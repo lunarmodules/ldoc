@@ -298,10 +298,16 @@ end
 -- Primarily intended as a debugging tool.
 function File:dump(verbose)
     for mod in self.modules:iter() do
-        print('Module:',mod.name,mod.summary,mod.description)
-        for item in mod.items:iter() do
-            item:dump(verbose)
-        end
+        mod:dump(verbose)
+    end
+end
+
+function Module:dump(verbose)
+    print '----'
+    print(self.type..':',self.name,self.summary)
+    if self.description then print(self.description) end
+    for item in self.items:iter() do
+        item:dump(verbose)
     end
 end
 
@@ -313,7 +319,7 @@ function Item:dump(verbose)
     end
     if verbose then
         print(self.type,name,self.summary)
-        print(self.description)
+        if self.description then print(self.description) end
         for p in self.params:iter() do
             print(p,self.params[p])
         end

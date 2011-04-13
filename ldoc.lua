@@ -25,6 +25,7 @@ ldoc, a Lua documentation generator, vs 0.1 Beta
   -t,--title (default Reference) page title
   -f,--format (default plain) formatting - can be markdown
   -b,--package  (default '') top-level package basename (needed for module(...))
+  --dump                debug output dump
   <file> (string) source file or directory containing source
 ]]
 
@@ -427,6 +428,13 @@ if args.module then
     if #module_list == 0 then quit("no modules found") end
     F:dump(args.verbose)
     return
+end
+
+if args.dump then
+    for mod in module_list:iter() do
+        mod:dump(true)
+    end
+    os.exit()
 end
 
 local css, templ = 'ldoc.css','ldoc.ltp'
