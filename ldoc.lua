@@ -267,9 +267,6 @@ local function parse_file(fname,lang)
 
             if ldoc_comment then
                 comment = table.concat(comment)
-                if t == 'keyword' and v == 'local' then
-                    t,v = tnext(tok)
-                end
                 fun_follows = t == 'keyword' and v == 'function'
                 if fun_follows or comment:find '@' then
                     tags = extract_tags(comment)
