@@ -192,7 +192,8 @@ function M.get_parameters (tok)
     if #ltl[1] == 0 then return args end -- no arguments
 
     local function set_comment (idx,tok)
-        args.comments[args[idx]] = value_of(tok)
+        local text = value_of(tok):gsub('%s*$','')
+        args.comments[args[idx]] = text
     end
 
     for i = 1,#ltl do
