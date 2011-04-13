@@ -152,6 +152,10 @@ end
 function Lang:find_module(tok)
 end
 
+function Lang:function_follows(t,v)
+    return false
+end
+
 function Lang:finalize()
     self.empty_comment_ = self.start_comment_..'%s*$'
 end
@@ -191,6 +195,11 @@ function Lua:find_module(tok,t,v)
         return '...',t,v
     end
 end
+
+function Lua:function_follows(t,v)
+    return t == 'keyword' and v == 'function'
+end
+
 
 local lua = Lua()
 
@@ -267,7 +276,7 @@ local function parse_file(fname,lang)
 
             if ldoc_comment then
                 comment = table.concat(comment)
-                fun_follows = t == 'keyword' and v == 'function'
+                fun_follows = lang:function_follows(t,v)
                 if fun_follows or comment:find '@' then
                     tags = extract_tags(comment)
                     if doc.project_level(tags.class) then
