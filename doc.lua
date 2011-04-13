@@ -320,7 +320,7 @@ function Item:dump(verbose)
     if verbose then
         print(self.type,name,self.summary)
         if self.description then print(self.description) end
-        for p in self.params:iter() do
+        for _,p in ipairs(self.params) do
             print(p,self.params[p])
         end
         for tag, value in pairs(self.tags) do
