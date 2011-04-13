@@ -15,7 +15,7 @@ app.require_here()
 
 local args = lapp [[
 ldoc, a Lua documentation generator, vs 0.1 Beta
-  -d,--dir (default .) output directory
+  -d,--dir (default docs) output directory
   -o  (default 'index') output name
   -v,--verbose          verbose
   -q,--quiet            suppress output
