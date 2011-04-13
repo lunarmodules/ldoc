@@ -149,7 +149,8 @@ function Lang:grab_block_comment(v,tok)
     return tools.grab_block_comment(v,tok,self.end_block1,self.end_block2)
 end
 
-function Lang:find_module(tok)
+function Lang:find_module(tok,t,v)
+    return '...',t,v
 end
 
 function Lang:function_follows(t,v)
