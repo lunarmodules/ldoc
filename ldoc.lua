@@ -246,12 +246,19 @@ local function parse_file(fname,lang)
 
     function F:warning (msg,kind)
         kind = kind or 'warning'
-        io.stderr:write(kind..' '..file..':'..lineno()..' '..msg,'\n')
+        io.stderr:write(kind..' '..fname..':'..lineno()..' '..msg,'\n')
     end
 
     function F:error (msg)
         self:warning(msg,'error')
         os.exit(1)
+    end
+
+    local function add_module(tags,module_found,old_style)
+        tags.name = module_found
+        tags.class = 'module'
+        local item = F:new_item(tags,lineno())
+        item.old_style = old_style
     end
 
     local t,v = tok()
@@ -283,25 +290,26 @@ local function parse_file(fname,lang)
                     tags = extract_tags(comment)
                     if doc.project_level(tags.class) then
                         module_found = tags.name
+                    elseif not module_found then
+                        module_found = tools.this_module_name(args.package,fname)
+                        add_module({summary=''},module_found,true)
+                        F:warning 'no module comment found'
                     end
                 end
             end
             -- some hackery necessary to find the module() call
-            if not module_found then
+            if not module_found and ldoc_comment then
                 local old_style
                 module_found,t,v = lang:find_module(tok,t,v)
                 -- right, we can add the module object ...
                 old_style = module_found ~= nil
                 if not module_found or module_found == '...' then
-                    if not t then return end -- run out of file!
+                    if not t then quit(fname..": end of file") end -- run out of file!
                     -- we have to guess the module name
                     module_found = tools.this_module_name(args.package,fname)
                 end
                 if not tags then tags = extract_tags(comment) end
-                tags.name = module_found
-                tags.class = 'module'
-                local item = F:new_item(tags,lineno())
-                item.old_style = old_style
+                add_module(tags,module_found,old_style)
                 tags = nil
                 -- if we did bump into a doc comment, then we can continue parsing it
             end
@@ -314,7 +322,7 @@ local function parse_file(fname,lang)
                     tags.formal_args = tools.get_parameters(toks)
                     tags.class = 'function'
                 end
-                if tags.name then --pretty.dump(tags)
+                if tags.name then
                     F:new_item(tags,lineno()).inferred = fun_follows
                 end
             end
