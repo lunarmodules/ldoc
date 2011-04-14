@@ -318,7 +318,8 @@ function Item:dump(verbose)
         name = name .. self.args
     end
     if verbose then
-        print(self.type,name,self.summary)
+        print(self.type,name)
+        print(self.summary)
         if self.description then print(self.description) end
         for _,p in ipairs(self.params) do
             print(p,self.params[p])

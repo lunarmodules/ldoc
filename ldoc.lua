@@ -357,7 +357,15 @@ end
 -- ldoc -m is expecting a Lua package; this converts this to a file path
 if args.module then
     local fullpath,lua = path.package_path(args.file)
-    if not fullpath then quit("module "..args.file.." not found on module path") end
+    if not fullpath then
+        local  mpath,name = tools.split_dotted_name(args.file)
+        fullpath,lua = path.package_path(mpath)
+        if not fullpath then
+            quit("module "..args.file.." not found on module path")
+        else
+            args.module = name
+        end
+    end
     if not lua then quit("module "..args.file.." is a binary extension") end
     args.file = fullpath
 end
@@ -434,7 +442,13 @@ end)
 -- using -v will make it more verbose
 if args.module then
     if #module_list == 0 then quit("no modules found") end
-    F:dump(args.verbose)
+    if args.module == true then
+        F:dump(args.verbose)
+    else
+        local fun = module_list[1].items.by_name[args.module]
+        if not fun then quit(args.module.." is not part of this module") end
+        fun:dump(true)
+    end
     return
 end
 
