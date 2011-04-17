@@ -125,6 +125,21 @@ function M.expand_comma_list (ls)
     return new_ls
 end
 
+-- grab lines from a line iterator `iter` until the line matches the pattern.
+-- Returns the joined lines and the line, which may be nil if we run out of
+-- lines.
+function M.grab_while_not(iter,pattern)
+    local line = iter()
+    local res = {}
+    while line and not line:match(pattern) do
+        append(res,line)
+        line = iter()
+    end
+    res = table.concat(res,'\n')
+    return res,line
+end
+
+
 function M.extract_identifier (value)
     return value:match('([%.:_%w]+)')
 end

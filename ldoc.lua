@@ -24,7 +24,7 @@ ldoc, a Lua documentation generator, vs 0.1 Beta
   -p,--project (default ldoc) project name
   -t,--title (default Reference) page title
   -f,--format (default plain) formatting - can be markdown
-  -b,--package  (default '') top-level package basename (needed for module(...))
+  -b,--package  (default .) top-level package basename (needed for module(...))
   --dump                debug output dump
   <file> (string) source file or directory containing source
 ]]
@@ -97,22 +97,39 @@ end
 
 local tnext = lexer.skipws
 
--- This rather nasty looking code takes the collected comment block, and splits
--- it up using '@', so it is specific to the LuaDoc style of commenting.
+-- a pattern particular to LuaDoc tag lines: the line must begin with @TAG,
+-- followed by the value, which may extend over several lines.
+local luadoc_tag = '%s*@(%a+)%s(.+)'
+
+-- assumes that the doc comment consists of distinct tag lines
+function parse_tags(text)
+    local lines = stringio.lines(text)
+    local preamble, line = tools.grab_while_not(lines,luadoc_tag)
+    local tag_items = {}
+    local follows
+    while line do
+        local tag,rest = line:match(luadoc_tag)
+        follows, line = tools.grab_while_not(lines,luadoc_tag)
+        append(tag_items,{tag, rest .. '\n' .. follows})
+    end
+    return preamble,tag_items
+end
+
+-- This takes the collected comment block, and uses the docstyle to
+-- extract tags and values.  Assume that the summary ends in a period or a question
+-- mark, and everything else in the preamble is the description.
 -- If a tag appears more than once, then its value becomes a list of strings.
 -- Alias substitution and @TYPE NAME shortcutting is handled by Item.check_tag
 local function extract_tags (s)
     if s:match '^%s*$' then return {} end
+    local preamble,tag_items = parse_tags(s)
     local strip = tools.strip
-    local items = utils.split(s,'@')
-    local summary,description = items[1]:match('^(.-)%.%s(.+)')
-    if not summary then summary = items[1] end
+    local summary,description = preamble:match('^(.-)[%.?]%s(.+)')
+    if not summary then summary = preamble end
     summary = summary .. '.'
-    table.remove(items,1)
     local tags = {summary=summary and strip(summary),description=description and strip(description)}
-    for _,item in ipairs(items) do
-        local tag,value = item:match('(%a+)%s+(.+)%s*$')
-        if not tag then print(s); os.exit() end
+    for _,item in ipairs(tag_items) do
+        local tag,value = item[1],item[2]
         tag = Item.check_tag(tags,tag)
         value = strip(value)
         local old_value = tags[tag]
@@ -185,8 +202,9 @@ end
 -- that we must infer the module name.
 function Lua:find_module(tok,t,v)
     while t and not (t == 'iden' and v == 'module') do
-        t,v = tnext(tok)
         if t == 'comment' and self:start_comment(v) then return nil,t,v end
+        --print(t,v)
+        t,v = tnext(tok)
     end
     if not t then return nil end
     t,v = tnext(tok)
@@ -236,7 +254,7 @@ local cc = CC()
 local function parse_file(fname,lang)
     local line,f = 1
     local F = File(fname)
-    local module_found
+    local module_found, first_comment = false,true
 
     local tok,f = lang.lexer(fname)
     local toks = tools.space_skip_getter(tok)
@@ -246,6 +264,8 @@ local function parse_file(fname,lang)
 
     function F:warning (msg,kind)
         kind = kind or 'warning'
+        lineno() -- why is this necessary?
+        lineno()
         io.stderr:write(kind..' '..fname..':'..lineno()..' '..msg,'\n')
     end
 
@@ -282,20 +302,23 @@ local function parse_file(fname,lang)
             if t == 'space' then t,v = tnext(tok) end
 
             local fun_follows,tags
-
-            if ldoc_comment then
+            if ldoc_comment or first_comment then
                 comment = table.concat(comment)
                 fun_follows = lang:function_follows(t,v)
-                if fun_follows or comment:find '@' then
+                if fun_follows or comment:find '@' or first_comment then
                     tags = extract_tags(comment)
+                    -- handle the special case where the initial module comment was not
+                    -- an ldoc style comment
+                    if not ldoc_comment and first_comment and not tags.class then
+                        tags.class = 'module'
+                        ldoc_comment = true
+                        F:warning 'Module doc comment assumed'
+                    end
                     if doc.project_level(tags.class) then
                         module_found = tags.name
-                    elseif not module_found then
-                        module_found = tools.this_module_name(args.package,fname)
-                        add_module({summary=''},module_found,true)
-                        F:warning 'no module comment found'
                     end
                 end
+                first_comment = false
             end
             -- some hackery necessary to find the module() call
             if not module_found and ldoc_comment then
@@ -370,8 +393,21 @@ if args.module then
     args.file = fullpath
 end
 
-if args.package == '' then
-    args.package = path.splitpath(args.file)
+if args.file == '.' then
+    args.file = lfs.currentdir()
+else
+    args.file = path.abspath(args.file)
+end
+
+local source_dir = args.file
+if path.isfile(args.file) then
+    source_dir = path.splitpath(source_dir)
+end
+
+if args.package == '.' then
+    args.package = source_dir
+elseif args.package == '..' then
+    args.package = path.splitpath(source_dir)
 end
 
 local file_types = {
