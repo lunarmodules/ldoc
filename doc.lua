@@ -16,8 +16,8 @@ local split_dotted_name = tools.split_dotted_name
 --  - tags which represent a type, like 'function' (TAG_TYPE)
 local known_tags = {
     param = 'M', see = 'M', usage = 'M', ['return'] = 'M', field = 'M', author='M';
-    class = 'id', name = 'id', pragma = 'id';
-    copyright = 'S', description = 'S', release = 'S';
+    class = 'id', name = 'id', pragma = 'id', alias = 'id';
+    copyright = 'S', summary = 'S', description = 'S', release = 'S';
     module = 'T', script = 'T',['function'] = 'T', table = 'T'
 }
 known_tags._alias = {}
@@ -107,6 +107,10 @@ function File:finish()
                 -- (retired until we handle methods like Set:unset() properly)
                 if not mod and not this_mod.old_style and item.inferred then
                     --item:warning(item.name .. ' is declared in global scope')
+                end
+                -- the function may be qualified with a module alias...
+                if this_mod.tags.alias and mod == this_mod.tags.alias then
+                    mod = this_mod.mod_name
                 end
                 -- if that's the mod_name, then we want to only use 'foo'
                 if mod == this_mod.mod_name and this_mod.tags.pragma ~= 'nostrip' then
