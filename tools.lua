@@ -199,10 +199,10 @@ local function value_of (tok) return tok[2] end
 -- following the arguments. ldoc will use these in addition to explicit
 -- param tags.
 
-function M.get_parameters (tok)
+function M.get_parameters (tok,endtoken,delim)
     local args = List()
     args.comments = {}
-    local ltl = lexer.get_separated_list(tok)
+    local ltl = lexer.get_separated_list(tok,endtoken,delim)
 
     if #ltl[1] == 0 then return args end -- no arguments
 

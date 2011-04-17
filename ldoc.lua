@@ -186,8 +186,12 @@ function Lang:search_for_token (tok,type,value,t,v)
     return t ~= nil,t,v
 end
 
-function Lang:parse_function_header (tok,toks)
+function Lang:parse_function_header (tags,tok,toks)
 end
+
+function Lang:parse_extra (tags,tok,toks)
+end
+
 
 class.Lua(Lang)
 
@@ -227,10 +231,20 @@ function Lua:function_follows(t,v)
     return t == 'keyword' and v == 'function'
 end
 
-function Lua:parse_function_header (tok,toks)
-    local name = tools.get_fun_name(tok)
-    local formal_args = tools.get_parameters(toks)
-    return name,formal_args
+function Lua:parse_function_header (tags,tok,toks)
+    tags.name = tools.get_fun_name(tok)
+    tags.formal_args = tools.get_parameters(toks)
+    tags.class = 'function'
+end
+
+function Lua:parse_extra (tags,tok,toks)
+    if tags.class == 'table' and not tags.fields then
+        local res,t,v = self:search_for_token(tok,'{','{',tok())
+        if not res then return nil,t,v end
+        tags.formal_args = tools.get_parameters(toks,'}',function(s)
+            return s == ',' or s == ';'
+        end)
+    end
 end
 
 
@@ -353,8 +367,9 @@ local function parse_file(fname,lang)
             -- end of a block of document comments
             if ldoc_comment and tags then
                 if fun_follows then -- parse the function definition
-                    tags.name, tags.formal_args = lang:parse_function_header(tok,toks)
-                    tags.class = 'function'
+                    lang:parse_function_header(tags,tok,toks)
+                else
+                    lang:parse_extra(tags,tok,toks)
                 end
                 if tags.name then
                     F:new_item(tags,lineno()).inferred = fun_follows

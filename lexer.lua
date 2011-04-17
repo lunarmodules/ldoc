@@ -400,6 +400,14 @@ function lexer.get_separated_list(tok,endtoken,delim)
             return t == endtoken
         end
     end
+    local is_delim
+    if type(delim) == 'function' then
+        is_delim = delim
+    else
+        is_delim = function(t)
+            return t == delim
+        end
+    end
     local token,value
     while true do
         token,value=tok()
@@ -418,7 +426,7 @@ function lexer.get_separated_list(tok,endtoken,delim)
             else
                 tappend(tl,')')
             end
-        elseif token == delim and level == 1 then
+        elseif level == 1 and is_delim(token) then
             append(parm_values,tl) -- a new parm
             tl = {}
         else
