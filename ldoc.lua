@@ -99,7 +99,7 @@ local tnext = lexer.skipws
 
 -- a pattern particular to LuaDoc tag lines: the line must begin with @TAG,
 -- followed by the value, which may extend over several lines.
-local luadoc_tag = '%s*@(%a+)%s(.+)'
+local luadoc_tag = '^%s*@(%a+)%s(.+)'
 
 -- assumes that the doc comment consists of distinct tag lines
 function parse_tags(text)
@@ -123,6 +123,7 @@ end
 local function extract_tags (s)
     if s:match '^%s*$' then return {} end
     local preamble,tag_items = parse_tags(s)
+
     local strip = tools.strip
     local summary,description = preamble:match('^(.-)[%.?]%s(.+)')
     if not summary then summary = preamble end
