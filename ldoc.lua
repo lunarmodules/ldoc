@@ -123,7 +123,6 @@ end
 local function extract_tags (s)
     if s:match '^%s*$' then return {} end
     local preamble,tag_items = parse_tags(s)
-
     local strip = tools.strip
     local summary,description = preamble:match('^(.-[%.?])%s(.+)')
     if not summary then summary = preamble end
@@ -179,6 +178,17 @@ function Lang:finalize()
     self.empty_comment_ = self.start_comment_..'%s*$'
 end
 
+function Lang:search_for_token (tok,type,value,t,v)
+    while t and not (t == type and v == value) do
+        if t == 'comment' and self:start_comment(v) then return nil,t,v end
+        t,v = tnext(tok)
+    end
+    return t ~= nil,t,v
+end
+
+function Lang:parse_function_header (tok,toks)
+end
+
 class.Lua(Lang)
 
 function Lua:_init()
@@ -201,12 +211,9 @@ end
 -- we should go back and process it. Likewise, module(...) also means
 -- that we must infer the module name.
 function Lua:find_module(tok,t,v)
-    while t and not (t == 'iden' and v == 'module') do
-        if t == 'comment' and self:start_comment(v) then return nil,t,v end
-        --print(t,v)
-        t,v = tnext(tok)
-    end
-    if not t then return nil end
+    local res
+    res,t,v = self:search_for_token(tok,'iden','module',t,v)
+    if not res then return nil,t,v end
     t,v = tnext(tok)
     if t == '(' then t,v = tnext(tok) end
     if t == 'string' then -- explicit name, cool
@@ -218,6 +225,12 @@ end
 
 function Lua:function_follows(t,v)
     return t == 'keyword' and v == 'function'
+end
+
+function Lua:parse_function_header (tok,toks)
+    local name = tools.get_fun_name(tok)
+    local formal_args = tools.get_parameters(toks)
+    return name,formal_args
 end
 
 
@@ -337,12 +350,10 @@ local function parse_file(fname,lang)
                 -- if we did bump into a doc comment, then we can continue parsing it
             end
 
-            -- end of a group of comments (may be just one)
+            -- end of a block of document comments
             if ldoc_comment and tags then
-                -- ldoc block
                 if fun_follows then -- parse the function definition
-                    tags.name = tools.get_fun_name(tok)
-                    tags.formal_args = tools.get_parameters(toks)
+                    tags.name, tags.formal_args = lang:parse_function_header(tok,toks)
                     tags.class = 'function'
                 end
                 if tags.name then
