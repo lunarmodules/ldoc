@@ -118,6 +118,15 @@ pre.example {
     font-size: .85em;
 }
 
+pre {
+    background-color: rgb(245, 245, 245);
+    border: 1px solid silver;
+    padding: 10px;
+    margin: 10px 0 10px 0;
+    font-family: "Andale Mono", monospace;
+}
+
+
 table.index { border: 1px #00007f; }
 table.index td { text-align: left; vertical-align: top; }
 
