@@ -543,6 +543,7 @@ if args.format ~= 'plain' then
     local ok,markup = pcall(require,args.format)
     if not ok then quit("cannot load formatter: "..args.format) end
     function ldoc.markup(txt)
+        if txt == nil then return '' end
         txt = markup(txt)
         return (txt:gsub('^%s*<p>(.+)</p>%s*$','%1'))
     end
