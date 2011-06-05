@@ -14,7 +14,7 @@ local lapp = require 'pl.lapp'
 app.require_here()
 
 local args = lapp [[
-ldoc, a Lua documentation generator, vs 0.1 Beta
+ldoc, a documentation generator for Lua, vs 0.2 Beta
   -d,--dir (default docs) output directory
   -o  (default 'index') output name
   -v,--verbose          verbose
@@ -23,7 +23,7 @@ ldoc, a Lua documentation generator, vs 0.1 Beta
   -s,--style (default !) directory for templates and style
   -p,--project (default ldoc) project name
   -t,--title (default Reference) page title
-  -f,--format (default plain) formatting - can be markdown
+  -f,--format (default plain) formatting - can be markdown or plain
   -b,--package  (default .) top-level package basename (needed for module(...))
   --dump                debug output dump
   <file> (string) source file or directory containing source
