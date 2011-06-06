@@ -22,11 +22,26 @@
 
 <!-- Menu -->
 
+# local function no_spaces(s) return s:gsub('%s','_') end
+
 <div id="navigation">
 <h1>$(ldoc.project)</h1>
+# if not ldoc.single then
 <ul>
   <li><a href="../index.html">Index</a></li>
 </ul>
+# else
+<p>$(ldoc.description)</p>
+# end
+
+# if module then
+<h2>Contents</h2>
+<ul>
+# for kind,items in module.kinds() do
+<li><a href="#$(no_spaces(kind))">$(kind)</a></li>
+# end
+</ul>
+# end
 
 # for kind, mods, type in ldoc.kinds() do
 <h2>$(kind)</h2>
@@ -35,7 +50,7 @@
 # local base = ""
 # kind = kind:lower()
 # if module then
-#   if module.type ~= type.type then base = "../"..kind.."/" end
+#   if module.type ~= type then base = "../"..kind.."/" end
 # else base = kind.."/"
 # end
 # for mod in mods() do
@@ -67,9 +82,9 @@
 <p>$(M(module.summary))</p>
 <p>$(M(module.description))</p>
 
-## -- bang out the tables of item types for this module (e.g Functions, Tables, etc)
+# -- bang out the tables of item types for this module (e.g Functions, Tables, etc)
 # for kind,items in module.kinds() do
-<h2>$(kind)</h2>
+<h2><a href="#$(no_spaces(kind))">$(kind)</a></h2>
 <table class="function_list">
 #  for item in items() do
 	<tr>
@@ -85,8 +100,8 @@
 
 # --- currently works for both Functions and Tables. The params field either contains
 # --- function parameters or table fields.
-# for kind, items, type in module.kinds() do
-    <h2><a name="$(kind)"></a>$(kind)</h2>
+# for kind, items in module.kinds() do
+    <h2><a name="$(no_spaces(kind))"></a>$(kind)</h2>
     <dl class="function">
 #  for item in items() do
     <dt>
@@ -98,7 +113,7 @@
     $(M(item.description))
 
 #  if item.params and #item.params > 0 then
-    <h3>$(type.subnames):</h3>
+    <h3>$(module.kinds:type_of(item).subnames):</h3>
     <ul>
 #   for p in iter(item.params) do
        <li><code><em>$(p)</em></code>: $(M(item.params[p]))</li>
@@ -146,13 +161,13 @@
   <p>$(M(ldoc.description))</p>
 # end
 
-# for kind, mods, type in ldoc.kinds() do
+# for kind, mods in ldoc.kinds() do
 <h2>$(kind)</h2>
 # kind = kind:lower()
 # for m in mods() do
 <table class="module_list">
 	<tr>
-		<td class="name"><a href="$(kind)/$(m.name).html">$(m.name)</a></td>
+		<td class="name"><a href="$(no_spaces(kind))/$(m.name).html">$(m.name)</a></td>
 		<td class="summary">$(M(m.summary))</td>
 	</tr>
 #  end -- for modules
