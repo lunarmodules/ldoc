@@ -102,6 +102,7 @@
 # --- function parameters or table fields.
 # for kind, items in module.kinds() do
     <h2><a name="$(no_spaces(kind))"></a>$(kind)</h2>
+    $(M(module.kinds:get_section_description(kind)))
     <dl class="function">
 #  for item in items() do
     <dt>

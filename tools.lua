@@ -44,8 +44,8 @@ end
 local KindMap = class()
 M.KindMap = KindMap
 
--- calling a KindMap returns an iterator. This returns the kind and the iterator
--- over the items of that type.
+-- calling a KindMap returns an iterator. This returns the kind, the iterator
+-- over the items of that type, and the actual type tag value.
 function KindMap:__call ()
    local i = 1
    local klass = self.klass
@@ -69,14 +69,20 @@ function KindMap:type_of (item)
    return klass.types_by_kind [kind]
 end
 
+function KindMap:get_section_description (kind)
+    return self.klass.descriptions[kind]
+end
+
 -- called for each new item. It does not actually create separate lists,
 -- (although that would not break the interface) but creates iterators
 -- for that item type if not already created.
-function KindMap:add (item,items)
-   local group = item[self.fieldname]
-   local kname = self.klass.types_by_tag[group]
+function KindMap:add (item,items,description)
+   local group = item[self.fieldname] -- which wd be item's type or section
+   local kname = self.klass.types_by_tag[group] -- the kind name
    if not self[kname] then
       self[kname] = M.type_iterator (items,self.fieldname,group)
+      --print(kname,description)
+      self.klass.descriptions[kname] = description
    end
 end
 
@@ -86,6 +92,7 @@ function KindMap._class_init (klass)
    klass.kinds = {} -- list in correct order of kinds
    klass.types_by_tag = {} -- indexed by tag
    klass.types_by_kind = {} -- indexed by kind
+   klass.descriptions = {} -- optional description for each kind
 end
 
 

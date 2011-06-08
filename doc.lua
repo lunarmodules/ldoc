@@ -141,12 +141,14 @@ function File:finish()
             end
 
             -- right, this item was within a section or a 'class'
+            local section_description
             if this_mod.section then
                item.section = this_mod.section.display_name
                -- if it was a class, then the name should be 'Class.foo'
                if this_mod.section.type == 'type' then
                   item.name = this_mod.section.name .. '.' .. item.name
                end
+               section_description = this_mod.section.description
             else -- otherwise, just goes into the default sections (Functions,Tables,etc)
                item.section = item.type
             end
@@ -156,9 +158,8 @@ function File:finish()
             these_items.by_name[item.name] = item
             these_items:append(item)
 
-
             -- register this item with the iterator
-            this_mod.kinds:add(item,these_items)
+            this_mod.kinds:add(item,these_items,section_description)
 
          else
             -- must be a free-standing function (sometimes a problem...)
