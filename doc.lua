@@ -364,6 +364,7 @@ function Item:dump(verbose)
       name = name .. self.args
    end
    if verbose then
+      print()
       print(self.type,name)
       print(self.summary)
       if self.description then print(self.description) end
