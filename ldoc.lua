@@ -16,6 +16,7 @@ app.require_here()
 local args = lapp [[
 ldoc, a documentation generator for Lua, vs 0.2 Beta
   -d,--dir (default docs) output directory
+  --here  read parameters from ./config.ld
   -o,--output  (default 'index') output name
   -v,--verbose          verbose
   -q,--quiet            suppress output
@@ -91,16 +92,19 @@ end
 -- handled specially. It will be loaded using 'ldoc' as the environment.
 local function read_ldoc_config (fname)
    local directory = path.dirname(fname)
+   local err
    print('reading configuration from '..fname)
-   local txt = utils.readfile(fname)
-   -- Penlight defines loadin for Lua 5.1 as well
-   local chunk,err = loadin(ldoc,txt)
-   if chunk then
-      local ok
-      ok,err = pcall(chunk)
-   end
+   local txt,not_found = utils.readfile(fname)
+   if txt then
+       -- Penlight defines loadin for Lua 5.1 as well
+       local chunk,err = loadin(ldoc,txt)
+       if chunk then
+          local ok
+          ok,err = pcall(chunk)
+       end
+    end
    if err then print('error loading config file '..fname..': '..err) end
-   return directory
+   return directory, not_found
 end
 
 ------ Parsing the Source --------------
@@ -407,6 +411,8 @@ end
 
 --- processing command line and preparing for output ---
 
+local CONFIG_NAME = 'config.ld'
+
 local F
 local file_list,module_list = List(),List()
 module_list.by_name = {}
@@ -436,8 +442,19 @@ if args.module then
    args.file = fullpath
 end
 
+local config_is_read
+
 if args.file == '.' then
-   args.file = lfs.currentdir()
+-- a special case: 'ldoc .' can get all its parameters from config.ld
+    local dir,err = read_ldoc_config('./'..CONFIG_NAME)
+    if err then quit("no "..CONFIG_NAME.." found here") end
+    config_is_read = true
+    args.file = ldoc.file or '.'
+    if args.file == '.' then
+        args.file = lfs.currentdir()
+    else
+        args.file = path.abspath(args.file)
+    end
 else
    args.file = path.abspath(args.file)
 end
@@ -469,7 +486,6 @@ function add_language_extension (ext,lang)
    file_types[ext] = lang
 end
 
-local CONFIG_NAME = 'config.ld'
 
 if path.isdir(args.file) then
    local files = List(dir.getallfiles(args.file,'*.*'))
@@ -478,7 +494,7 @@ if path.isdir(args.file) then
    end)
 
    -- finding more than one should probably be a warning...
-   if #config_files > 0 then
+   if #config_files > 0 and not config_is_read then
       config_dir = read_ldoc_config(config_files[1])
    end
 
@@ -500,7 +516,7 @@ elseif path.isfile(args.file) then
    local config_dir = path.dirname(args.file)
    if config_dir == '' then config_dir = '.' end
    local config = path.join(config_dir,CONFIG_NAME)
-   if path.isfile(config) then
+   if path.isfile(config) and not config_is_read then
       read_ldoc_config(config)
    end
    local ext = path.extension(args.file)
@@ -559,8 +575,10 @@ end
 local module_template,err = utils.readfile (path.join(args.style,templ))
 if not module_template then quit(err) end
 
--- can specify formatter in config.ld
+-- can specify format, output and dir in config.ld
 if ldoc.format then args.format = ldoc.format end
+if ldoc.output then args.output = ldoc.output end
+if ldoc.dir then args.dir = ldoc.dir end
 
 if args.format ~= 'plain' then
    local ok,markup = pcall(require,args.format)
