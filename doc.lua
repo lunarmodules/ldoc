@@ -324,7 +324,7 @@ function Module:resolve_references(modules)
             if mod_ref then
                local name = item_ref and item_ref.name or ''
                -- this is deeply hacky; classes have 'Class ' prepended.
-               if item_ref.type == 'type' then
+               if item_ref and item_ref.type == 'type' then
                   name = 'Class_'..name
                end
                item.see:append {mod=mod_ref.name,name=name,label=s}

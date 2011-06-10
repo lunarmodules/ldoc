@@ -16,16 +16,17 @@ app.require_here()
 local args = lapp [[
 ldoc, a documentation generator for Lua, vs 0.2 Beta
   -d,--dir (default docs) output directory
-  --here  read parameters from ./config.ld
   -o,--output  (default 'index') output name
   -v,--verbose          verbose
   -q,--quiet            suppress output
   -m,--module           module docs as text
-  -s,--style (default !) directory for templates and style
+  -s,--style (default !) directory for style sheet (ldoc.css)
+  -l,--template (default !) directory for template (ldoc.ltp)
   -p,--project (default ldoc) project name
   -t,--title (default Reference) page title
   -f,--format (default plain) formatting - can be markdown or plain
   -b,--package  (default .) top-level package basename (needed for module(...))
+  -x,--ext (default html) output file extension
   --dump                debug output dump
   <file> (string) source file or directory containing source
 ]]
@@ -442,19 +443,18 @@ if args.module then
    args.file = fullpath
 end
 
-local config_is_read
-
-if args.file == '.' then
 -- a special case: 'ldoc .' can get all its parameters from config.ld
-    local dir,err = read_ldoc_config('./'..CONFIG_NAME)
-    if err then quit("no "..CONFIG_NAME.." found here") end
-    config_is_read = true
-    args.file = ldoc.file or '.'
-    if args.file == '.' then
-        args.file = lfs.currentdir()
-    else
-        args.file = path.abspath(args.file)
-    end
+if args.file == '.' then
+   local err
+   config_dir,err = read_ldoc_config('./'..CONFIG_NAME)
+   if err then quit("no "..CONFIG_NAME.." found here") end
+   config_is_read = true
+   args.file = ldoc.file or '.'
+   if args.file == '.' then
+      args.file = lfs.currentdir()
+   else
+      args.file = path.abspath(args.file)
+   end
 else
    args.file = path.abspath(args.file)
 end
@@ -494,7 +494,7 @@ if path.isdir(args.file) then
    end)
 
    -- finding more than one should probably be a warning...
-   if #config_files > 0 and not config_is_read then
+   if #config_files > 0 and not config_dir then
       config_dir = read_ldoc_config(config_files[1])
    end
 
@@ -513,11 +513,13 @@ if path.isdir(args.file) then
    multiple_files = true
 elseif path.isfile(args.file) then
    -- a single file may be accompanied by a config.ld in the same dir
-   local config_dir = path.dirname(args.file)
-   if config_dir == '' then config_dir = '.' end
-   local config = path.join(config_dir,CONFIG_NAME)
-   if path.isfile(config) and not config_is_read then
-      read_ldoc_config(config)
+   if not config_dir then
+      config_dir = path.dirname(args.file)
+      if config_dir == '' then config_dir = '.' end
+      local config = path.join(config_dir,CONFIG_NAME)
+      if path.isfile(config) and not config_is_read then
+         read_ldoc_config(config)
+      end
    end
    local ext = path.extension(args.file)
    local ftype = file_types[ext]
@@ -562,23 +564,52 @@ end
 
 local css, templ = 'ldoc.css','ldoc.ltp'
 
--- the style directory for template and stylesheet can be specified
--- either by command-line 'style' argument or by 'style' field in
--- config.ld. Then it is relative to the location of that file.
-if ldoc.style then args.style = path.join(config_dir,ldoc.style) end
-
--- '!' here means 'use same directory as the ldoc.lua script'
-if args.style == '!' then
-   args.style = arg[0]:gsub('[^/\\]+$','')
+local function style_dir (sname)
+   local style = ldoc[sname]
+   local dir
+   if style then
+      if style == true then
+         dir = config_dir
+      elseif type(style) == 'string' and path.isdir(style) then
+         dir = style
+      else
+         quit(tostring(name).." is not a directory")
+      end
+      args[sname] = dir
+   end
 end
+
+local function override (field)
+   if ldoc[field] then args[field] = ldoc[field] end
+end
+
+-- the directories for template and stylesheet can be specified
+-- either by command-line '--template','--style' arguments or by 'template and
+-- 'style' fields in config.ld.
+-- The assumption here is that if these variables are simply true then the directory
+-- containing config.ld contains a ldoc.css and a ldoc.ltp respectively. Otherwise
+-- they must be a valid subdirectory.
+
+style_dir 'style'
+style_dir 'template'
+
+-- can specify format, output, dir and ext in config.ld
+override 'format'
+override 'output'
+override 'dir'
+override 'ext'
+args.ext = '.'..args.ext
+
+
+-- '!' here means 'use same directory as ldoc.lua
+local ldoc_dir = arg[0]:gsub('[^/\\]+$','')
+if args.style == '!' then args.style = ldoc_dir end
+if args.template == '!' then args.template = ldoc_dir end
 
 local module_template,err = utils.readfile (path.join(args.style,templ))
 if not module_template then quit(err) end
 
--- can specify format, output and dir in config.ld
-if ldoc.format then args.format = ldoc.format end
-if ldoc.output then args.output = ldoc.output end
-if ldoc.dir then args.dir = ldoc.dir end
+
 
 if args.format ~= 'plain' then
    local ok,markup = pcall(require,args.format)
@@ -617,7 +648,7 @@ function generate_output()
    check_file(args.dir..css, path.join(args.style,css))
 
    -- write out the module index
-   writefile(args.dir..args.output..'.html',out)
+   writefile(args.dir..args.output..args.ext,out)
 
    -- write out the per-module documentation
    if not ldoc.single then
@@ -633,7 +664,7 @@ function generate_output()
             if not out then
                quit('template failed for '..m.name..': '..err)
             else
-               writefile(args.dir..kind..'/'..m.name..'.html',out)
+               writefile(args.dir..kind..'/'..m.name..args.ext,out)
             end
          end
       end
