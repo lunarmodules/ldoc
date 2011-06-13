@@ -18,7 +18,8 @@ local known_tags = {
    param = 'M', see = 'M', usage = 'M', ['return'] = 'M', field = 'M', author='M';
    class = 'id', name = 'id', pragma = 'id', alias = 'id';
    copyright = 'S', summary = 'S', description = 'S', release = 'S', license = 'S';
-   module = 'T', script = 'T',['function'] = 'T', table = 'T', section = 'T', type = 'T';
+   module = 'T', script = 'T',['function'] = 'T', lfunction = 'T',
+   table = 'T', section = 'T', type = 'T';
 }
 known_tags._alias = {}
 known_tags._project_level = {
@@ -78,10 +79,8 @@ function File:_init(filename)
 end
 
 function File:new_item(tags,line)
-   local item = Item(tags)
+   local item = Item(tags,self,line)
    self.items:append(item)
-   item.file = self
-   item.lineno = line
    return item
 end
 
@@ -92,6 +91,7 @@ function File:finish()
       item:finish()
       if doc.project_level(item.type) then
          this_mod = item
+
          -- if name is 'package.mod', then mod_name is 'mod'
          local package,mname = split_dotted_name(this_mod.name)
          if not package then
@@ -168,7 +168,9 @@ function File:finish()
    end
 end
 
-function Item:_init(tags)
+function Item:_init(tags,file,line)
+   self.file = file
+   self.lineno = line
    self.summary = tags.summary
    self.description = tags.description
    tags.summary = nil
@@ -186,14 +188,14 @@ function Item:_init(tags)
       elseif ttype == TAG_ID then
          if type(value) ~= 'string' then
             -- such tags are _not_ multiple, e.g. name
-            self:error(tag..' cannot have multiple values')
+            self:error("'"..tag.."' cannot have multiple values")
          else
             self.tags[tag] = tools.extract_identifier(value)
          end
       elseif ttype == TAG_SINGLE then
          self.tags[tag] = value
       else
-         self:warning ('unknown tag: '..tag)
+         self:warning ("unknown tag: '"..tag.."'")
       end
    end
 end
@@ -270,6 +272,11 @@ function Item:warning(msg)
    if type(name) == 'table' then pretty.dump(name); name = '?' end
    name = name or '?'
    io.stderr:write(name,':',self.lineno or '?',' ',msg,'\n')
+end
+
+function Item:error(msg)
+   self:warning(msg)
+   os.exit(1)
 end
 
 -- resolving @see references. A word may be either a function in this module,

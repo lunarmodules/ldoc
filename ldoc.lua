@@ -47,6 +47,7 @@ end
 ModuleMap:add_kind('function','Functions','Parameters')
 ModuleMap:add_kind('table','Tables','Fields')
 ModuleMap:add_kind('field','Fields')
+ModuleMap:add_kind('lfunction','Local Functions','Parameters')
 
 
 class.ProjectMap(KindMap)
@@ -244,8 +245,10 @@ function Lua:find_module(tok,t,v)
    end
 end
 
-function Lua:function_follows(t,v)
-   return t == 'keyword' and v == 'function'
+function Lua:function_follows(t,v,tok)
+   local is_local = t == 'keyword' and v == 'local'
+   if is_local then t,v = tnext(tok) end
+   return t == 'keyword' and v == 'function', is_local
 end
 
 function Lua:parse_function_header (tags,tok,toks)
@@ -256,7 +259,11 @@ end
 
 function Lua:parse_extra (tags,tok,toks)
    if tags.class == 'table' and not tags.fields then
-      local res,t,v = self:search_for_token(tok,'{','{',tok())
+      local res
+      local stat,t,v = pcall(tok)
+      if not stat then return nil end
+      print('tok',t,v)
+      res,t,v = self:search_for_token(tok,'{','{',tok())
       if not res then return nil,t,v end
       tags.formal_args = tools.get_parameters(toks,'}',function(s)
          return s == ',' or s == ';'
@@ -303,7 +310,13 @@ local function parse_file(fname,lang)
    local tok,f = lang.lexer(fname)
    local toks = tools.space_skip_getter(tok)
 
-   function lineno () return lexer.lineno(tok) end
+    function lineno ()
+        while true do
+            local res = lexer.lineno(tok)
+            if type(res) == 'number' then return res end
+            if res == nil then return nil end
+        end
+    end
    function filename () return fname end
 
    function F:warning (msg,kind)
@@ -350,24 +363,20 @@ local function parse_file(fname,lang)
 
          if t == 'space' then t,v = tnext(tok) end
 
-         local fun_follows,tags
+         local fun_follows, tags, is_local
          if ldoc_comment or first_comment then
             comment = table.concat(comment)
-            fun_follows = lang:function_follows(t,v)
-            if fun_follows or comment:find '@' or first_comment then
+            if not ldoc_comment and first_comment then
+               F:error("first comment must be a doc comment!")
+            end
+            first_comment = false
+            fun_follows, is_local = lang:function_follows(t,v,tok)
+            if fun_follows or comment:find '@'then
                tags = extract_tags(comment)
-               -- handle the special case where the initial module comment was not
-               -- an ldoc style comment
-               if not ldoc_comment and first_comment and not tags.class then
-                  tags.class = 'module'
-                  ldoc_comment = true
-                  F:warning 'Module doc comment assumed'
-               end
                if doc.project_level(tags.class) then
                   module_found = tags.name
                end
             end
-            first_comment = false
          end
          -- some hackery necessary to find the module() call
          if not module_found and ldoc_comment then
@@ -388,14 +397,21 @@ local function parse_file(fname,lang)
 
          -- end of a block of document comments
          if ldoc_comment and tags then
-            if fun_follows then -- parse the function definition
-               lang:parse_function_header(tags,tok,toks)
-            else
-               lang:parse_extra(tags,tok,toks)
+            local line = t ~= nil and lineno() or 666
+            if t ~= nil then
+               if fun_follows then -- parse the function definition
+                  lang:parse_function_header(tags,tok,toks)
+               else
+                  lang:parse_extra(tags,tok,toks)
+               end
+            end
+            if tags.class == 'function' and is_local then
+               tags.class = 'lfunction'
             end
             if tags.name then
-               F:new_item(tags,lineno()).inferred = fun_follows
+               F:new_item(tags,line).inferred = fun_follows
             end
+            if not t then break end
          end
       end
       if t ~= 'comment' then t,v = tok() end
@@ -606,7 +622,7 @@ local ldoc_dir = arg[0]:gsub('[^/\\]+$','')
 if args.style == '!' then args.style = ldoc_dir end
 if args.template == '!' then args.template = ldoc_dir end
 
-local module_template,err = utils.readfile (path.join(args.style,templ))
+local module_template,err = utils.readfile (path.join(args.template,templ))
 if not module_template then quit(err) end
 
 
