@@ -13,6 +13,16 @@ module 'mod'
 function combine(first,second)
 end
 
+--- Combine a whole bunch of strings.
+function combine_all(...)
+end
+
+---
+-- Creates a constant capture. This pattern matches the empty string and
+-- produces all given values as its captured values.
+function lpeg.Cc([value, ...]) end
+
+
 --- Split a string _str_. Returns the first part and the second part, so that
 -- `combine(first,second)` is equal to _s_.
 function split(s)
