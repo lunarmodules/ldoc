@@ -6,7 +6,7 @@ require 'pl'
 local tools = {}
 local M = tools
 local append = table.insert
-local lexer = require 'lexer'
+local lexer = require 'ldoc.lexer'
 local quit = utils.quit
 
 -- this constructs an iterator over a list of objects which returns only

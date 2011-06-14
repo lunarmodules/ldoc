@@ -31,10 +31,10 @@ ldoc, a documentation generator for Lua, vs 0.2 Beta
   <file> (string) source file or directory containing source
 ]]
 
-local lexer = require 'lexer'
-local doc = require 'doc'
+local lexer = require 'ldoc.lexer'
+local doc = require 'ldoc.doc'
 local Item,File,Module = doc.Item,doc.File,doc.Module
-local tools = require 'tools'
+local tools = require 'ldoc.tools'
 local KindMap = tools.KindMap
 
 class.ModuleMap(KindMap)

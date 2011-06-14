@@ -6,7 +6,7 @@ require 'pl'
 
 local doc = {}
 
-local tools = require 'tools'
+local tools = require 'ldoc.tools'
 local split_dotted_name = tools.split_dotted_name
 
 -- these are the basic tags known to ldoc. They come in several varieties:
