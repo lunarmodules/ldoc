@@ -201,6 +201,40 @@ function M.this_module_name (basename,fname)
    return M.name_of(lpath)
 end
 
+function M.find_existing_module (name, searchfn)
+   local fullpath,lua = searchfn(name)
+   local mod = true
+   if not fullpath then -- maybe it's a function reference?
+      -- try again with the module part
+      local  mpath,fname = M.split_dotted_name(name)
+      if mpath then
+         fullpath,lua = searchfn(mpath)
+      else
+         fullpath = nil
+      end
+      if not fullpath then
+         return nil, "module or function '"..name.."' not found on module path"
+      else
+         mod = fname
+      end
+   end
+   if not lua then return nil, "module '"..name.."' is a binary extension" end
+   return fullpath, mod
+end
+
+function M.lookup_existing_module_or_function (name, docpath)
+   -- first look up on the Lua module path
+   local fullpath, mod = M.find_existing_module(name,path.package_path)
+   -- no go; but see if we can find it on the doc path
+   if not fullpath then
+      fullpath, mod = M.find_existing_module(name, function(name)
+         local fpath = package.searchpath(name,docpath)
+         return fpath,true  -- result must always be 'lua'!
+      end)
+   end
+   return fullpath, mod -- `mod` can be the error message
+end
+
 
 --------- lexer tools -----
 

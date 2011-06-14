@@ -442,20 +442,21 @@ local function extract_modules (F)
    end
 end
 
+local ldoc_dir = arg[0]:gsub('[^/\\]+$','')
+local doc_path = ldoc_dir..'builtin/?.luadoc'
+
 -- ldoc -m is expecting a Lua package; this converts this to a file path
 if args.module then
-   local fullpath,lua = path.package_path(args.file)
-   if not fullpath then
-      local  mpath,name = tools.split_dotted_name(args.file)
-      fullpath,lua = path.package_path(mpath)
-      if not fullpath then
-         quit("module "..args.file.." not found on module path")
-      else
-         args.module = name
-      end
+   if _G[args.file] then
+      args.file = 'global.'..args.file
    end
-   if not lua then quit("module "..args.file.." is a binary extension") end
-   args.file = fullpath
+   local fullpath,mod = tools.lookup_existing_module_or_function (args.file, doc_path)
+   if not fullpath then
+      quit(mod)
+   else
+      args.file = fullpath
+      args.module = mod
+   end
 end
 
 -- a special case: 'ldoc .' can get all its parameters from config.ld
@@ -617,7 +618,7 @@ args.ext = '.'..args.ext
 
 
 -- '!' here means 'use same directory as ldoc.lua
-local ldoc_html = path.join(arg[0]:gsub('[^/\\]+$',''),'html')
+local ldoc_html = path.join(ldoc_dir,'html')
 if args.style == '!' then args.style = ldoc_html end
 if args.template == '!' then args.template = ldoc_html end
 
