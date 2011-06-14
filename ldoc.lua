@@ -447,7 +447,7 @@ local doc_path = ldoc_dir..'builtin/?.luadoc'
 
 -- ldoc -m is expecting a Lua package; this converts this to a file path
 if args.module then
-   if type(_G[args.file]) ~= 'table' then
+   if args.file:match '^%a+$' and _G[args.file] then
       args.file = 'global.'..args.file
    end
    local fullpath,mod = tools.lookup_existing_module_or_function (args.file, doc_path)
@@ -456,7 +456,6 @@ if args.module then
    else
       args.file = fullpath
       args.module = mod
-      print(fullpath,mod)
    end
 end
 
