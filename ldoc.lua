@@ -262,7 +262,6 @@ function Lua:parse_extra (tags,tok,toks)
       local res
       local stat,t,v = pcall(tok)
       if not stat then return nil end
-      print('tok',t,v)
       res,t,v = self:search_for_token(tok,'{','{',tok())
       if not res then return nil,t,v end
       tags.formal_args = tools.get_parameters(toks,'}',function(s)
@@ -618,14 +617,12 @@ args.ext = '.'..args.ext
 
 
 -- '!' here means 'use same directory as ldoc.lua
-local ldoc_dir = arg[0]:gsub('[^/\\]+$','')
-if args.style == '!' then args.style = ldoc_dir end
-if args.template == '!' then args.template = ldoc_dir end
+local ldoc_html = path.join(arg[0]:gsub('[^/\\]+$',''),'html')
+if args.style == '!' then args.style = ldoc_html end
+if args.template == '!' then args.template = ldoc_html end
 
 local module_template,err = utils.readfile (path.join(args.template,templ))
 if not module_template then quit(err) end
-
-
 
 if args.format ~= 'plain' then
    local ok,markup = pcall(require,args.format)
