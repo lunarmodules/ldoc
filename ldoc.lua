@@ -4,6 +4,9 @@
 -- easier customization options. C/C++ support is provided.
 -- Steve Donovan, 2011
 
+local globals = {}
+for k,v in pairs(_G) do globals[k] = v end
+
 require 'pl'
 
 local append = table.insert
@@ -447,7 +450,7 @@ local doc_path = ldoc_dir..'builtin/?.luadoc'
 
 -- ldoc -m is expecting a Lua package; this converts this to a file path
 if args.module then
-   if args.file:match '^%a+$' and _G[args.file] then
+   if args.file:match '^%a+$' and globals[args.file] then
       args.file = 'global.'..args.file
    end
    local fullpath,mod = tools.lookup_existing_module_or_function (args.file, doc_path)
