@@ -20,6 +20,7 @@ local known_tags = {
    copyright = 'S', summary = 'S', description = 'S', release = 'S', license = 'S';
    module = 'T', script = 'T',['function'] = 'T', lfunction = 'T',
    table = 'T', section = 'T', type = 'T';
+   ['local'] = 'N';
 }
 known_tags._alias = {}
 known_tags._project_level = {
@@ -27,8 +28,9 @@ known_tags._project_level = {
    script = true
 }
 
-local TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE = 'M','id','S','T'
-doc.TAG_MULTI,doc.TAG_ID,doc.TAG_SINGLE,doc.TAG_TYPE = TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE
+local TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE,TAG_FLAG = 'M','id','S','T','N'
+doc.TAG_MULTI,doc.TAG_ID,doc.TAG_SINGLE,doc.TAG_TYPE,doc.TAG_FLAG =
+    TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE,TAG_FLAG
 
 -- add a new tag.
 function doc.add_tag(tag,type,project_level)
@@ -194,6 +196,8 @@ function Item:_init(tags,file,line)
          end
       elseif ttype == TAG_SINGLE then
          self.tags[tag] = value
+      elseif ttype == TAG_FLAG then
+         self.tags[tag] = true
       else
          self:warning ("unknown tag: '"..tag.."'")
       end

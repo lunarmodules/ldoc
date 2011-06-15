@@ -407,7 +407,7 @@ local function parse_file(fname,lang)
                   lang:parse_extra(tags,tok,toks)
                end
             end
-            if tags.class == 'function' and is_local then
+            if tags.class == 'function' and (is_local or tags['local']) then
                tags.class = 'lfunction'
             end
             if tags.name then
@@ -450,7 +450,9 @@ local doc_path = ldoc_dir..'builtin/?.luadoc'
 
 -- ldoc -m is expecting a Lua package; this converts this to a file path
 if args.module then
-   if args.file:match '^%a+$' and globals[args.file] then
+   -- first check if we've been given a global Lua lib function
+   local glob = globals[args.file]
+   if args.file:match '^%a+$' and glob and type(glob) ~= 'table' then
       args.file = 'global.'..args.file
    end
    local fullpath,mod = tools.lookup_existing_module_or_function (args.file, doc_path)
@@ -568,7 +570,7 @@ if args.module then
       F:dump(args.verbose)
    else
       local fun = module_list[1].items.by_name[args.module]
-      if not fun then quit(args.module.." is not part of this module") end
+      if not fun then quit(args.module.." is not part of "..args.file) end
       fun:dump(true)
    end
    return
