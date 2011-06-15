@@ -350,13 +350,11 @@ function Module:resolve_references(modules)
    end
 end
 
--- make a text dump of the contents of this File object.
--- The level of detail is controlled by the 'verbose' parameter.
--- Primarily intended as a debugging tool.
-function File:dump(verbose)
-   for mod in self.modules:iter() do
-      mod:dump(verbose)
-   end
+-- suppress the display of local functions.
+-- This is just a placeholder hack until we have a more general scheme
+-- for indicating 'private' content of a module.
+function Module:mask_locals ()
+   self.kinds['Local Functions'] = nil
 end
 
 function Module:dump(verbose)
@@ -365,6 +363,15 @@ function Module:dump(verbose)
    if self.description then print(self.description) end
    for item in self.items:iter() do
       item:dump(verbose)
+   end
+end
+
+-- make a text dump of the contents of this File object.
+-- The level of detail is controlled by the 'verbose' parameter.
+-- Primarily intended as a debugging tool.
+function File:dump(verbose)
+   for mod in self.modules:iter() do
+      mod:dump(verbose)
    end
 end
 

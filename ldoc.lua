@@ -21,6 +21,7 @@ ldoc, a documentation generator for Lua, vs 0.3 Beta
   -d,--dir (default docs) output directory
   -o,--output  (default 'index') output name
   -v,--verbose          verbose
+  -a,--all              show local functions, etc, in docs
   -q,--quiet            suppress output
   -m,--module           module docs as text
   -s,--style (default !) directory for style sheet (ldoc.css)
@@ -556,6 +557,13 @@ local project = ProjectMap()
 for mod in module_list:iter() do
    mod:resolve_references(module_list)
    project:add(mod,module_list)
+end
+
+-- the default is not to show local functions in the documentation.
+if not args.all then
+   for mod in module_list:iter() do
+      mod:mask_locals()
+   end
 end
 
 table.sort(module_list,function(m1,m2)
