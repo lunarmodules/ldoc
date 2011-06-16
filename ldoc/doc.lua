@@ -134,7 +134,8 @@ function File:finish()
                --item:warning(item.name .. ' is declared in global scope')
             end
             -- the function may be qualified with a module alias...
-            if this_mod.tags.alias and mod == this_mod.tags.alias then
+            local alias = this_mod.tags.alias
+            if (alias and mod == alias) or mod == 'M' or mod == '_M' then
                mod = this_mod.mod_name
             end
             -- if that's the mod_name, then we want to only use 'foo'

@@ -168,11 +168,13 @@ end
 local quit = utils.quit
 
 
--- parses a Lua file, looking for ldoc comments. These are like LuaDoc comments;
--- they start with multiple '-'. If they don't define a name tag, then by default
+-- parses a Lua or C file, looking for ldoc comments. These are like LuaDoc comments;
+-- they start with multiple '-'. (Block commments are allowed)
+-- If they don't define a name tag, then by default
 -- it is assumed that a function definition follows. If it is the first comment
 -- encountered, then ldoc looks for a call to module() to find the name of the
--- module.
+-- module if there isn't an explicit module name specified.
+
 local function parse_file(fname,lang)
    local line,f = 1
    local F = File(fname)

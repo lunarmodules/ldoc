@@ -188,7 +188,6 @@ end
 function M.this_module_name (basename,fname)
    local ext
    if basename == '' then
-      --quit("module(...) needs package basename")
       return M.name_of(fname)
    end
    basename = path.abspath(basename)
@@ -198,7 +197,7 @@ function M.this_module_name (basename,fname)
    local lpath,cnt = fname:gsub('^'..utils.escape(basename),'')
    if cnt ~= 1 then quit("module(...) name deduction failed: base "..basename.." "..fname) end
    lpath = lpath:gsub(path.sep,'.')
-   return M.name_of(lpath)
+   return M.name_of(lpath):gsub('%.init$','')
 end
 
 function M.find_existing_module (name, searchfn)
