@@ -233,6 +233,12 @@ table.index td { text-align: left; vertical-align: top; }
     }
 }
 
+table.module_list {
+    border-width: 1px;
+    border-style: solid;
+    border-color: #cccccc;
+    border-collapse: collapse;
+}
 table.module_list td {
     border-width: 1px;
     padding: 3px;
@@ -242,22 +248,6 @@ table.module_list td {
 table.module_list td.name { background-color: #f0f0f0; }
 table.module_list td.summary { width: 100%; }
 
-table.file_list {
-    border-width: 1px;
-    border-style: solid;
-    border-color: #cccccc;
-    border-collapse: collapse;
-}
-table.file_list td {
-    border-width: 1px;
-    padding: 3px;
-    border-style: solid;
-    border-color: #cccccc;
-}
-
-table.file_list td.name { background-color: #f0f0f0; }
-
-table.file_list td.summary { width: 100%; }
 
 table.function_list {
     border-width: 1px;
@@ -271,28 +261,10 @@ table.function_list td {
     border-style: solid;
     border-color: #cccccc;
 }
-
 table.function_list td.name { background-color: #f0f0f0; }
-
 table.function_list td.summary { width: 100%; }
-
-table.table_list {
-    border-width: 1px;
-    border-style: solid;
-    border-color: #cccccc;
-    border-collapse: collapse;
-}
-table.table_list td {
-    border-width: 1px;
-    padding: 3px;
-    border-style: solid;
-    border-color: #cccccc;
-}
-
-table.table_list td.name { background-color: #f0f0f0; }
-
-table.table_list td.summary { width: 100%; }
 
 dl.table dt, dl.function dt {border-top: 1px solid #ccc; padding-top: 1em;}
 dl.table dd, dl.function dd {padding-bottom: 1em; margin: 10px 0 0 20px;}
 dl.table h3, dl.function h3 {font-size: .95em;}
+
