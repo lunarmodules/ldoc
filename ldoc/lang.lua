@@ -106,7 +106,7 @@ function Lua:parse_function_header (tags,tok,toks)
 end
 
 function Lua:parse_extra (tags,tok,toks)
-   if tags.class == 'table' and not tags.fields then
+   if tags.class == 'table' and not tags.field then
       local res
       local stat,t,v = pcall(tok)
       if not stat then return nil end
