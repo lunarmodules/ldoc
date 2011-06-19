@@ -14,7 +14,7 @@ local lapp = require 'pl.lapp'
 app.require_here()
 
 local args = lapp [[
-ldoc, a documentation generator for Lua, vs 0.3 Beta
+ldoc, a documentation generator for Lua, vs 0.4 Beta
   -d,--dir (default docs) output directory
   -o,--output  (default 'index') output name
   -v,--verbose          verbose
