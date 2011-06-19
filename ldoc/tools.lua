@@ -195,6 +195,7 @@ function M.this_module_name (basename,fname)
       basename = basename..path.sep
    end
    local lpath,cnt = fname:gsub('^'..utils.escape(basename),'')
+   --print('deduce',lpath,cnt,basename)
    if cnt ~= 1 then quit("module(...) name deduction failed: base "..basename.." "..fname) end
    lpath = lpath:gsub(path.sep,'.')
    return M.name_of(lpath):gsub('%.init$','')
