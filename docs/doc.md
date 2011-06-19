@@ -165,6 +165,8 @@ It is common to use an alias for the package name with new-style modules. Here a
 
 It's semi-standard to use 'M' or '_M' for the module alias; LDoc will recognize these automatically.
 
+By default, comments are treated verbatim and traditionally contain HTML. This is irritating for the human reader of the comments and tedious for the writer, so there is an option to use [Markdown](http://daringfireball.net/projects/markdown); `--format markdown`. This requires [markdown.lua](http://www.frykholm.se/files/markdown.lua) by Niklas Frykholm to be installed (this can be most easily done with `luarocks install markdown`.)  `format = 'markdown'` can be used in your `config.ld`.
+
 A special case is if you simply say 'ldoc .'. Then there _must_ be a `config.ld` file available in the directory, and it can specify the file:
 
     file = "mymod.lua"
