@@ -4,9 +4,6 @@
 -- easier customization options. C/C++ support is provided.
 -- Steve Donovan, 2011
 
-local globals = {}
-for k,v in pairs(_G) do globals[k] = v end
-
 require 'pl'
 
 local append = table.insert
@@ -32,6 +29,7 @@ ldoc, a documentation generator for Lua, vs 0.3 Beta
   -b,--package  (default .) top-level package basename (needed for module(...))
   -x,--ext (default html) output file extension
   --dump                debug output dump
+  --filter (default none) dump output as Lua data
   <file> (string) source file or directory containing source
 ]]
 
@@ -40,6 +38,7 @@ local doc = require 'ldoc.doc'
 local lang = require 'ldoc.lang'
 local Item,File,Module = doc.Item,doc.File,doc.Module
 local tools = require 'ldoc.tools'
+local global = require 'builtin.globals'
 local KindMap = tools.KindMap
 
 class.ModuleMap(KindMap)
@@ -112,6 +111,10 @@ local function read_ldoc_config (fname)
     end
    if err then print('error loading config file '..fname..': '..err) end
    return directory, not_found
+end
+
+local function quote (s)
+   return "'"..s.."'"
 end
 
 ------ Parsing the Source --------------
@@ -278,6 +281,7 @@ local function parse_file(fname,lang)
                   lang:parse_extra(tags,tok,toks)
                end
             end
+            -- local functions treated specially
             if tags.class == 'function' and (is_local or tags['local']) then
                tags.class = 'lfunction'
             end
@@ -319,11 +323,11 @@ end
 local ldoc_dir = arg[0]:gsub('[^/\\]+$','')
 local doc_path = ldoc_dir..'builtin/?.luadoc'
 
+
 -- ldoc -m is expecting a Lua package; this converts this to a file path
 if args.module then
    -- first check if we've been given a global Lua lib function
-   local glob = globals[args.file]
-   if args.file:match '^%a+$' and glob and type(glob) ~= 'table' then
+   if args.file:match '^%a+$' and global.functions[args.file] then
       args.file = 'global.'..args.file
    end
    local fullpath,mod = tools.lookup_existing_module_or_function (args.file, doc_path)
@@ -339,7 +343,7 @@ end
 if args.file == '.' then
    local err
    config_dir,err = read_ldoc_config('./'..CONFIG_NAME)
-   if err then quit("no "..CONFIG_NAME.." found here") end
+   if err then quit("no "..quote(CONFIG_NAME).." found here") end
    config_is_read = true
    args.file = ldoc.file or '.'
    if args.file == '.' then
@@ -356,10 +360,29 @@ if path.isfile(args.file) then
    source_dir = path.splitpath(source_dir)
 end
 
+---------- specifying the package for inferring module names --------
+-- If you use module(...), or forget to explicitly use @module, then
+-- ldoc has to infer the module name. There are three sensible values for
+-- `args.package`:
+--
+--  * '.' the actual source is in an immediate subdir of the path given
+--  * '..' the path given points to the source directory
+--  * 'NAME' explicitly give the base module package name
+--
+
 if args.package == '.' then
    args.package = source_dir
 elseif args.package == '..' then
    args.package = path.splitpath(source_dir)
+elseif not args.package:find '[\//]' then
+   local subdir,dir = path.splitpath(source_dir)
+   if dir == args.package then
+      args.package = subdir
+   elseif path.isdir(path.join(source_dir,args.package)) then
+      args.package = source_dir
+   else
+      quit("args.package is not the name of the source directory")
+   end
 end
 
 local lua, cc = lang.lua, lang.cc
@@ -450,7 +473,7 @@ if args.module then
       F:dump(args.verbose)
    else
       local fun = module_list[1].items.by_name[args.module]
-      if not fun then quit(args.module.." is not part of "..args.file) end
+      if not fun then quit(quote(args.module).." is not part of "..quote(args.file)) end
       fun:dump(true)
    end
    return
@@ -460,6 +483,33 @@ if args.dump then
    for mod in module_list:iter() do
       mod:dump(true)
    end
+   os.exit()
+end
+
+
+if args.filter ~= 'none' then
+   local mod,name = tools.split_dotted_name(args.filter)
+   local ok,P = pcall(require,mod)
+   if not ok then quit("cannot find module "..quote(mod)) end
+   local ok,f = pcall(function() return P[name] end)
+   if not ok or type(f) ~= 'function' then quit("dump module: no function "..quote(name)) end
+
+   -- clean up some redundant and cyclical references--
+   module_list.by_name = nil
+   for mod in module_list:iter() do
+      mod.kinds = nil
+      mod.file = mod.file.filename
+      for item in mod.items:iter() do
+         item.module = nil
+         item.file = nil
+         item.formal_args = nil
+         item.tags['return'] = nil
+      end
+      mod.items.by_name = nil
+   end
+
+   local ok,err = pcall(f,module_list)
+   if not ok then quit("dump failed: "..err) end
    os.exit()
 end
 
@@ -474,7 +524,7 @@ local function style_dir (sname)
       elseif type(style) == 'string' and path.isdir(style) then
          dir = style
       else
-         quit(tostring(name).." is not a directory")
+         quit(quote(tostring(name)).." is not a directory")
       end
       args[sname] = dir
    end
@@ -499,8 +549,10 @@ override 'format'
 override 'output'
 override 'dir'
 override 'ext'
-args.ext = '.'..args.ext
 
+if not args.ext:find '^%.' then
+   args.ext = '.'..args.ext
+end
 
 -- '!' here means 'use same directory as ldoc.lua
 local ldoc_html = path.join(ldoc_dir,'html')
