@@ -373,18 +373,21 @@ end
 --  * 'NAME' explicitly give the base module package name
 --
 
-if args.package == '.' then
-   args.package = source_dir
-elseif args.package == '..' then
-   args.package = path.splitpath(source_dir)
-elseif not args.package:find '[\//]' then
-   local subdir,dir = path.splitpath(source_dir)
-   if dir == args.package then
-      args.package = subdir
-   elseif path.isdir(path.join(source_dir,args.package)) then
+local function setup_package_base()
+   if ldoc.package then args.package = ldoc.package end
+   if args.package == '.' then
       args.package = source_dir
-   else
-      quit("args.package is not the name of the source directory")
+   elseif args.package == '..' then
+      args.package = path.splitpath(source_dir)
+   elseif not args.package:find '[\//]' then
+      local subdir,dir = path.splitpath(source_dir)
+      if dir == args.package then
+         args.package = subdir
+      elseif path.isdir(path.join(source_dir,args.package)) then
+         args.package = source_dir
+      else
+         quit("args.package is not the name of the source directory")
+      end
    end
 end
 
@@ -417,6 +420,7 @@ if path.isdir(args.file) then
    if #config_files > 0 and not config_dir then
       config_dir = read_ldoc_config(config_files[1])
    end
+   setup_package_base()
 
    for f in files:iter() do
       local ext = path.extension(f)
@@ -441,6 +445,7 @@ elseif path.isfile(args.file) then
          read_ldoc_config(config)
       end
    end
+   setup_package_base()
    local ext = path.extension(args.file)
    local ftype = file_types[ext]
    if not ftype then quit "unsupported extension" end
