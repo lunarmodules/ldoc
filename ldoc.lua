@@ -252,6 +252,9 @@ local function parse_file(fname,lang)
                if doc.project_level(tags.class) then
                   module_found = tags.name
                end
+               if tags.class == 'function' then
+                  fun_follows, is_local = false, false
+               end
             end
          end
          -- some hackery necessary to find the module() call
