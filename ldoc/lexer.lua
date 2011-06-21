@@ -154,7 +154,11 @@ function lexer.scan (s,matches,filter,options)
     function lex ()
         local i1,i2,idx,res1,res2,tok,pat,fun,capt
         local line = 1
-        if file then s = file:read()..'\n' end
+        if file then
+            s = file:read()
+            if not s then return nil end -- empty file
+            s = s ..'\n'
+         end
         local sz = #s
         local idx = 1
         --print('sz',sz)
