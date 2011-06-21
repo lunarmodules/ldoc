@@ -452,7 +452,7 @@ elseif path.isfile(args.file) then
    F = read_file(args.file,ftype)
    extract_modules(F)
 else
-   quit ("file or directory does not exist")
+   quit ("file or directory does not exist: "..quote(args.file))
 end
 
 local project = ProjectMap()
@@ -568,7 +568,9 @@ if args.style == '!' then args.style = ldoc_html end
 if args.template == '!' then args.template = ldoc_html end
 
 local module_template,err = utils.readfile (path.join(args.template,templ))
-if not module_template then quit(err) end
+if not module_template then
+   quit("template not found. Use -l to specify directory containing ldoc.ltp")
+end
 
 if args.format ~= 'plain' then
    local ok,markup = pcall(require,args.format)

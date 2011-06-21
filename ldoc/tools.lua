@@ -176,7 +176,7 @@ function M.check_file (f,original)
          text,err = utils.writefile(f,text)
       end
       if err then
-         quit("Could not copy %s to %s: %s",original,f,err)
+         quit("Could not copy "..original.." to "..f)
       end
       --- this baby from PL is borked on Windows systems w/out Alien
       --- if the path is relative
