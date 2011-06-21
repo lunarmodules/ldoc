@@ -171,7 +171,16 @@ end
 
 function M.check_file (f,original)
    if not path.exists(f) then
-      dir.copyfile(original,f)
+      local text,err = utils.readfile(original)
+      if text then
+         text,err = utils.writefile(f,text)
+      end
+      if err then
+         quit("Could not copy %s to %s: %s",original,f,err)
+      end
+      --- this baby from PL is borked on Windows systems w/out Alien
+      --- if the path is relative
+      ---dir.copyfile(original,f)
    end
 end
 
