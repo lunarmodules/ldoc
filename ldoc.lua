@@ -431,6 +431,11 @@ if path.isdir(args.file) then
          file_list:append(F)
       end
    end
+
+   if #F == 0 then
+      quit("this directory contained no source files")
+   end
+
    for F in file_list:iter() do
       extract_modules(F)
    end
@@ -448,7 +453,7 @@ elseif path.isfile(args.file) then
    setup_package_base()
    local ext = path.extension(args.file)
    local ftype = file_types[ext]
-   if not ftype then quit "unsupported extension" end
+   if not ftype then quit "unsupported file extension" end
    F = read_file(args.file,ftype)
    extract_modules(F)
 else
@@ -600,7 +605,7 @@ function generate_output()
       ldoc = ldoc,
       module = ldoc.single and ldoc.modules[1] or nil
     })
-   if not out then quit(err) end
+   if not out then quit("template failed: "..err) end
 
    check_directory(args.dir)
 
