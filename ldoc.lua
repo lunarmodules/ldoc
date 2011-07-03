@@ -243,7 +243,8 @@ local function parse_file(fname,lang)
          if ldoc_comment or first_comment then
             comment = table.concat(comment)
             if not ldoc_comment and first_comment then
-               F:error("first comment must be a doc comment!")
+               F:warning("first comment must be a doc comment!")
+               break
             end
             first_comment = false
             fun_follows, is_local = lang:function_follows(t,v,tok)
@@ -351,6 +352,11 @@ if args.file == '.' then
    args.file = ldoc.file or '.'
    if args.file == '.' then
       args.file = lfs.currentdir()
+   elseif type(args.file) == 'table' then
+      for i,f in ipairs(args.file) do
+         args.file[i] = path.abspath(f)
+         print(args.file[i])
+      end
    else
       args.file = path.abspath(args.file)
    end
@@ -359,7 +365,7 @@ else
 end
 
 local source_dir = args.file
-if path.isfile(args.file) then
+if type(args.file) == 'string' and path.isfile(args.file) then
    source_dir = path.splitpath(source_dir)
 end
 
@@ -409,58 +415,81 @@ function add_language_extension (ext,lang)
    file_types[ext] = lang
 end
 
-
-if path.isdir(args.file) then
-   local files = List(dir.getallfiles(args.file,'*.*'))
-   local config_files = files:filter(function(f)
-      return path.basename(f) == CONFIG_NAME
-   end)
-
-   -- finding more than one should probably be a warning...
-   if #config_files > 0 and not config_dir then
-      config_dir = read_ldoc_config(config_files[1])
+local function process_file (f, file_list)
+   print(f)
+   local ext = path.extension(f)
+   local ftype = file_types[ext]
+   if ftype then
+      if args.verbose then print(path.basename(f)) end
+      local F = read_file(f,ftype)
+      file_list:append(F)
    end
-   setup_package_base()
+end
 
-   for f in files:iter() do
-      local ext = path.extension(f)
-      local ftype = file_types[ext]
-      if ftype then
-         if args.verbose then print(path.basename(f)) end
-         local F = read_file(f,ftype)
-         file_list:append(F)
+if type(args.file) == 'table' then
+   -- this can only be set from config file so we can assume it's already read
+   for _,f in ipairs(args.file) do
+      if path.isdir(f) then
+         local files = List(dir.getallfiles(f,'*.*'))
+         for f in files:iter() do
+            process_file(f, file_list)
+         end
+      elseif path.isfile(f) then
+         process_file(f, file_list)
+      else
+         quit("file or directory does not exist: "..quote(f))
+      end
+   end
+   if #file_list == 0 then quit "no source files specified" end
+elseif path.isdir(args.file) then
+   local files = List(dir.getallfiles(args.file,'*.*'))
+
+   if not config_dir then
+      local config_files = files:filter(function(f)
+         return path.basename(f) == CONFIG_NAME
+      end)
+      if #config_files > 0 then
+         config_dir = read_ldoc_config(config_files[1])
+         if #config_files > 1 then
+            print('warning: other config files found: '..config_files[2])
+         end
       end
    end
 
-   if #F == 0 then
-      quit("this directory contained no source files")
+   for f in files:iter() do
+      process_file(f, file_list)
    end
 
-   for F in file_list:iter() do
-      extract_modules(F)
+   if #file_list == 0 then
+      quit(quote(args.file).." contained no source files")
    end
-   multiple_files = true
+
 elseif path.isfile(args.file) then
    -- a single file may be accompanied by a config.ld in the same dir
    if not config_dir then
       config_dir = path.dirname(args.file)
       if config_dir == '' then config_dir = '.' end
       local config = path.join(config_dir,CONFIG_NAME)
-      if path.isfile(config) and not config_is_read then
+      if path.isfile(config) then
          read_ldoc_config(config)
       end
    end
-   setup_package_base()
-   local ext = path.extension(args.file)
-   local ftype = file_types[ext]
-   if not ftype then quit "unsupported file extension" end
-   F = read_file(args.file,ftype)
-   extract_modules(F)
+
+   process_file(args.file, file_list)
+   if #file_list == 0 then quit "unsupported file extension" end
 else
    quit ("file or directory does not exist: "..quote(args.file))
 end
 
+setup_package_base()
+
+multiple_files = #file_list > 1
+
 local project = ProjectMap()
+
+for F in file_list:iter() do
+   extract_modules(F)
+end
 
 for mod in module_list:iter() do
    mod:resolve_references(module_list)
