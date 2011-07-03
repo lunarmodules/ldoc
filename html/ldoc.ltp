@@ -28,7 +28,7 @@
 <h1>$(ldoc.project)</h1>
 # if not ldoc.single then
 <ul>
-  <li><a href="../index.html">Index</a></li>
+  <li><a href="../$(ldoc.output).html">Index</a></li>
 </ul>
 # else
 <p>$(ldoc.description)</p>

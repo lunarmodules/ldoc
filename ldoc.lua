@@ -648,6 +648,7 @@ function generate_output()
    -- write out the per-module documentation
    if not ldoc.single then
       ldoc.css = '../'..css
+      ldoc.output = args.output
       for kind, modules in project() do
          kind = kind:lower()
          check_directory(args.dir..kind)
