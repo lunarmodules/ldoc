@@ -130,7 +130,7 @@ end
 function M.expand_comma_list (ls)
    local new_ls = List()
    for s in ls:iter() do
-      s = s:gsub('[^%.:%w]*$','')
+      s = s:gsub('[^%.:%w_]*$','')
       if s:find ',' then
          new_ls:extend(List.split(s,'%s*,%s*'))
       else
@@ -323,13 +323,18 @@ end
 function M.grab_block_comment (v,tok,end1,end2)
    local res = {v}
    local t,last_v
+   local t12 = end1..end2
+   k = 1
    repeat
       last_v = v
       t,v = tok()
+      if t=='comment' and v:find(t12,1,true) then t12 = nil; break end
       append(res,v)
    until last_v == end1 and v == end2
-   table.remove(res)
-   table.remove(res)
+   if t12 then
+      table.remove(res)
+      table.remove(res)
+   end
    res = table.concat(res)
    return 'comment',res
 end
