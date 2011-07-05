@@ -613,12 +613,28 @@ if not module_template then
 end
 
 if args.format ~= 'plain' then
-   ldoc.markup = markup.create(args.format)
+   ldoc.markup = markup.create(ldoc, args.format)
 else
    ldoc.markup = function (txt)
       return txt
    end
 end
+
+-- this generates the internal module/function references; strictly speaking,
+-- it should be (and was) part of the template, but inline references in
+-- Markdown required it be more widely available. A temporary situation!
+
+function ldoc.href(see)
+   if see.href then -- explict reference, e.g. to Lua manual
+      return see.href
+   else
+      -- usually the module name, except when we have a single module
+      local doc_name = see.mod
+      if ldoc.single then doc_name = args.output end
+      return doc_name..'.html#'..see.name
+   end
+end
+
 
 function generate_output()
    ldoc.single = not multiple_files
@@ -630,9 +646,10 @@ function generate_output()
    ldoc.title = ldoc.title or args.title
    ldoc.project = ldoc.project or args.project
 
+   ldoc.module = ldoc.single and ldoc.modules[1] or nil
    local out,err = template.substitute(module_template,{
       ldoc = ldoc,
-      module = ldoc.single and ldoc.modules[1] or nil
+      module = ldoc.module
     })
    if not out then quit("template failed: "..err) end
 
@@ -653,6 +670,7 @@ function generate_output()
          kind = kind:lower()
          check_directory(args.dir..kind)
          for m in modules() do
+            ldoc.module = m
             out,err = template.substitute(module_template,{
                module=m,
                ldoc = ldoc

@@ -285,6 +285,65 @@ function Item:error(msg)
    os.exit(1)
 end
 
+function Module:hunt_for_reference (packmod, modules)
+   local mod_ref
+   local package = self.package
+   repeat -- same package?
+      local nmod = package..'.'..packmod
+      mod_ref = modules.by_name[nmod]
+      if mod_ref then break end -- cool
+      package = split_dotted_name(package)
+   until not package
+   return mod_ref
+end
+
+local function reference (s, mod_ref, item_ref)
+   local name = item_ref and item_ref.name or ''
+   -- this is deeply hacky; classes have 'Class ' prepended.
+   if item_ref and item_ref.type == 'type' then
+      name = 'Class_'..name
+   end
+   return {mod = mod_ref.name, name = name, label=s}
+end
+
+function Module:process_see_reference (s,modules)
+   local mod_ref,fun_ref,name,packmod
+   -- is this a fully qualified module name?
+   local mod_ref = modules.by_name[s]
+   if mod_ref then return reference(s, mod_ref,nil) end
+   -- module reference?
+   mod_ref = self:hunt_for_reference(s, modules)
+   if mod_ref then return mod_ref end
+   local packmod,name = split_dotted_name(s) -- e.g. 'pl.utils','split'
+   if packmod then -- qualified name
+      mod_ref = modules.by_name[packmod] -- fully qualified mod name?
+      if not mod_ref then
+         mod_ref = self:hunt_for_reference(packmod, modules)
+         if not mod_ref then
+            local ref = global.lua_manual_ref(s)
+            if ref then return ref end
+            return nil,"module not found: "..packmod
+         end
+      end
+      fun_ref = mod_ref.items.by_name[name]
+      if fun_ref then
+         return reference(s,mod_ref,fun_ref)
+      else
+         return nil,"function not found: "..s.." in "..mod_ref.name
+      end
+   else -- plain jane name; module in this package, function in this module
+      mod_ref = modules.by_name[self.package..'.'..s]
+      if mod_ref then return reference(s, mod_ref,nil) end
+      fun_ref = self.items.by_name[s]
+      if fun_ref then return reference(s, self,fun_ref)
+      else
+         local ref = global.lua_manual_ref (s)
+         if ref then return ref end
+         return nil, "function not found: "..s.." in this module"
+      end
+   end
+end
+
 -- resolving @see references. A word may be either a function in this module,
 -- or a module in this package. A MOD.NAME reference is within this package.
 -- Otherwise, the full qualified name must be used.
@@ -296,76 +355,17 @@ end
 function Module:resolve_references(modules)
    local found = List()
 
-   local function hunt_for_reference (packmod)
-      local mod_ref
-      local package = self.package
-      repeat -- same package?
-         local nmod = package..'.'..packmod
-         mod_ref = modules.by_name[nmod]
-         if mod_ref then break end -- cool
-         package = split_dotted_name(package)
-      until not package
-      return mod_ref
-   end
-
-   local function process_see_reference (item,see,s)
-      local mod_ref,fun_ref,name,packmod
-      -- is this a fully qualified module name?
-      local mod_ref = modules.by_name[s]
-      if mod_ref then return mod_ref,nil end
-      -- module reference?
-      mod_ref = hunt_for_reference(s)
-      if mod_ref then return mod_ref end
-      local packmod,name = split_dotted_name(s) -- e.g. 'pl.utils','split'
-      if packmod then -- qualified name
-         mod_ref = modules.by_name[packmod] -- fully qualified mod name?
-         if not mod_ref then
-            mod_ref = hunt_for_reference(packmod)
-            if not mod_ref then
-               local ref = global.lua_manual_ref(s)
-               if ref then return ref end
-               return item:warning("module not found: "..packmod)
-            end
-         end
-         fun_ref = mod_ref.items.by_name[name]
-         if fun_ref then
-            return mod_ref,fun_ref
-         else
-            item:warning("function not found: "..s.." in "..mod_ref.name)
-         end
-      else -- plain jane name; module in this package, function in this module
-         mod_ref = modules.by_name[self.package..'.'..s]
-         if mod_ref then return mod_ref,nil end
-         fun_ref = self.items.by_name[s]
-         if fun_ref then return self,fun_ref
-         else
-            local ref = global.lua_manual_ref (s)
-            if ref then return ref end
-            item:warning("function not found: "..s.." in this module")
-         end
-      end
-   end
-
    for item in self.items:iter() do
       local see = item.tags.see
       if see then -- this guy has @see references
          item.see = List()
          for s in see:iter() do
-            local mod_ref, item_ref = process_see_reference(item,see,s)
-            if mod_ref then
-               local href
-               if mod_ref.name then
-                  local name = item_ref and item_ref.name or ''
-                  -- this is deeply hacky; classes have 'Class ' prepended.
-                  if item_ref and item_ref.type == 'type' then
-                     name = 'Class_'..name
-                  end
-                  href = {mod=mod_ref.name,name=name,label=s}
-               else
-                  href = {href = mod_ref.href,label=s}
-               end
+            local href, err = self:process_see_reference(s,modules)
+            if href then
                item.see:append (href)
                found:append{item,s}
+            elseif err then
+               item:warning(err)
             end
          end
       end

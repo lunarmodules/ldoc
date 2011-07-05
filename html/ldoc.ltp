@@ -142,17 +142,12 @@
     </ol>
 #   end -- if returns
 
-#   local function href(see)
-#       if see.href then return see.href
-#       else return see.mod..'.html#'..see.name
-#       end
-#   end
 #   if item.see then
 #     local li,il = use_li(item.see)
     <h3>see also:</h3>
     <ul>
 #     for see in iter(item.see) do
-         $(li)<a href="$(href(see))">$(see.label)</a>$(il)
+         $(li)<a href="$(ldoc.href(see))">$(see.label)</a>$(il)
 #    end -- for
     </ul>
 #   end -- if see

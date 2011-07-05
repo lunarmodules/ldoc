@@ -48,13 +48,12 @@ local manual = 'http://www.lua.org/manual/5.1/manual.html#'
 local fun_ref = manual..'pdf-'
 
 local function function_ref (name)
-   return {href = fun_ref..name}
+   return {href = fun_ref..name, label = name}
 end
 
 local function module_ref (name)
-   return {href = manual..tables[name]}
+   return {href = manual..tables[name], label = name}
 end
-
 
 local function lua_manual_ref (name)
    local tbl,fname = tools.split_dotted_name(name)
