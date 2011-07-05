@@ -103,10 +103,15 @@ local function read_ldoc_config (fname)
    local txt,not_found = utils.readfile(fname)
    if txt then
        -- Penlight defines loadin for Lua 5.1 as well
-       local chunk,err = loadin(ldoc,txt)
-       if chunk then
-          local ok
-          ok,err = pcall(chunk)
+      local chunk,err
+      if not loadin then -- Penlight 0.9.5
+         chunk,err = load(txt,nil,nil,ldoc)
+      else
+         chunk,err = loadin(ldoc,txt)
+      end
+      if chunk then
+         local ok
+         ok,err = pcall(chunk)
        end
     end
    if err then print('error loading config file '..fname..': '..err) end
