@@ -39,6 +39,7 @@ local lang = require 'ldoc.lang'
 local Item,File,Module = doc.Item,doc.File,doc.Module
 local tools = require 'ldoc.tools'
 local global = require 'builtin.globals'
+local markup = require 'ldoc.markup'
 local KindMap = tools.KindMap
 
 class.ModuleMap(KindMap)
@@ -612,15 +613,9 @@ if not module_template then
 end
 
 if args.format ~= 'plain' then
-   local ok,markup = pcall(require,args.format)
-   if not ok then quit("cannot load formatter: "..args.format) end
-   function ldoc.markup(txt)
-      if txt == nil then return '' end
-      txt = markup(txt)
-      return (txt:gsub('^%s*<p>(.+)</p>%s*$','%1'))
-   end
+   ldoc.markup = markup.create(args.format)
 else
-   function ldoc.markup(txt)
+   ldoc.markup = function (txt)
       return txt
    end
 end
