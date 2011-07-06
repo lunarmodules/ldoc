@@ -15,14 +15,21 @@
 	<div id="product_description"></div>
 </div> <!-- id="product" -->
 
+# local function use_li(ls)
+#   if #ls > 1 then return '<li>','</li>' else return '','' end
+# end
+# local function display_name(item)
+#   if item.type == 'function' then return item.name..'&nbsp;'..item.args
+#   else return item.name end
+#  end
+# local function no_spaces(s) return s:gsub('%s','_') end
+
 <div id="main">
 
 # local iter = ldoc.modules.iter
 # local M = ldoc.markup
 
 <!-- Menu -->
-
-# local function no_spaces(s) return s:gsub('%s','_') end
 
 <div id="navigation">
 <h1>$(ldoc.project)</h1>
@@ -34,7 +41,7 @@
 <p>$(ldoc.description)</p>
 # end
 
-# if module then
+# if module and not ldoc.no_summary then
 <h2>Contents</h2>
 <ul>
 # for kind,items in module.kinds() do
@@ -43,6 +50,7 @@
 </ul>
 # end
 
+# if not ldoc.no_summary then
 # for kind, mods, type in ldoc.kinds() do
 <h2>$(kind)</h2>
 <ul>
@@ -59,9 +67,18 @@
 # else
   <li><a href="$(base..mod.name).html">$(mod.name)</a></li>
 # end
+# end
 #end
 </ul>
-# end
+# else
+<ul>
+# for kind, items in module.kinds() do
+<h2>$(kind)</h2>
+# for item in items() do
+    <li><a href="#$(item.name)">$(display_name(item))</a></li>
+# end end
+</ul>
+#end
 
 </div>
 
@@ -71,17 +88,11 @@
 
 <h1>Module <code>$(module.name)</code></h1>
 
-# local function use_li(ls)
-#   if #ls > 1 then return '<li>','</li>' else return '','' end
-# end
-# local function display_name(item)
-#   if item.type == 'function' then return item.name..'&nbsp;'..item.args
-#   else return item.name end
-#  end
 
 <p>$(M(module.summary))</p>
 <p>$(M(module.description))</p>
 
+# if not ldoc.no_summary then
 # -- bang out the tables of item types for this module (e.g Functions, Tables, etc)
 # for kind,items in module.kinds() do
 <h2><a href="#$(no_spaces(kind))">$(kind)</a></h2>
@@ -97,6 +108,8 @@
 
 <br/>
 <br/>
+
+#end -- if not no_summary
 
 # --- currently works for both Functions and Tables. The params field either contains
 # --- function parameters or table fields.
