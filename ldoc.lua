@@ -552,6 +552,7 @@ if args.filter ~= 'none' then
          item.file = nil
          item.formal_args = nil
          item.tags['return'] = nil
+         item.see = nil
       end
       mod.items.by_name = nil
    end
@@ -612,13 +613,8 @@ if not module_template then
    quit("template not found. Use -l to specify directory containing ldoc.ltp")
 end
 
-if args.format ~= 'plain' then
-   ldoc.markup = markup.create(ldoc, args.format)
-else
-   ldoc.markup = function (txt)
-      return txt
-   end
-end
+-- create the function that renders text (descriptions and summaries)
+ldoc.markup = markup.create(ldoc, args.format)
 
 -- this generates the internal module/function references; strictly speaking,
 -- it should be (and was) part of the template, but inline references in
