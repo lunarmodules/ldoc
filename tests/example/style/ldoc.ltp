@@ -48,7 +48,7 @@
 <ul>
 # for kind, items in module.kinds() do
 # for item in items() do
-    <li><a href="$(item.name)">$(display_name(item))</a></li>
+    <li><a href="#$(item.name)">$(display_name(item))</a></li>
 # end
 # end
 </ul>
