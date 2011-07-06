@@ -157,8 +157,8 @@ local function extract_tags (s)
    local preamble,tag_items = parse_tags(s)
    local strip = tools.strip
    local summary,description = preamble:match('^(.-[%.?])%s(.+)')
-   if not summary then summary = preamble end
-   local tags = {summary=summary and strip(summary),description=description and strip(description)}
+   if not summary then summary = preamble end  --  and strip(description) ?
+   local tags = {summary=summary and strip(summary),description=description}
    for _,item in ipairs(tag_items) do
       local tag,value = item[1],item[2]
       tag = Item.check_tag(tags,tag)
