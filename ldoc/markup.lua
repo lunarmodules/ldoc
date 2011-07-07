@@ -40,7 +40,7 @@ end
 
 -- inline <references> use same lookup as @see
 function markup.resolve_inline_references (ldoc, txt)
-   return (txt:gsub('<([%w_%.]-)>',function(name)
+   return (txt:gsub('@{([%w_%.]-)}',function(name)
       local ref,err = ldoc.module:process_see_reference(name,ldoc.modules)
       if not ref then
          if ldoc.item then ldoc.item:warning(err)
