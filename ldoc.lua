@@ -14,7 +14,7 @@ local lapp = require 'pl.lapp'
 app.require_here()
 
 local args = lapp [[
-ldoc, a documentation generator for Lua, vs 0.4 Beta
+ldoc, a documentation generator for Lua, vs 0.5
   -d,--dir (default docs) output directory
   -o,--output  (default 'index') output name
   -v,--verbose          verbose
@@ -28,8 +28,9 @@ ldoc, a documentation generator for Lua, vs 0.4 Beta
   -f,--format (default plain) formatting - can be markdown or plain
   -b,--package  (default .) top-level package basename (needed for module(...))
   -x,--ext (default html) output file extension
+  -c,--config (default config.ld) configuration name
   --dump                debug output dump
-  --filter (default none) dump output as Lua data
+  --filter (default none) filter output as Lua data (e.g pl.pretty.dump)
   <file> (string) source file or directory containing source
 ]]
 
@@ -315,8 +316,6 @@ end
 
 --- processing command line and preparing for output ---
 
-local CONFIG_NAME = 'config.ld'
-
 local F
 local file_list,module_list = List(),List()
 module_list.by_name = {}
@@ -352,8 +351,8 @@ end
 -- a special case: 'ldoc .' can get all its parameters from config.ld
 if args.file == '.' then
    local err
-   config_dir,err = read_ldoc_config('./'..CONFIG_NAME)
-   if err then quit("no "..quote(CONFIG_NAME).." found here") end
+   config_dir,err = read_ldoc_config('./'..args.config)
+   if err then quit("no "..quote(args.config).." found here") end
    config_is_read = true
    args.file = ldoc.file or '.'
    if args.file == '.' then
@@ -422,7 +421,6 @@ function add_language_extension (ext,lang)
 end
 
 local function process_file (f, file_list)
-   print(f)
    local ext = path.extension(f)
    local ftype = file_types[ext]
    if ftype then
@@ -452,7 +450,7 @@ elseif path.isdir(args.file) then
 
    if not config_dir then
       local config_files = files:filter(function(f)
-         return path.basename(f) == CONFIG_NAME
+         return path.basename(f) == args.config
       end)
       if #config_files > 0 then
          config_dir = read_ldoc_config(config_files[1])
@@ -475,7 +473,7 @@ elseif path.isfile(args.file) then
    if not config_dir then
       config_dir = path.dirname(args.file)
       if config_dir == '' then config_dir = '.' end
-      local config = path.join(config_dir,CONFIG_NAME)
+      local config = path.join(config_dir,args.config)
       if path.isfile(config) then
          read_ldoc_config(config)
       end
@@ -632,9 +630,9 @@ function ldoc.href(see)
 end
 
 
-function generate_output()
-   ldoc.single = not multiple_files
+local function generate_output()
    local check_directory, check_file, writefile = tools.check_directory, tools.check_file, tools.writefile
+   ldoc.single = not multiple_files
    ldoc.log = print
    ldoc.kinds = project
    ldoc.css = css
