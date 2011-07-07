@@ -99,9 +99,9 @@
 # for kind,items in module.kinds() do
 <h2><a href="#$(no_spaces(kind))">$(kind)</a></h2>
 <table class="function_list">
-#  for item in items() do
+#  for item in items() do -- nowrap
 	<tr>
-	<td class="name" nowrap><a href="#$(item.name)">$(display_name(item))</a></td>
+	<td class="name"><a href="#$(item.name)">$(display_name(item))</a></td>
 	<td class="summary">$(M(item.summary))</td>
 	</tr>
 #  end -- for items
