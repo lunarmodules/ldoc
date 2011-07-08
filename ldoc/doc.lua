@@ -18,14 +18,15 @@ local known_tags = {
    param = 'M', see = 'M', usage = 'M', ['return'] = 'M', field = 'M', author='M';
    class = 'id', name = 'id', pragma = 'id', alias = 'id';
    copyright = 'S', summary = 'S', description = 'S', release = 'S', license = 'S';
-   module = 'T', script = 'T',['function'] = 'T', lfunction = 'T',
-   table = 'T', section = 'T', type = 'T';
+   module = 'T', script = 'T', example = 'T',
+   ['function'] = 'T', lfunction = 'T', table = 'T', section = 'T', type = 'T';
    ['local'] = 'N';
 }
 known_tags._alias = {}
 known_tags._project_level = {
    module = true,
-   script = true
+   script = true,
+   example = true
 }
 
 local TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE,TAG_FLAG = 'M','id','S','T','N'
@@ -93,14 +94,16 @@ function File:finish()
       item:finish()
       if doc.project_level(item.type) then
          this_mod = item
-
-         -- if name is 'package.mod', then mod_name is 'mod'
-         local package,mname = split_dotted_name(this_mod.name)
-         if not package then
-            mname = this_mod.name
-            package = ''
-         else
-            package = package
+         local package,mname
+         if item.type == 'module' then
+            -- if name is 'package.mod', then mod_name is 'mod'
+            package,mname = split_dotted_name(this_mod.name)
+            if not package then
+               mname = this_mod.name
+               package = ''
+            else
+               package = package
+            end
          end
          self.modules:append(this_mod)
          this_mod.package = package
@@ -230,6 +233,7 @@ function Item:finish()
    if tags.see then
       tags.see = tools.expand_comma_list(tags.see)
    end
+   --if self.type ~= 'function' then print(self.name,self.type) end
    if  doc.project_level(self.type) then
       -- we are a module, so become one!
       self.items = List()
@@ -314,6 +318,10 @@ function Module:process_see_reference (s,modules)
    -- module reference?
    mod_ref = self:hunt_for_reference(s, modules)
    if mod_ref then return mod_ref end
+   -- method reference? (These are of form CLASS.NAME)
+   fun_ref = self.items.by_name[s]
+   if fun_ref then return reference(s,self,fun_ref) end
+   -- otherwise, start splitting!
    local packmod,name = split_dotted_name(s) -- e.g. 'pl.utils','split'
    if packmod then -- qualified name
       mod_ref = modules.by_name[packmod] -- fully qualified mod name?
