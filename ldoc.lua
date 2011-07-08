@@ -23,6 +23,7 @@ ldoc, a documentation generator for Lua, vs 0.5
   -m,--module           module docs as text
   -s,--style (default !) directory for style sheet (ldoc.css)
   -l,--template (default !) directory for template (ldoc.ltp)
+  -1,--one              use one-column output layout
   -p,--project (default ldoc) project name
   -t,--title (default Reference) page title
   -f,--format (default plain) formatting - can be markdown or plain
@@ -66,6 +67,8 @@ end
 
 ProjectMap:add_kind('module','Modules')
 ProjectMap:add_kind('script','Scripts')
+ProjectMap:add_kind('example','Examples')
+
 
 ------- ldoc external API ------------
 
@@ -322,12 +325,6 @@ module_list.by_name = {}
 local multiple_files
 local config_dir
 
-local function extract_modules (F)
-   for mod in F.modules:iter() do
-      module_list:append(mod)
-      module_list.by_name[mod.name] = mod
-   end
-end
 
 local ldoc_dir = arg[0]:gsub('[^/\\]+$','')
 local doc_path = ldoc_dir..'builtin/?.luadoc'
@@ -430,24 +427,47 @@ local function process_file (f, file_list)
    end
 end
 
-if type(args.file) == 'table' then
-   -- this can only be set from config file so we can assume it's already read
-   for _,f in ipairs(args.file) do
+local function process_file_list (list, mask, operation, ...)
+   for _,f in ipairs(list) do
       if path.isdir(f) then
-         local files = List(dir.getallfiles(f,'*.*'))
+         local files = List(dir.getallfiles(f,mask))
          for f in files:iter() do
-            process_file(f, file_list)
+            operation(f, ...)
          end
       elseif path.isfile(f) then
-         process_file(f, file_list)
+         operation(f, ...)
       else
          quit("file or directory does not exist: "..quote(f))
       end
    end
+end
+
+local prettify = require 'ldoc.prettify'
+
+function process_example (f, file_list)
+   local F = File(f)
+   local tags = {
+      name = path.basename(f),
+      class = 'example',
+      description = prettify.lua(f)
+   }
+   local item = F:new_item(tags,1)
+   F:finish()
+   item.not_code = true
+   file_list:append(F)
+end
+
+if type(ldoc.examples) == 'table' then
+   process_file_list (ldoc.examples, '*.lua', process_example, file_list)
+end
+
+if type(args.file) == 'table' then
+   -- this can only be set from config file so we can assume it's already read
+   process_file_list(args.file,'*.*',process_file, file_list)
    if #file_list == 0 then quit "no source files specified" end
 elseif path.isdir(args.file) then
    local files = List(dir.getallfiles(args.file,'*.*'))
-
+   -- use any configuration file we find, if not already specified
    if not config_dir then
       local config_files = files:filter(function(f)
          return path.basename(f) == args.config
@@ -459,15 +479,12 @@ elseif path.isdir(args.file) then
          end
       end
    end
-
    for f in files:iter() do
       process_file(f, file_list)
    end
-
    if #file_list == 0 then
       quit(quote(args.file).." contained no source files")
    end
-
 elseif path.isfile(args.file) then
    -- a single file may be accompanied by a config.ld in the same dir
    if not config_dir then
@@ -478,7 +495,6 @@ elseif path.isfile(args.file) then
          read_ldoc_config(config)
       end
    end
-
    process_file(args.file, file_list)
    if #file_list == 0 then quit "unsupported file extension" end
 else
@@ -492,7 +508,10 @@ multiple_files = #file_list > 1
 local project = ProjectMap()
 
 for F in file_list:iter() do
-   extract_modules(F)
+   for mod in F.modules:iter() do
+      module_list:append(mod)
+      module_list.by_name[mod.name] = mod
+   end
 end
 
 for mod in module_list:iter() do
@@ -596,9 +615,14 @@ override 'format'
 override 'output'
 override 'dir'
 override 'ext'
+override 'one'
 
 if not args.ext:find '^%.' then
    args.ext = '.'..args.ext
+end
+
+if args.one then
+   css = 'ldoc_one.css'
 end
 
 -- '!' here means 'use same directory as ldoc.lua
@@ -665,6 +689,8 @@ local function generate_output()
          check_directory(args.dir..kind)
          for m in modules() do
             ldoc.module = m
+            ldoc.body = m.not_code and m.description or nil
+            ldoc.no_contents = ldoc.body ~= nil
             out,err = template.substitute(module_template,{
                module=m,
                ldoc = ldoc
