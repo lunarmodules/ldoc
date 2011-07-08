@@ -44,7 +44,7 @@
 <p>$(ldoc.description)</p>
 # end
 
-# if module and not ldoc.no_summary then
+# if module and not ldoc.no_summary and not ldoc.no_contents then
 <h2>Contents</h2>
 <ul>
 # for kind,items in module.kinds() do
