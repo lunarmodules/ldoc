@@ -130,7 +130,7 @@ end
 function M.expand_comma_list (ls)
    local new_ls = List()
    for s in ls:iter() do
-      s = s:gsub('[^%.:%w_]*$','')
+      s = s:gsub('[^%.:%-%w_]*$','')
       if s:find ',' then
          new_ls:extend(List.split(s,'%s*,%s*'))
       else
@@ -156,7 +156,7 @@ end
 
 
 function M.extract_identifier (value)
-   return value:match('([%.:_%w]+)')
+   return value:match('([%.:%-_%w]+)')
 end
 
 function M.strip (s)

@@ -322,7 +322,6 @@ end
 local F
 local file_list,module_list = List(),List()
 module_list.by_name = {}
-local multiple_files
 local config_dir
 
 
@@ -442,24 +441,6 @@ local function process_file_list (list, mask, operation, ...)
    end
 end
 
-local prettify = require 'ldoc.prettify'
-
-function process_example (f, file_list)
-   local F = File(f)
-   local tags = {
-      name = path.basename(f),
-      class = 'example',
-      description = prettify.lua(f)
-   }
-   local item = F:new_item(tags,1)
-   F:finish()
-   item.not_code = true
-   file_list:append(F)
-end
-
-if type(ldoc.examples) == 'table' then
-   process_file_list (ldoc.examples, '*.lua', process_example, file_list)
-end
 
 if type(args.file) == 'table' then
    -- this can only be set from config file so we can assume it's already read
@@ -503,12 +484,34 @@ end
 
 setup_package_base()
 
-multiple_files = #file_list > 1
+local multiple_files = #file_list > 1
+local first_module
+
+if type(ldoc.examples) == 'table' then
+   local prettify = require 'ldoc.prettify'
+
+   local function process_example (f, file_list)
+      local F = File(f)
+      local tags = {
+         name = path.basename(f),
+         class = 'example',
+         description = prettify.lua(f)
+      }
+      local item = F:new_item(tags,1)
+      F:finish()
+      item.not_code = true
+      file_list:append(F)
+   end
+
+   process_file_list (ldoc.examples, '*.lua', process_example, file_list)
+end
+
 
 local project = ProjectMap()
 
 for F in file_list:iter() do
    for mod in F.modules:iter() do
+      if not first_module then first_module = mod end
       module_list:append(mod)
       module_list.by_name[mod.name] = mod
    end
@@ -653,6 +656,41 @@ function ldoc.href(see)
    end
 end
 
+-- this is either called from the 'root' (index or single module) or
+-- from the 'modules' etc directories. If we are in one of those directories,
+-- then linking to another kind is `../kind/name`; to the same kind is just `name`.
+-- If we are in the root, then it is `kind/name`.
+
+function ldoc.ref_to_module (mod,module,kind)
+   local base = "" -- default: same directory
+   local name = mod.name -- default: name of module
+   local single_mod = ldoc.single and ldoc.root
+   kind = kind:lower()
+   if not ldoc.single then
+      if module then -- we are in kind/
+         if module.type ~= type then -- cross ref to ../kind/
+            base = "../"..kind.."/"
+         end
+      else -- we are in root: index
+         base = kind..'/'
+      end
+   else -- single module
+      --print('mod',mod.name,mod.type,module.type,first_module.type)
+      if mod == first_module then
+         name = ldoc.output
+         if not ldoc.root then base = '../' end
+      elseif ldoc.root then -- ref to other kinds (like examples)
+         base = kind..'/'
+      else
+         if module.type ~= type then -- cross ref to ../kind/
+            base = "../"..kind.."/"
+         end
+      end
+   end
+   print('res',base..name)
+   return base..name
+end
+
 
 local function generate_output()
    local check_directory, check_file, writefile = tools.check_directory, tools.check_file, tools.writefile
@@ -664,33 +702,38 @@ local function generate_output()
    ldoc.title = ldoc.title or args.title
    ldoc.project = ldoc.project or args.project
 
-   ldoc.module = ldoc.single and ldoc.modules[1] or nil
+   -- in single mode there is one module and the 'index' is the
+   -- documentation for that module.
+   ldoc.module = ldoc.single and first_module or nil
+   ldoc.root = true
    local out,err = template.substitute(module_template,{
       ldoc = ldoc,
       module = ldoc.module
     })
+   ldoc.root = false
    if not out then quit("template failed: "..err) end
 
-   check_directory(args.dir)
+   check_directory(args.dir) -- make sure output directory is ok
 
    args.dir = args.dir .. path.sep
 
-   check_file(args.dir..css, path.join(args.style,css))
+   check_file(args.dir..css, path.join(args.style,css)) -- has CSS been copied?
 
    -- write out the module index
    writefile(args.dir..args.output..args.ext,out)
 
    -- write out the per-module documentation
-   if not ldoc.single then
-      ldoc.css = '../'..css
-      ldoc.output = args.output
-      for kind, modules in project() do
-         kind = kind:lower()
+   -- in single mode, we exclude any modules since the module has been done;
+   -- this step is then only for putting out any examples or topics
+   ldoc.css = '../'..css
+   ldoc.output = args.output
+   for kind, modules in project() do
+      kind = kind:lower()
+      if not ldoc.single or ldoc.single and kind ~= 'modules' then
          check_directory(args.dir..kind)
          for m in modules() do
             ldoc.module = m
             ldoc.body = m.not_code and m.description or nil
-            ldoc.no_contents = ldoc.body ~= nil
             out,err = template.substitute(module_template,{
                module=m,
                ldoc = ldoc

@@ -123,6 +123,7 @@ pre {
     border: 1px solid silver;
     padding: 10px;
     margin: 10px 0 10px 0;
+    overflow: auto;
     font-family: "Andale Mono", monospace;
 }
 
@@ -245,7 +246,7 @@ table.module_list td {
     border-style: solid;
     border-color: #cccccc;
 }
-table.module_list td.name { background-color: #f0f0f0; }
+table.module_list td.name { background-color: #f0f0f0; ; min-width: 200px; }
 table.module_list td.summary { width: 100%; }
 
 
@@ -261,7 +262,7 @@ table.function_list td {
     border-style: solid;
     border-color: #cccccc;
 }
-table.function_list td.name { background-color: #f0f0f0; }
+table.function_list td.name { background-color: #f0f0f0; ; min-width: 200px; }
 table.function_list td.summary { width: 100%; }
 
 dl.table dt, dl.function dt {border-top: 1px solid #ccc; padding-top: 1em;}
@@ -274,5 +275,11 @@ ol ul { margin-top: 0px; }
 ol ol { margin-top: 0px; }
 ul ol { margin-top: 0px; }
 
+/* styles for prettification of source */
+.keyword {font-weight: bold; color: #6666AA; }
+.number  { color: #AA6666; }
+.string  { color: #8888AA; }
+.comment { color: #666600; }
+.prepro { color: #006666; }
 
 

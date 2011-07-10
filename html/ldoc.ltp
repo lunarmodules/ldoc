@@ -35,7 +35,9 @@
 <!-- Menu -->
 
 <div id="navigation">
+
 <h1>$(ldoc.project)</h1>
+
 # if not ldoc.single then -- reference back to project index
 <ul>
   <li><a href="../$(ldoc.output).html">Index</a></li>
@@ -44,7 +46,8 @@
 <p>$(ldoc.description)</p>
 # end
 
-# if module and not ldoc.no_summary and not ldoc.no_contents then
+# --------- contents of module -------------
+# if module and not ldoc.no_summary and #module.items > 0 then
 <h2>Contents</h2>
 <ul>
 # for kind,items in module.kinds() do
@@ -53,23 +56,18 @@
 </ul>
 # end
 
+# -------- contents of project ----------
 # if not ldoc.no_summary then
+# local this_mod = module and module.name
 # for kind, mods, type in ldoc.kinds() do
 <h2>$(kind)</h2>
 <ul>
-# local this_mod = module and module.name
-# local base = ""
-# kind = kind:lower()
-# if module then
-#   if module.type ~= type then base = "../"..kind.."/" end
-# else base = kind.."/"
-# end
 # for mod in mods() do
-#  if mod.name == this_mod then
+#  if mod.name == this_mod then -- highlight current module, link to others
   <li><strong>$(mod.name)</strong></li>
-# else
-  <li><a href="$(base..mod.name).html">$(mod.name)</a></li>
-# end
+#  else
+  <li><a href="$(ldoc.ref_to_module(mod,module,kind)).html">$(mod.name)</a></li>
+#  end
 # end
 #end
 </ul>
@@ -87,10 +85,13 @@
 
 <div id="content">
 
-# if ldoc.body then -- verbatim HTML as contents
+#if module then
+<h1>$(title(module.type)) <code>$(module.name)</code></h1>
+# end
+
+# if ldoc.body then -- verbatim HTML as contents; 'non-code' entries
     $(ldoc.body)
 # elseif module then -- module documentation
-<h1>$(title(module.type)) <code>$(module.name)</code></h1>
 <p>$(M(module.summary))</p>
 <p>$(M(module.description))</p>
 
