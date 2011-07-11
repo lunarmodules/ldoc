@@ -426,19 +426,38 @@ local function process_file (f, file_list)
    end
 end
 
-local function process_file_list (list, mask, operation, ...)
+local process_file_list, files_from_list
+
+function process_file_list (list, mask, operation, ...)
+   local exclude_list = list.exclude and files_from_list(list.exclude, mask)
+   if exclude_list then pretty.dump(exclude_list) end
+   local function process (f,...)
+      f = path.normcase(f)
+      f = path.abspath(f)
+      if exclude_list and exclude_list:index(f) == nil then
+         operation(f, ...)
+      end
+   end
    for _,f in ipairs(list) do
       if path.isdir(f) then
          local files = List(dir.getallfiles(f,mask))
          for f in files:iter() do
-            operation(f, ...)
+            process(f,...)
          end
       elseif path.isfile(f) then
-         operation(f, ...)
+         process(f,...)
       else
          quit("file or directory does not exist: "..quote(f))
       end
    end
+end
+
+function files_from_list (list, mask)
+   local excl = List()
+   process_file_list (list, mask, function(f)
+      excl:append(f)
+   end)
+   return excl
 end
 
 
@@ -495,11 +514,10 @@ if type(ldoc.examples) == 'table' then
       local tags = {
          name = path.basename(f),
          class = 'example',
-         description = prettify.lua(f)
       }
       local item = F:new_item(tags,1)
       F:finish()
-      item.not_code = true
+      item.body = prettify.lua(f)
       file_list:append(F)
    end
 
@@ -687,7 +705,7 @@ function ldoc.ref_to_module (mod,module,kind)
          end
       end
    end
-   print('res',base..name)
+   --print('res',base..name)
    return base..name
 end
 
@@ -733,7 +751,7 @@ local function generate_output()
          check_directory(args.dir..kind)
          for m in modules() do
             ldoc.module = m
-            ldoc.body = m.not_code and m.description or nil
+            ldoc.body = m.body
             out,err = template.substitute(module_template,{
                module=m,
                ldoc = ldoc
