@@ -18,15 +18,16 @@ local known_tags = {
    param = 'M', see = 'M', usage = 'M', ['return'] = 'M', field = 'M', author='M';
    class = 'id', name = 'id', pragma = 'id', alias = 'id';
    copyright = 'S', summary = 'S', description = 'S', release = 'S', license = 'S';
-   module = 'T', script = 'T', example = 'T',
-   ['function'] = 'T', lfunction = 'T', table = 'T', section = 'T', type = 'T';
+   module = 'T', script = 'T', example = 'T', topic = 'T', -- project-level
+   ['function'] = 'T', lfunction = 'T', table = 'T', section = 'T', type = 'T'; -- module-level
    ['local'] = 'N';
 }
 known_tags._alias = {}
 known_tags._project_level = {
    module = true,
    script = true,
-   example = true
+   example = true,
+   topic = true
 }
 
 local TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE,TAG_FLAG = 'M','id','S','T','N'
@@ -82,7 +83,7 @@ function File:_init(filename)
 end
 
 function File:new_item(tags,line)
-   local item = Item(tags,self,line)
+   local item = Item(tags,self,line or 1)
    self.items:append(item)
    return item
 end
@@ -98,12 +99,10 @@ function File:finish()
          if item.type == 'module' then
             -- if name is 'package.mod', then mod_name is 'mod'
             package,mname = split_dotted_name(this_mod.name)
-            if not package then
-               mname = this_mod.name
-               package = ''
-            else
-               package = package
-            end
+         end
+         if not package then
+            mname = this_mod.name
+            package = ''
          end
          self.modules:append(this_mod)
          this_mod.package = package
@@ -203,7 +202,7 @@ function Item:_init(tags,file,line)
       elseif ttype == TAG_FLAG then
          self.tags[tag] = true
       else
-         self:warning ("unknown tag: '"..tag.."'")
+         self:warning ("unknown tag: '"..tag.."' "..tostring(ttype))
       end
    end
 end
@@ -291,7 +290,7 @@ end
 
 function Module:hunt_for_reference (packmod, modules)
    local mod_ref
-   local package = self.package
+   local package = self.package or ''
    repeat -- same package?
       local nmod = package..'.'..packmod
       mod_ref = modules.by_name[nmod]
@@ -307,7 +306,7 @@ local function reference (s, mod_ref, item_ref)
    if item_ref and item_ref.type == 'type' then
       name = 'Class_'..name
    end
-   return {mod = mod_ref.name, name = name, label=s}
+   return {mod = mod_ref, name = name, label=s}
 end
 
 function Module:process_see_reference (s,modules)
@@ -391,6 +390,8 @@ function Module:mask_locals ()
    self.kinds['Local Functions'] = nil
 end
 
+--------- dumping out modules and items -------------
+
 function Module:dump(verbose)
    print '----'
    print(self.type..':',self.name,self.summary)
@@ -429,6 +430,34 @@ function Item:dump(verbose)
    else
       print('* '..name..' - '..self.summary)
    end
+end
+
+function doc.filter_objects_through_function(filter, module_list)
+   local quit = utils.quit
+   if filter == 'dump' then filter = 'pl.pretty.dump' end
+   local mod,name = tools.split_dotted_name(filter)
+   local ok,P = pcall(require,mod)
+   if not ok then quit("cannot find module "..quote(mod)) end
+   local ok,f = pcall(function() return P[name] end)
+   if not ok or type(f) ~= 'function' then quit("dump module: no function "..quote(name)) end
+
+   -- clean up some redundant and cyclical references--
+   module_list.by_name = nil
+   for mod in module_list:iter() do
+      mod.kinds = nil
+      mod.file = mod.file.filename
+      for item in mod.items:iter() do
+         item.module = nil
+         item.file = nil
+         item.formal_args = nil
+         item.tags['return'] = nil
+         item.see = nil
+      end
+      mod.items.by_name = nil
+   end
+
+   local ok,err = pcall(f,module_list)
+   if not ok then quit("dump failed: "..err) end
 end
 
 return doc

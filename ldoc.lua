@@ -67,6 +67,7 @@ end
 
 ProjectMap:add_kind('module','Modules')
 ProjectMap:add_kind('script','Scripts')
+ProjectMap:add_kind('topic','Topics')
 ProjectMap:add_kind('example','Examples')
 
 
@@ -416,6 +417,11 @@ function add_language_extension (ext,lang)
    file_types[ext] = lang
 end
 
+--------- processing files ---------------------
+-- ldoc may be given a file, or a directory. `args.file` may also be specified in config.ld
+-- where it is a list of files or directories. If specified on the command-line, we have
+-- to find an optional associated config.ld, if not already loaded.
+
 local function process_file (f, file_list)
    local ext = path.extension(f)
    local ftype = file_types[ext]
@@ -426,40 +432,7 @@ local function process_file (f, file_list)
    end
 end
 
-local process_file_list, files_from_list
-
-function process_file_list (list, mask, operation, ...)
-   local exclude_list = list.exclude and files_from_list(list.exclude, mask)
-   if exclude_list then pretty.dump(exclude_list) end
-   local function process (f,...)
-      f = path.normcase(f)
-      f = path.abspath(f)
-      if exclude_list and exclude_list:index(f) == nil then
-         operation(f, ...)
-      end
-   end
-   for _,f in ipairs(list) do
-      if path.isdir(f) then
-         local files = List(dir.getallfiles(f,mask))
-         for f in files:iter() do
-            process(f,...)
-         end
-      elseif path.isfile(f) then
-         process(f,...)
-      else
-         quit("file or directory does not exist: "..quote(f))
-      end
-   end
-end
-
-function files_from_list (list, mask)
-   local excl = List()
-   process_file_list (list, mask, function(f)
-      excl:append(f)
-   end)
-   return excl
-end
-
+local process_file_list = tools.process_file_list
 
 if type(args.file) == 'table' then
    -- this can only be set from config file so we can assume it's already read
@@ -503,27 +476,53 @@ end
 
 setup_package_base()
 
+
 local multiple_files = #file_list > 1
 local first_module
+
+------ 'Special' Project-level entities ---------------------------------------
+-- Examples and Topics do not contain code to be processed for doc comments.
+-- Instead, they are intended to be rendered nicely as-is, whether as pretty-lua
+-- or as Markdown text. Treating them as 'modules' does stretch the meaning of
+-- of the term, but allows them to be treated much as modules or scripts.
+-- They define an item 'body' field (containing the file's text) and a 'postprocess'
+-- field which is used later to convert them into HTML. They may contain @{ref}s.
+
+local function add_special_project_entity (f,tags,process)
+   local F = File(f)
+   tags.name = path.basename(f)
+   local text = utils.readfile(f)
+   local item = F:new_item(tags,1)
+   if process then
+      text = process(F, text)
+   end
+   F:finish()
+   file_list:append(F)
+   item.body = text
+   return item
+end
 
 if type(ldoc.examples) == 'table' then
    local prettify = require 'ldoc.prettify'
 
    local function process_example (f, file_list)
-      local F = File(f)
-      local tags = {
-         name = path.basename(f),
+      local item = add_special_project_entity(f,{
          class = 'example',
-      }
-      local item = F:new_item(tags,1)
-      F:finish()
-      item.body = prettify.lua(f)
-      file_list:append(F)
+      })
+      item.postprocess = prettify.lua
    end
 
    process_file_list (ldoc.examples, '*.lua', process_example, file_list)
 end
 
+if type(ldoc.readme) == 'string' then
+   local item = add_special_project_entity(ldoc.readme,{
+      class = 'topic'
+   }, markup.add_sections)
+   item.postprocess = markup.create(ldoc, 'markdown')
+end
+
+---- extract modules from the file objects, resolve references and sort appropriately ---
 
 local project = ProjectMap()
 
@@ -551,12 +550,14 @@ table.sort(module_list,function(m1,m2)
    return m1.name < m2.name
 end)
 
+-------- three ways to dump the object graph after processing -----
+
 -- ldoc -m will give a quick & dirty dump of the module's documentation;
 -- using -v will make it more verbose
 if args.module then
    if #module_list == 0 then quit("no modules found") end
    if args.module == true then
-      F:dump(args.verbose)
+      file_list[1]:dump(args.verbose)
    else
       local fun = module_list[1].items.by_name[args.module]
       if not fun then quit(quote(args.module).." is not part of "..quote(args.file)) end
@@ -565,6 +566,7 @@ if args.module then
    return
 end
 
+-- ldoc --dump will do the same as -m, except for the currently specified files
 if args.dump then
    for mod in module_list:iter() do
       mod:dump(true)
@@ -572,31 +574,10 @@ if args.dump then
    os.exit()
 end
 
-
+-- ldoc --filter mod.name will load the module `mod` and pass the object graph
+-- to the function `name`. As a special case --filter dump will use pl.pretty.dump.
 if args.filter ~= 'none' then
-   local mod,name = tools.split_dotted_name(args.filter)
-   local ok,P = pcall(require,mod)
-   if not ok then quit("cannot find module "..quote(mod)) end
-   local ok,f = pcall(function() return P[name] end)
-   if not ok or type(f) ~= 'function' then quit("dump module: no function "..quote(name)) end
-
-   -- clean up some redundant and cyclical references--
-   module_list.by_name = nil
-   for mod in module_list:iter() do
-      mod.kinds = nil
-      mod.file = mod.file.filename
-      for item in mod.items:iter() do
-         item.module = nil
-         item.file = nil
-         item.formal_args = nil
-         item.tags['return'] = nil
-         item.see = nil
-      end
-      mod.items.by_name = nil
-   end
-
-   local ok,err = pcall(f,module_list)
-   if not ok then quit("dump failed: "..err) end
+   doc.filter_objects_through_function(args.filter, module_list)
    os.exit()
 end
 
@@ -667,10 +648,7 @@ function ldoc.href(see)
    if see.href then -- explict reference, e.g. to Lua manual
       return see.href
    else
-      -- usually the module name, except when we have a single module
-      local doc_name = see.mod
-      if ldoc.single then doc_name = args.output end
-      return doc_name..'.html#'..see.name
+      return ldoc.ref_to_module(see.mod)..'#'..see.name
    end
 end
 
@@ -679,11 +657,10 @@ end
 -- then linking to another kind is `../kind/name`; to the same kind is just `name`.
 -- If we are in the root, then it is `kind/name`.
 
-function ldoc.ref_to_module (mod,module,kind)
+function ldoc.ref_to_module (mod)
    local base = "" -- default: same directory
+   local kind, module = mod.kind, ldoc.module
    local name = mod.name -- default: name of module
-   local single_mod = ldoc.single and ldoc.root
-   kind = kind:lower()
    if not ldoc.single then
       if module then -- we are in kind/
          if module.type ~= type then -- cross ref to ../kind/
@@ -693,7 +670,6 @@ function ldoc.ref_to_module (mod,module,kind)
          base = kind..'/'
       end
    else -- single module
-      --print('mod',mod.name,mod.type,module.type,first_module.type)
       if mod == first_module then
          name = ldoc.output
          if not ldoc.root then base = '../' end
@@ -705,14 +681,13 @@ function ldoc.ref_to_module (mod,module,kind)
          end
       end
    end
-   --print('res',base..name)
-   return base..name
+   return base..name..'.html'
 end
 
 
 local function generate_output()
    local check_directory, check_file, writefile = tools.check_directory, tools.check_file, tools.writefile
-   ldoc.single = not multiple_files
+   ldoc.single = not multiple_files and first_module or nil
    ldoc.log = print
    ldoc.kinds = project
    ldoc.css = css
@@ -752,6 +727,9 @@ local function generate_output()
          for m in modules() do
             ldoc.module = m
             ldoc.body = m.body
+            if ldoc.body then
+               ldoc.body = m.postprocess(ldoc.body)
+            end
             out,err = template.substitute(module_template,{
                module=m,
                ldoc = ldoc

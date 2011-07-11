@@ -5,6 +5,8 @@
 -- `@{example:test-fun}`.
 require 'pl'
 local lexer = require 'ldoc.lexer'
+local markup = require 'ldoc.markup'
+local tnext = lexer.skipws
 local prettify = {}
 
 local escaped_chars = {
@@ -29,10 +31,7 @@ end
 
 local spans = {keyword=true,number=true,string=true,comment=true}
 
-function prettify.lua (file)
-   local code,err = utils.readfile(file)
-   if not code then return nil,err end
-
+function prettify.lua (code)
    local res = List()
    res:append(header)
    res:append '<pre>\n'
@@ -43,6 +42,9 @@ function prettify.lua (file)
    while t do
       val = escape(val)
       if spans[t] then
+         if t == 'comment' then -- may contain @{ref}
+            val = markup.resolve_inline_references(val)
+         end
          res:append(span(t,val))
       else
          res:append(val)
@@ -54,3 +56,17 @@ function prettify.lua (file)
 end
 
 return prettify
+
+--[[
+         if t == 'iden' then
+            local tn,vn = tnext(tok)
+            if tn == '.' then
+
+            else
+               res:append(tn)
+               res:append(val)
+            end
+         else
+            res:append(val)
+         end
+]]

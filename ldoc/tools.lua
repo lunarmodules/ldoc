@@ -84,6 +84,7 @@ function KindMap:add (item,items,description)
       --print(kname,description)
       self.klass.descriptions[kname] = description
    end
+   item.kind = kname:lower()
 end
 
 -- KindMap has a 'class constructor' which is used to modify
@@ -337,6 +338,38 @@ function M.grab_block_comment (v,tok,end1,end2)
    end
    res = table.concat(res)
    return 'comment',res
+end
+
+function M.process_file_list (list, mask, operation, ...)
+   local exclude_list = list.exclude and M.files_from_list(list.exclude, mask)
+   if exclude_list then pretty.dump(exclude_list) end
+   local function process (f,...)
+      f = path.normcase(f)
+      f = path.abspath(f)
+      if not exclude_list or exclude_list and exclude_list:index(f) == nil then
+         operation(f, ...)
+      end
+   end
+   for _,f in ipairs(list) do
+      if path.isdir(f) then
+         local files = List(dir.getallfiles(f,mask))
+         for f in files:iter() do
+            process(f,...)
+         end
+      elseif path.isfile(f) then
+         process(f,...)
+      else
+         quit("file or directory does not exist: "..quote(f))
+      end
+   end
+end
+
+function M.files_from_list (list, mask)
+   local excl = List()
+   M.process_file_list (list, mask, function(f)
+      excl:append(f)
+   end)
+   return excl
 end
 
 
