@@ -156,11 +156,12 @@ function lexer.scan (s,matches,filter,options)
         local line = 1
         if file then
             s = file:read()
-            if not s then return nil end -- empty file
+            if not s or s == '' then return nil end -- empty file
             s = s ..'\n'
          end
         local sz = #s
         local idx = 1
+        if sz == 0 then return nil end -- empty file
         --print('sz',sz)
         while true do
             for _,m in ipairs(matches) do

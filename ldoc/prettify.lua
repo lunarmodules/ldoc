@@ -39,6 +39,7 @@ function prettify.lua (file)
 
    local tok = lexer.lua(code,{},{})
    local t,val = tok()
+   if not t then return nil,"empty file" end
    while t do
       val = escape(val)
       if spans[t] then
