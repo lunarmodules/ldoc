@@ -92,6 +92,9 @@ function html.generate_output(ldoc, args, project)
    -- in single mode there is one module and the 'index' is the
    -- documentation for that module.
    ldoc.module = ldoc.single
+   if ldoc.single and args.one then
+      ldoc.kinds_allowed = {module = true, topic = true}
+   end
    ldoc.root = true
    local out,err = template.substitute(module_template,{
       ldoc = ldoc,

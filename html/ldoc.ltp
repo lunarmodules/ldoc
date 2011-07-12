@@ -53,13 +53,15 @@
 # if not ldoc.no_summary then
 # local this_mod = module and module.name
 # for kind, mods, type in ldoc.kinds() do
+#  if not ldoc.kinds_allowed or ldoc.kinds_allowed[type] then
 <h2>$(kind)</h2>
 <ul>
-# for mod in mods() do
-#  if mod.name == this_mod then -- highlight current module, link to others
+#  for mod in mods() do
+#   if mod.name == this_mod then -- highlight current module, link to others
   <li><strong>$(mod.name)</strong></li>
-#  else
+#   else
   <li><a href="$(ldoc.ref_to_module(mod))">$(mod.name)</a></li>
+#   end
 #  end
 # end
 #end
