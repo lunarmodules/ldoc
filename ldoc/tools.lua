@@ -342,7 +342,6 @@ end
 
 function M.process_file_list (list, mask, operation, ...)
    local exclude_list = list.exclude and M.files_from_list(list.exclude, mask)
-   if exclude_list then pretty.dump(exclude_list) end
    local function process (f,...)
       f = path.normcase(f)
       f = path.abspath(f)

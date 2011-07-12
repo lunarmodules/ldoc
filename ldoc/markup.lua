@@ -6,15 +6,17 @@
 require 'pl'
 local doc = require 'ldoc.doc'
 local utils = require 'pl.utils'
-local quit = utils.quit
+local prettify = require 'ldoc.prettify'
+local quit, concat, lstrip = utils.quit, table.concat, stringx.lstrip
 local markup = {}
 
 -- workaround Markdown's need for blank lines around indented blocks
 -- (does mean you have to keep indentation discipline!)
 function markup.insert_markdown_lines (txt)
    local res, append = {}, table.insert
-   local last_indent, start_indent, skip = -1, -1, false
+   local last_indent, start_indent, skip, code = -1, -1, false, nil
    for line in stringx.lines(txt) do
+      line = line:gsub('\t','    ')  -- some people like tabs ;)
       if not line:match '^%s*$' then --ignore blank lines
          local indent = #line:match '^%s*'
          if start_indent < 0 then -- initialize indents at start
@@ -24,49 +26,53 @@ function markup.insert_markdown_lines (txt)
          if indent < start_indent then -- end of indented block
             append(res,'')
             skip = false
+            if code then
+               code = concat(code,'\n')
+               code, err = prettify.lua(code)
+               if code then
+                  append(res,code)
+                  append(res,'</pre>')
+               end
+               code = nil
+            end
          end
          if not skip and indent > last_indent then -- start of indent
             append(res,'')
             skip = true
             start_indent = indent
+            if indent >= 4 then
+               code = {}
+            end
          end
-         append(res,line)
+         if code then
+            append(code, line:sub(start_indent))
+         else
+            append(res,line)
+         end
          last_indent = indent
-      else
+      elseif not code then
          append(res,'')
       end
    end
-   return table.concat(res,'\n')
+   res = concat(res,'\n')
+   return res
 end
 
 -- for readme text, the idea here is to insert module sections at ## so that
 -- they can appear in the contents list as a ToC
 function markup.add_sections(F, txt)
    local res, append = {}, table.insert
-   local last_indent, start_indent, skip = -1, -1, false
    for line in stringx.lines(txt) do
       local title = line:match '^##[^#]%s*(.+)'
       if title then
-         -- some serious hackery. We force sections into this 'module',
-         -- and ensure that there is a dummy item so that the section
-         -- is not empty.
-         local section = title:gsub('%A','_')
-         F:new_item {
-            name = section,
-            class = 'section',
-            summary = title
-         }
-         F:new_item {
-            name = 'dumbo',
-            class = 'function',
-         }
+         local section = F:add_document_section(title)
          append(res,('<a id="%s"></a>\n'):format(section))
          append(res,line)
       else
          append(res,line)
       end
    end
-   return table.concat(res,'\n')
+   return concat(res,'\n')
 end
 
 local function handle_reference (ldoc, name)
@@ -104,6 +110,7 @@ function markup.create (ldoc, format)
    markup.href = function(ref)
       return ldoc.href(ref)
    end
+
    if format == 'plain' then
       processor = function(txt)
          if txt == nil then return '' end
@@ -128,6 +135,7 @@ function markup.create (ldoc, format)
       return resolve_inline_references(ldoc, txt)
    end
    markup.processor = processor
+   prettify.resolve_inline_references = markup.resolve_inline_references
    return processor
 end
 

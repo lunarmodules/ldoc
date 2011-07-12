@@ -7,7 +7,7 @@
 require 'pl'
 
 local append = table.insert
-local template = require 'pl.template'
+
 local lapp = require 'pl.lapp'
 
 -- so we can find our private modules
@@ -35,14 +35,16 @@ ldoc, a documentation generator for Lua, vs 0.5
   <file> (string) source file or directory containing source
 ]]
 
-local lexer = require 'ldoc.lexer'
 local doc = require 'ldoc.doc'
 local lang = require 'ldoc.lang'
-local Item,File,Module = doc.Item,doc.File,doc.Module
 local tools = require 'ldoc.tools'
 local global = require 'builtin.globals'
 local markup = require 'ldoc.markup'
+local parse = require 'ldoc.parse'
 local KindMap = tools.KindMap
+local Item,File,Module = doc.Item,doc.File,doc.Module
+local quit = utils.quit
+
 
 class.ModuleMap(KindMap)
 
@@ -70,6 +72,17 @@ ProjectMap:add_kind('script','Scripts')
 ProjectMap:add_kind('topic','Topics')
 ProjectMap:add_kind('example','Examples')
 
+local lua, cc = lang.lua, lang.cc
+
+local file_types = {
+   ['.lua'] = lua,
+   ['.ldoc'] = lua,
+   ['.luadoc'] = lua,
+   ['.c'] = cc,
+   ['.cpp'] = cc,
+   ['.cxx'] = cc,
+   ['.C'] = cc
+}
 
 ------- ldoc external API ------------
 
@@ -83,7 +96,9 @@ function ldoc.alias (a,tag)
 end
 
 function ldoc.add_language_extension(ext,lang)
-   add_language_extension(ext,lang)
+   lang = (lang=='c' and cc) or (lang=='lua' and lua) or quit('unknown language')
+   if ext:sub(1,1) ~= '.' then ext = '.'..ext end
+   file_types[ext] = lang
 end
 
 function ldoc.add_section (name,title,subname)
@@ -126,196 +141,6 @@ end
 
 local function quote (s)
    return "'"..s.."'"
-end
-
------- Parsing the Source --------------
--- This uses the lexer from PL, but it should be possible to use Peter Odding's
--- excellent Lpeg based lexer instead.
-
-local tnext = lexer.skipws
-
--- a pattern particular to LuaDoc tag lines: the line must begin with @TAG,
--- followed by the value, which may extend over several lines.
-local luadoc_tag = '^%s*@(%a+)%s(.+)'
-
--- assumes that the doc comment consists of distinct tag lines
-function parse_tags(text)
-   local lines = stringio.lines(text)
-   local preamble, line = tools.grab_while_not(lines,luadoc_tag)
-   local tag_items = {}
-   local follows
-   while line do
-      local tag,rest = line:match(luadoc_tag)
-      follows, line = tools.grab_while_not(lines,luadoc_tag)
-      append(tag_items,{tag, rest .. '\n' .. follows})
-   end
-   return preamble,tag_items
-end
-
--- This takes the collected comment block, and uses the docstyle to
--- extract tags and values.  Assume that the summary ends in a period or a question
--- mark, and everything else in the preamble is the description.
--- If a tag appears more than once, then its value becomes a list of strings.
--- Alias substitution and @TYPE NAME shortcutting is handled by Item.check_tag
-local function extract_tags (s)
-   if s:match '^%s*$' then return {} end
-   local preamble,tag_items = parse_tags(s)
-   local strip = tools.strip
-   local summary,description = preamble:match('^(.-[%.?])%s(.+)')
-   if not summary then summary = preamble end  --  and strip(description) ?
-   local tags = {summary=summary and strip(summary),description=description}
-   for _,item in ipairs(tag_items) do
-      local tag,value = item[1],item[2]
-      tag = Item.check_tag(tags,tag)
-      value = strip(value)
-      local old_value = tags[tag]
-      if old_value then
-         if type(old_value)=='string' then tags[tag] = List{old_value} end
-         tags[tag]:append(value)
-      else
-         tags[tag] = value
-      end
-   end
-   return Map(tags)
-end
-
-local quit = utils.quit
-
-
--- parses a Lua or C file, looking for ldoc comments. These are like LuaDoc comments;
--- they start with multiple '-'. (Block commments are allowed)
--- If they don't define a name tag, then by default
--- it is assumed that a function definition follows. If it is the first comment
--- encountered, then ldoc looks for a call to module() to find the name of the
--- module if there isn't an explicit module name specified.
-
-local function parse_file(fname,lang)
-   local line,f = 1
-   local F = File(fname)
-   local module_found, first_comment = false,true
-
-   local tok,f = lang.lexer(fname)
-   local toks = tools.space_skip_getter(tok)
-
-    function lineno ()
-        while true do
-            local res = lexer.lineno(tok)
-            if type(res) == 'number' then return res end
-            if res == nil then return nil end
-        end
-    end
-   function filename () return fname end
-
-   function F:warning (msg,kind)
-      kind = kind or 'warning'
-      lineno() -- why is this necessary?
-      lineno()
-      io.stderr:write(kind..' '..fname..':'..lineno()..' '..msg,'\n')
-   end
-
-   function F:error (msg)
-      self:warning(msg,'error')
-      os.exit(1)
-   end
-
-   local function add_module(tags,module_found,old_style)
-      tags.name = module_found
-      tags.class = 'module'
-      local item = F:new_item(tags,lineno())
-      item.old_style = old_style
-   end
-
-   local t,v = tok()
-   while t do
-      if t == 'comment' then
-         local comment = {}
-         local ldoc_comment,block = lang:start_comment(v)
-         if ldoc_comment and block then
-            t,v = lang:grab_block_comment(v,tok)
-         end
-
-         if lang:empty_comment(v)  then -- ignore rest of empty start comments
-            t,v = tok()
-         end
-
-         while t and t == 'comment' do
-            v = lang:trim_comment(v)
-            append(comment,v)
-            t,v = tok()
-            if t == 'space' and not v:match '\n' then
-               t,v = tok()
-            end
-         end
-         if not t then break end -- no more file!
-
-         if t == 'space' then t,v = tnext(tok) end
-
-         local fun_follows, tags, is_local
-         if ldoc_comment or first_comment then
-            comment = table.concat(comment)
-            if not ldoc_comment and first_comment then
-               F:warning("first comment must be a doc comment!")
-               break
-            end
-            first_comment = false
-            fun_follows, is_local = lang:function_follows(t,v,tok)
-            if fun_follows or comment:find '@'then
-               tags = extract_tags(comment)
-               if doc.project_level(tags.class) then
-                  module_found = tags.name
-               end
-               if tags.class == 'function' then
-                  fun_follows, is_local = false, false
-               end
-            end
-         end
-         -- some hackery necessary to find the module() call
-         if not module_found and ldoc_comment then
-            local old_style
-            module_found,t,v = lang:find_module(tok,t,v)
-            -- right, we can add the module object ...
-            old_style = module_found ~= nil
-            if not module_found or module_found == '...' then
-               if not t then quit(fname..": end of file") end -- run out of file!
-               -- we have to guess the module name
-               module_found = tools.this_module_name(args.package,fname)
-            end
-            if not tags then tags = extract_tags(comment) end
-            add_module(tags,module_found,old_style)
-            tags = nil
-            -- if we did bump into a doc comment, then we can continue parsing it
-         end
-
-         -- end of a block of document comments
-         if ldoc_comment and tags then
-            local line = t ~= nil and lineno() or 666
-            if t ~= nil then
-               if fun_follows then -- parse the function definition
-                  lang:parse_function_header(tags,tok,toks)
-               else
-                  lang:parse_extra(tags,tok,toks)
-               end
-            end
-            -- local functions treated specially
-            if tags.class == 'function' and (is_local or tags['local']) then
-               tags.class = 'lfunction'
-            end
-            if tags.name then
-               F:new_item(tags,line).inferred = fun_follows
-            end
-            if not t then break end
-         end
-      end
-      if t ~= 'comment' then t,v = tok() end
-   end
-   if f then f:close() end
-   return F
-end
-
-function read_file(name,lang)
-   local F = parse_file(name,lang)
-   F:finish()
-   return F
 end
 
 --- processing command line and preparing for output ---
@@ -399,23 +224,6 @@ local function setup_package_base()
    end
 end
 
-local lua, cc = lang.lua, lang.cc
-
-local file_types = {
-   ['.lua'] = lua,
-   ['.ldoc'] = lua,
-   ['.luadoc'] = lua,
-   ['.c'] = cc,
-   ['.cpp'] = cc,
-   ['.cxx'] = cc,
-   ['.C'] = cc
-}
-
-function add_language_extension (ext,lang)
-   lang = (lang=='c' and cc) or (lang=='lua' and lua) or quit('unknown language')
-   if ext:sub(1,1) ~= '.' then ext = '.'..ext end
-   file_types[ext] = lang
-end
 
 --------- processing files ---------------------
 -- ldoc may be given a file, or a directory. `args.file` may also be specified in config.ld
@@ -427,7 +235,8 @@ local function process_file (f, file_list)
    local ftype = file_types[ext]
    if ftype then
       if args.verbose then print(path.basename(f)) end
-      local F = read_file(f,ftype)
+      local F,err = parse.file(f,ftype)
+      if err then quit(err) end
       file_list:append(F)
    end
 end
@@ -504,6 +313,8 @@ end
 
 if type(ldoc.examples) == 'table' then
    local prettify = require 'ldoc.prettify'
+   local formatter = markup.create(ldoc,'plain')
+   prettify.resolve_inline_references = markup.resolve_inline_references
 
    local function process_example (f, file_list)
       local item = add_special_project_entity(f,{
@@ -581,7 +392,7 @@ if args.filter ~= 'none' then
    os.exit()
 end
 
-local css, templ = 'ldoc.css','ldoc.ltp'
+ldoc.css, ldoc.templ = 'ldoc.css','ldoc.ltp'
 
 local function style_dir (sname)
    local style = ldoc[sname]
@@ -624,7 +435,7 @@ if not args.ext:find '^%.' then
 end
 
 if args.one then
-   css = 'ldoc_one.css'
+   ldoc.css = 'ldoc_one.css'
 end
 
 -- '!' here means 'use same directory as ldoc.lua
@@ -632,120 +443,21 @@ local ldoc_html = path.join(ldoc_dir,'html')
 if args.style == '!' then args.style = ldoc_html end
 if args.template == '!' then args.template = ldoc_html end
 
-local module_template,err = utils.readfile (path.join(args.template,templ))
-if not module_template then
-   quit("template not found. Use -l to specify directory containing ldoc.ltp")
-end
 
 -- create the function that renders text (descriptions and summaries)
 ldoc.markup = markup.create(ldoc, args.format)
 
--- this generates the internal module/function references; strictly speaking,
--- it should be (and was) part of the template, but inline references in
--- Markdown required it be more widely available. A temporary situation!
 
-function ldoc.href(see)
-   if see.href then -- explict reference, e.g. to Lua manual
-      return see.href
-   else
-      return ldoc.ref_to_module(see.mod)..'#'..see.name
-   end
-end
+ldoc.single = not multiple_files and first_module or nil
+ldoc.log = print
+ldoc.kinds = project
+ldoc.modules = module_list
+ldoc.title = ldoc.title or args.title
+ldoc.project = ldoc.project or args.project
 
--- this is either called from the 'root' (index or single module) or
--- from the 'modules' etc directories. If we are in one of those directories,
--- then linking to another kind is `../kind/name`; to the same kind is just `name`.
--- If we are in the root, then it is `kind/name`.
+local html = require 'ldoc.html'
 
-function ldoc.ref_to_module (mod)
-   local base = "" -- default: same directory
-   local kind, module = mod.kind, ldoc.module
-   local name = mod.name -- default: name of module
-   if not ldoc.single then
-      if module then -- we are in kind/
-         if module.type ~= type then -- cross ref to ../kind/
-            base = "../"..kind.."/"
-         end
-      else -- we are in root: index
-         base = kind..'/'
-      end
-   else -- single module
-      if mod == first_module then
-         name = ldoc.output
-         if not ldoc.root then base = '../' end
-      elseif ldoc.root then -- ref to other kinds (like examples)
-         base = kind..'/'
-      else
-         if module.type ~= type then -- cross ref to ../kind/
-            base = "../"..kind.."/"
-         end
-      end
-   end
-   return base..name..'.html'
-end
-
-
-local function generate_output()
-   local check_directory, check_file, writefile = tools.check_directory, tools.check_file, tools.writefile
-   ldoc.single = not multiple_files and first_module or nil
-   ldoc.log = print
-   ldoc.kinds = project
-   ldoc.css = css
-   ldoc.modules = module_list
-   ldoc.title = ldoc.title or args.title
-   ldoc.project = ldoc.project or args.project
-
-   -- in single mode there is one module and the 'index' is the
-   -- documentation for that module.
-   ldoc.module = ldoc.single and first_module or nil
-   ldoc.root = true
-   local out,err = template.substitute(module_template,{
-      ldoc = ldoc,
-      module = ldoc.module
-    })
-   ldoc.root = false
-   if not out then quit("template failed: "..err) end
-
-   check_directory(args.dir) -- make sure output directory is ok
-
-   args.dir = args.dir .. path.sep
-
-   check_file(args.dir..css, path.join(args.style,css)) -- has CSS been copied?
-
-   -- write out the module index
-   writefile(args.dir..args.output..args.ext,out)
-
-   -- write out the per-module documentation
-   -- in single mode, we exclude any modules since the module has been done;
-   -- this step is then only for putting out any examples or topics
-   ldoc.css = '../'..css
-   ldoc.output = args.output
-   for kind, modules in project() do
-      kind = kind:lower()
-      if not ldoc.single or ldoc.single and kind ~= 'modules' then
-         check_directory(args.dir..kind)
-         for m in modules() do
-            ldoc.module = m
-            ldoc.body = m.body
-            if ldoc.body then
-               ldoc.body = m.postprocess(ldoc.body)
-            end
-            out,err = template.substitute(module_template,{
-               module=m,
-               ldoc = ldoc
-            })
-            if not out then
-               quit('template failed for '..m.name..': '..err)
-            else
-               writefile(args.dir..kind..'/'..m.name..args.ext,out)
-            end
-         end
-      end
-   end
-   if not args.quiet then print('output written to '..args.dir) end
-end
-
-generate_output()
+html.generate_output(ldoc, args, project)
 
 if args.verbose then
    print 'modules'

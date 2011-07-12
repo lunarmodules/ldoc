@@ -173,6 +173,24 @@ function File:finish()
    end
 end
 
+-- some serious hackery. We force sections into this 'module',
+-- and ensure that there is a dummy item so that the section
+-- is not empty.
+
+function File:add_document_section(title)
+   local section = title:gsub('%A','_')
+   self:new_item {
+      name = section,
+      class = 'section',
+      summary = title
+   }
+   self:new_item {
+      name = 'dumbo',
+      class = 'function',
+   }
+   return section
+end
+
 function Item:_init(tags,file,line)
    self.file = file
    self.lineno = line

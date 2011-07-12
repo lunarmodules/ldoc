@@ -16,20 +16,12 @@
 	<div id="product_description"></div>
 </div> <!-- id="product" -->
 
-# local function use_li(ls)
-#   if #ls > 1 then return '<li>','</li>' else return '','' end
-# end
-# local function display_name(item)
-#   if item.type == 'function' then return item.name..'&nbsp;'..item.args
-#   else return item.name end
-#  end
-# local function no_spaces(s) return (s:gsub('%s','_')) end
-# local function title(s) return (s:gsub('(%a)(%a*)',function(f,r)
-#     return f:upper()..r
-# end)) end
 
 <div id="main">
 
+# local no_spaces = ldoc.no_spaces
+# local use_li = ldoc.use_li
+# local display_name = ldoc.display_name
 # local iter = ldoc.modules.iter
 # local M = ldoc.markup
 
@@ -87,7 +79,7 @@
 <div id="content">
 
 #if module then
-<h1>$(title(module.type)) <code>$(module.name)</code></h1>
+<h1>$(ldoc.titlecase(module.type)) <code>$(module.name)</code></h1>
 # end
 
 # if ldoc.body then -- verbatim HTML as contents; 'non-code' entries
