@@ -88,6 +88,7 @@ function html.generate_output(ldoc, args, project)
    end
 
    local css = ldoc.css
+   ldoc.output = args.output
 
    -- in single mode there is one module and the 'index' is the
    -- documentation for that module.
@@ -116,7 +117,6 @@ function html.generate_output(ldoc, args, project)
    -- in single mode, we exclude any modules since the module has been done;
    -- this step is then only for putting out any examples or topics
    ldoc.css = '../'..css
-   ldoc.output = args.output
    for kind, modules in project() do
       kind = kind:lower()
       if not ldoc.single or ldoc.single and kind ~= 'modules' then

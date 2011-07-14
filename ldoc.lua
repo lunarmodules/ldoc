@@ -139,10 +139,7 @@ local function read_ldoc_config (fname)
    return directory, not_found
 end
 
-local function quote (s)
-   return "'"..s.."'"
-end
-
+local quote = tools.quote
 --- processing command line and preparing for output ---
 
 local F
