@@ -171,7 +171,7 @@ function M.check_directory(d)
 end
 
 function M.check_file (f,original)
-   if not path.exists(f) then
+   if not path.exists(f) or path.getmtime(original) > path.getmtime(f) then
       local text,err = utils.readfile(original)
       if text then
          text,err = utils.writefile(f,text)
@@ -179,9 +179,6 @@ function M.check_file (f,original)
       if err then
          quit("Could not copy "..original.." to "..f)
       end
-      --- this baby from PL is borked on Windows systems w/out Alien
-      --- if the path is relative
-      ---dir.copyfile(original,f)
    end
 end
 
@@ -317,6 +314,10 @@ function M.space_skip_getter(tok)
    end
 end
 
+function M.quote (s)
+   return "'"..s.."'"
+end
+
 -- an embarassing function. The PL Lua lexer does not do block comments
 -- when used in line-grabbing mode, and in fact (0.9.4) does not even
 -- do them properly in full-text mode, due to a ordering mistake.
@@ -358,7 +359,7 @@ function M.process_file_list (list, mask, operation, ...)
       elseif path.isfile(f) then
          process(f,...)
       else
-         quit("file or directory does not exist: "..quote(f))
+         quit("file or directory does not exist: "..M.quote(f))
       end
    end
 end
