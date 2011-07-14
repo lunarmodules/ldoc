@@ -95,9 +95,9 @@
 # for kind,items in module.kinds() do
 <h2><a href="#$(no_spaces(kind))">$(kind)</a></h2>
 <table class="function_list">
-#  for item in items() do -- nowrap
+#  for item in items() do
 	<tr>
-	<td class="name"><a href="#$(item.name)">$(display_name(item))</a></td>
+	<td class="name" nowrap><a href="#$(item.name)">$(display_name(item))</a></td>
 	<td class="summary">$(M(item.summary))</td>
 	</tr>
 #  end -- for items
@@ -181,7 +181,7 @@
 <table class="module_list">
 # for m in mods() do
 	<tr>
-		<td class="name"><a href="$(no_spaces(kind))/$(m.name).html">$(m.name)</a></td>
+		<td class="name" nowrap><a href="$(no_spaces(kind))/$(m.name).html">$(m.name)</a></td>
 		<td class="summary">$(M(m.summary))</td>
 	</tr>
 #  end -- for modules
