@@ -10,7 +10,7 @@
   more than one line
   - indeed
   can keep going
-Inline _see references_: look at <_ONE_> and <table.concat>.
+Inline _see references_: look at @{_ONE_} and @{table.concat}.
 Indented code blocks may also follow immediately.
     function test(a,b)
        return three(a,b)
@@ -20,7 +20,7 @@ Indented code blocks may also follow immediately.
 
 ----------
 -- A function.
--- Can also use <_TWO_>
+-- Can also use @{_TWO_}
 function _ONE_() end
 
 -----------
