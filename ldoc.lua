@@ -232,13 +232,16 @@ local function process_file (f, file_list)
    local ftype = file_types[ext]
    if ftype then
       if args.verbose then print(path.basename(f)) end
-      local F,err = parse.file(f,ftype)
+      local F,err = parse.file(f,ftype,args)
       if err then quit(err) end
       file_list:append(F)
    end
 end
 
 local process_file_list = tools.process_file_list
+
+setup_package_base()
+
 
 if type(args.file) == 'table' then
    -- this can only be set from config file so we can assume it's already read
@@ -279,8 +282,6 @@ elseif path.isfile(args.file) then
 else
    quit ("file or directory does not exist: "..quote(args.file))
 end
-
-setup_package_base()
 
 
 local multiple_files = #file_list > 1

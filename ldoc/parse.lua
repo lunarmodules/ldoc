@@ -68,7 +68,7 @@ end
 -- encountered, then ldoc looks for a call to module() to find the name of the
 -- module if there isn't an explicit module name specified.
 
-local function parse_file(fname,lang)
+local function parse_file(fname,lang, package)
    local line,f = 1
    local F = File(fname)
    local module_found, first_comment = false,true
@@ -157,7 +157,7 @@ local function parse_file(fname,lang)
             if not module_found or module_found == '...' then
                if not t then return nil, fname..": end of file" end -- run out of file!
                -- we have to guess the module name
-               module_found = tools.this_module_name(args.package,fname)
+               module_found = tools.this_module_name(package,fname)
             end
             if not tags then tags = extract_tags(comment) end
             add_module(tags,module_found,old_style)
@@ -191,8 +191,8 @@ local function parse_file(fname,lang)
    return F
 end
 
-function parse.file(name,lang)
-   local F,err = parse_file(name,lang)
+function parse.file(name,lang, args)
+   local F,err = parse_file(name,lang, args.package)
    if err then return nil,err end
    F:finish()
    return F
