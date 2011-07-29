@@ -40,6 +40,7 @@ function html.generate_output(ldoc, args, project)
    -- If we are in the root, then it is `kind/name`.
    function ldoc.ref_to_module (mod)
       local base = "" -- default: same directory
+      mod = mod or ldoc.module
       local kind, module = mod.kind, ldoc.module
       local name = mod.name -- default: name of module
       if not ldoc.single then

@@ -36,7 +36,7 @@ function Lang:find_module(tok,t,v)
    return '...',t,v
 end
 
-function Lang:function_follows(t,v)
+function Lang:item_follows(t,v)
    return false
 end
 
@@ -52,10 +52,7 @@ function Lang:search_for_token (tok,type,value,t,v)
    return t ~= nil,t,v
 end
 
-function Lang:parse_function_header (tags,tok,toks)
-end
-
-function Lang:parse_extra (tags,tok,toks)
+function Lang:parse_extra (tags,tok)
 end
 
 
@@ -76,14 +73,7 @@ function Lua.lexer(fname)
    return lexer.lua(f,{}),f
 end
 
--- If a module name was not provided, then we look for an explicit module()
--- call. However, we should not try too hard; if we hit a doc comment then
--- we should go back and process it. Likewise, module(...) also means
--- that we must infer the module name.
-function Lua:find_module(tok,t,v)
-   local res
-   res,t,v = self:search_for_token(tok,'iden','module',t,v)
-   if not res then return nil,t,v end
+function Lua:parse_module_call(tok,t,v)
    t,v = tnext(tok)
    if t == '(' then t,v = tnext(tok) end
    if t == 'string' then -- explicit name, cool
@@ -93,28 +83,87 @@ function Lua:find_module(tok,t,v)
    end
 end
 
-function Lua:function_follows(t,v,tok)
-   local is_local = t == 'keyword' and v == 'local'
-   if is_local then t,v = tnext(tok) end
-   return t == 'keyword' and v == 'function', is_local
+-- If a module name was not provided, then we look for an explicit module()
+-- call. However, we should not try too hard; if we hit a doc comment then
+-- we should go back and process it. Likewise, module(...) also means
+-- that we must infer the module name.
+function Lua:find_module(tok,t,v)
+   local res
+   res,t,v = self:search_for_token(tok,'iden','module',t,v)
+   if not res then return nil,t,v end
+   return self:parse_module_call(tok,t,v)
 end
 
-function Lua:parse_function_header (tags,tok,toks)
-   tags.name = tools.get_fun_name(tok)
-   tags.formal_args = tools.get_parameters(toks)
+local function parse_lua_parameters (tags,tok)
+   tags.formal_args = tools.get_parameters(tok)
    tags.class = 'function'
 end
 
-function Lua:parse_extra (tags,tok,toks)
+local function parse_lua_function_header (tags,tok)
+   tags.name = tools.get_fun_name(tok)
+   parse_lua_parameters(tags,tok)
+end
+
+local function parse_lua_table (tags,tok)
+   tags.formal_args = tools.get_parameters(tok,'}',function(s)
+      return s == ',' or s == ';'
+   end)
+end
+
+--------------- function and variable inferrence -----------
+-- After a doc comment, there may be a local followed by:
+-- [1] (l)function: function NAME
+-- [2] (l)function: NAME = function
+-- [3] table: NAME = {
+-- [4] field: NAME = <anything else>  (this is a module-level field)
+--
+-- Depending on the case successfully detected, returns a function which
+-- will be called later to fill in inferred item tags
+function Lua:item_follows(t,v,tok)
+   local parser
+   local is_local = t == 'keyword' and v == 'local'
+   if is_local then t,v = tnext(tok) end
+   if t == 'keyword' and v == 'function' then -- case [1]
+      parser = parse_lua_function_header
+   elseif t == 'iden' then
+      local name,t,v = tools.get_fun_name(tok,v)
+      if t ~= '=' then return nil end -- probably invalid code...
+      t,v = tnext(tok)
+      if t == 'keyword' and v == 'function' then -- case [2]
+         tnext(tok) -- skip '('
+         parser = function(tags,tok)
+            tags.name = name
+            parse_lua_parameters(tags,tok)
+         end
+      elseif t == '{' then -- case [3]
+         parser = function(tags,tok)
+            tags.class = 'table'
+            tags.name = name
+            parse_lua_table (tags,tok)
+         end
+      else -- case [4]
+         parser = function(tags)
+            tags.class = 'field'
+            tags.name = name
+         end
+      end
+   end
+   return parser, is_local
+end
+
+
+-- this is called, whether the tag was inferred or not.
+-- Currently tries to fill in the fields of a table from comments
+function Lua:parse_extra (tags,tok)
    if tags.class == 'table' and not tags.field then
-      local res
-      local stat,t,v = pcall(tok)
-      if not stat then return nil end
-      res,t,v = self:search_for_token(tok,'{','{',tok())
-      if not res then return nil,t,v end
-      tags.formal_args = tools.get_parameters(toks,'}',function(s)
-         return s == ',' or s == ';'
-      end)
+      local res, stat
+      if t ~= '{' then
+         stat,t,v = pcall(tok)
+         if not stat then return nil end
+         res,t,v = self:search_for_token(tok,'{','{',tok())
+         if not res then return nil,t,v end
+      end
+      parse_lua_table (tags,tok)
    end
 end
 
