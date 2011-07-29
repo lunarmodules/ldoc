@@ -115,6 +115,13 @@ function ldoc.new_type (tag,header,project_level)
    end
 end
 
+local ldoc_contents = {
+   'alias','add_language_extension','new_type','add_section',
+   'file','project','title','package','format','output','dir','ext',
+   'one','style','description','examples','readme','all'
+}
+ldoc_contents = tablex.makeset(ldoc_contents)
+
 -- any file called 'config.ld' found in the source tree will be
 -- handled specially. It will be loaded using 'ldoc' as the environment.
 local function read_ldoc_config (fname)
@@ -136,6 +143,11 @@ local function read_ldoc_config (fname)
        end
     end
    if err then print('error loading config file '..fname..': '..err) end
+   for k in pairs(ldoc) do
+      if not ldoc_contents[k] then
+         quit("this config file field/function is unrecognized: "..k)
+      end
+   end
    return directory, not_found
 end
 
@@ -167,6 +179,8 @@ if args.module then
    end
 end
 
+local abspath = tools.abspath
+
 -- a special case: 'ldoc .' can get all its parameters from config.ld
 if args.file == '.' then
    local err
@@ -178,18 +192,21 @@ if args.file == '.' then
       args.file = lfs.currentdir()
    elseif type(args.file) == 'table' then
       for i,f in ipairs(args.file) do
-         args.file[i] = path.abspath(f)
+         args.file[i] = abspath(f)
          print(args.file[i])
       end
    else
-      args.file = path.abspath(args.file)
+      args.file = abspath(args.file)
    end
 else
-   args.file = path.abspath(args.file)
+   args.file = abspath(args.file)
 end
 
 local source_dir = args.file
-if type(args.file) == 'string' and path.isfile(args.file) then
+if type(source_dir) == 'table' then
+   source_dir = source_dir[1]
+end
+if type(source_dir) == 'string' and path.isfile(source_dir) then
    source_dir = path.splitpath(source_dir)
 end
 
@@ -309,6 +326,9 @@ local function add_special_project_entity (f,tags,process)
    return item
 end
 
+if type(ldoc.examples) == 'string' then
+   ldoc.examples = {ldoc.examples}
+end
 if type(ldoc.examples) == 'table' then
    local prettify = require 'ldoc.prettify'
    local formatter = markup.create(ldoc,'plain')
@@ -349,7 +369,7 @@ for mod in module_list:iter() do
 end
 
 -- the default is not to show local functions in the documentation.
-if not args.all then
+if not args.all and not ldoc.all then
    for mod in module_list:iter() do
       mod:mask_locals()
    end
