@@ -156,7 +156,7 @@ function lexer.scan (s,matches,filter,options)
         local line = 1
         if file then
             s = file:read()
-            if not s or s == '' then return nil end -- empty file
+            if not s then return nil end -- empty file
             s = s ..'\n'
          end
         local sz = #s
