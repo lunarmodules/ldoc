@@ -256,6 +256,7 @@ local function value_of (tok) return tok[2] end
 -- param tags.
 
 function M.get_parameters (tok,endtoken,delim)
+   tok = M.space_skip_getter(tok)
    local args = List()
    args.comments = {}
    local ltl = lexer.get_separated_list(tok,endtoken,delim)
@@ -289,18 +290,23 @@ function M.get_parameters (tok,endtoken,delim)
 end
 
 -- parse a Lua identifier - contains names separated by . and :.
-function M.get_fun_name (tok)
+function M.get_fun_name (tok,first)
    local res = {}
-   local _,name = tnext(tok)
-   _,sep = tnext(tok)
+   local t,name
+   if not first then
+      t,name = tnext(tok)
+   else
+      t,name = 'iden',first
+   end
+   t,sep = tnext(tok)
    while sep == '.' or sep == ':' do
       append(res,name)
       append(res,sep)
-      _,name = tnext(tok)
-      _,sep = tnext(tok)
+      t,name = tnext(tok)
+      t,sep = tnext(tok)
    end
    append(res,name)
-   return table.concat(res)
+   return table.concat(res),t,sep
 end
 
 -- space-skipping version of token iterator
@@ -341,11 +347,14 @@ function M.grab_block_comment (v,tok,end1,end2)
    return 'comment',res
 end
 
+function M.abspath (f)
+   return path.normcase(path.abspath(f))
+end
+
 function M.process_file_list (list, mask, operation, ...)
    local exclude_list = list.exclude and M.files_from_list(list.exclude, mask)
    local function process (f,...)
-      f = path.normcase(f)
-      f = path.abspath(f)
+      f = M.abspath(f)
       if not exclude_list or exclude_list and exclude_list:index(f) == nil then
          operation(f, ...)
       end

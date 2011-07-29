@@ -74,7 +74,6 @@ local function parse_file(fname,lang, package)
    local module_found, first_comment = false,true
 
    local tok,f = lang.lexer(fname)
-   local toks = tools.space_skip_getter(tok)
 
     function lineno ()
         while true do
@@ -100,15 +99,37 @@ local function parse_file(fname,lang, package)
    local function add_module(tags,module_found,old_style)
       tags.name = module_found
       tags.class = 'module'
-      local item = F:new_item(tags,lineno())
+      local item = F:new_item(tags,pcall(lineno) or 1)
       item.old_style = old_style
    end
 
-   local t,v = tok()
+   local mod
+   local t,v = tnext(tok)
+   if lang.parse_module_call and t ~= 'comment'then
+      while t and not (t == 'iden' and v == 'module') do
+         t,v = tnext(tok)
+      end
+      if not t then
+         F:warning("no module() call found; no initial doc comment")
+      else
+         mod,t,v = lang:parse_module_call(tok,t,v)
+         if mod ~= '...' then
+            add_module({summary='(no description)'},mod,true)
+            first_comment = false
+            module_found = true
+         end
+      end
+   end
    while t do
       if t == 'comment' then
          local comment = {}
+
          local ldoc_comment,block = lang:start_comment(v)
+
+         if ldoc_comment and v:match '%-+$' then
+            ldoc_comment = false
+         end
+
          if ldoc_comment and block then
             t,v = lang:grab_block_comment(v,tok)
          end
@@ -129,7 +150,7 @@ local function parse_file(fname,lang, package)
 
          if t == 'space' then t,v = tnext(tok) end
 
-         local fun_follows, tags, is_local
+         local item_follows, tags, is_local
          if ldoc_comment or first_comment then
             comment = table.concat(comment)
             if not ldoc_comment and first_comment then
@@ -137,14 +158,14 @@ local function parse_file(fname,lang, package)
                break
             end
             first_comment = false
-            fun_follows, is_local = lang:function_follows(t,v,tok)
-            if fun_follows or comment:find '@'then
+            item_follows, is_local = lang:item_follows(t,v,tok)
+            if item_follows or comment:find '@'then
                tags = extract_tags(comment)
                if doc.project_level(tags.class) then
                   module_found = tags.name
                end
                if tags.class == 'function' then
-                  fun_follows, is_local = false, false
+                  item_follows, is_local = false, false
                end
             end
          end
@@ -155,13 +176,16 @@ local function parse_file(fname,lang, package)
             -- right, we can add the module object ...
             old_style = module_found ~= nil
             if not module_found or module_found == '...' then
-               if not t then return nil, fname..": end of file" end -- run out of file!
                -- we have to guess the module name
                module_found = tools.this_module_name(package,fname)
             end
             if not tags then tags = extract_tags(comment) end
             add_module(tags,module_found,old_style)
             tags = nil
+            if not t then
+               io.stderr:write('warning: ',fname,' contains no items\n')
+               break;
+            end -- run out of file!
             -- if we did bump into a doc comment, then we can continue parsing it
          end
 
@@ -169,10 +193,10 @@ local function parse_file(fname,lang, package)
          if ldoc_comment and tags then
             local line = t ~= nil and lineno() or 666
             if t ~= nil then
-               if fun_follows then -- parse the function definition
-                  lang:parse_function_header(tags,tok,toks)
+               if item_follows then -- parse the item definition
+                  item_follows(tags,tok)
                else
-                  lang:parse_extra(tags,tok,toks)
+                  lang:parse_extra(tags,tok)
                end
             end
             -- local functions treated specially
@@ -180,7 +204,7 @@ local function parse_file(fname,lang, package)
                tags.class = 'lfunction'
             end
             if tags.name then
-               F:new_item(tags,line).inferred = fun_follows
+               F:new_item(tags,line).inferred = item_follows ~= nil
             end
             if not t then break end
          end
