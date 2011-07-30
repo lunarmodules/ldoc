@@ -123,7 +123,7 @@ function markup.create (ldoc, format)
       processor = function (txt)
          if txt == nil then return '' end
          txt = resolve_inline_references(ldoc, txt)
-         if txt:find '\n' and not ldoc.classic_markdown then -- multiline text
+         if txt:find '\n' and ldoc.extended_markdown then -- multiline text
             txt = markup.insert_markdown_lines(txt)
          end
          txt = formatter   (txt)
