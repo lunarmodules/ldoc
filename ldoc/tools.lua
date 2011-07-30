@@ -337,6 +337,7 @@ function M.grab_block_comment (v,tok,end1,end2)
       last_v = v
       t,v = tok()
       if t=='comment' and v:find(t12,1,true) then t12 = nil; break end
+      if t=='string' then v = "'"..v.."'" end
       append(res,v)
    until last_v == end1 and v == end2
    if t12 then
