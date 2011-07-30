@@ -164,7 +164,7 @@ local function parse_file(fname,lang, package)
                if doc.project_level(tags.class) then
                   module_found = tags.name
                end
-               if tags.class == 'function' then
+               if tags.name then
                   item_follows, is_local = false, false
                end
             end
