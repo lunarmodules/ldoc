@@ -76,18 +76,13 @@ local function parse_file(fname,lang, package)
    local tok,f = lang.lexer(fname)
 
     function lineno ()
-        while true do
-            local res = lexer.lineno(tok)
-            if type(res) == 'number' then return res end
-            if res == nil then return nil end
-        end
+      return tok:lineno()
     end
+
    function filename () return fname end
 
    function F:warning (msg,kind)
       kind = kind or 'warning'
-      lineno() -- why is this necessary?
-      lineno()
       io.stderr:write(kind..' '..fname..':'..lineno()..' '..msg,'\n')
    end
 
@@ -123,9 +118,7 @@ local function parse_file(fname,lang, package)
    while t do
       if t == 'comment' then
          local comment = {}
-
          local ldoc_comment,block = lang:start_comment(v)
-
          if ldoc_comment and v:match '%-+$' then
             ldoc_comment = false
          end

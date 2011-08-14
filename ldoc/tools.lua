@@ -324,29 +324,22 @@ function M.quote (s)
    return "'"..s.."'"
 end
 
--- an embarassing function. The PL Lua lexer does not do block comments
--- when used in line-grabbing mode, and in fact (0.9.4) does not even
--- do them properly in full-text mode, due to a ordering mistake.
--- So, we do what we can ;)
+-- The PL Lua lexer does not do block comments
+-- when used in line-grabbing mode, so this function grabs each line
+-- until we meet the end of the comment
 function M.grab_block_comment (v,tok,end1,end2)
    local res = {v}
-   local t,last_v
-   local t12 = end1..end2
-   k = 1
    repeat
-      last_v = v
-      t,v = tok()
-      if t=='comment' and v:find(t12,1,true) then t12 = nil; break end
-      if t=='string' then v = "'"..v.."'" end
+      v = lexer.getline(tok)
+      if v:match '%]%]' then break end
       append(res,v)
-   until last_v == end1 and v == end2
-   if t12 then
-      table.remove(res)
-      table.remove(res)
-   end
+      append(res,'\n')
+   until false
    res = table.concat(res)
+   --print(res)
    return 'comment',res
 end
+
 
 function M.abspath (f)
    return path.normcase(path.abspath(f))

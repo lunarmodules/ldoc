@@ -21,7 +21,6 @@
 -- @class module
 -- @name pl.lexer
 
-local yield,wrap = coroutine.yield,coroutine.wrap
 local strfind = string.find
 local strsub = string.sub
 local append = table.insert
@@ -52,14 +51,14 @@ local PREPRO = '^#.-[^\\]\n'
 local plain_matches,lua_matches,cpp_matches,lua_keyword,cpp_keyword
 
 local function tdump(tok)
-    return yield(tok,tok)
+    return tok,tok
 end
 
 local function ndump(tok,options)
     if options and options.number then
         tok = tonumber(tok)
     end
-    return yield("number",tok)
+    return "number",tok
 end
 
 -- regular strings, single or double quotes; usually we want them
@@ -68,7 +67,7 @@ local function sdump(tok,options)
     if options and options.string then
         tok = tok:sub(2,-2)
     end
-    return yield("string",tok)
+    return "string",tok
 end
 
 -- long Lua strings need extra work to get rid of the quotes
@@ -76,45 +75,45 @@ local function sdump_l(tok,options)
     if options and options.string then
         tok = tok:sub(3,-3)
     end
-    return yield("string",tok)
+    return "string",tok
 end
 
 local function chdump(tok,options)
     if options and options.string then
         tok = tok:sub(2,-2)
     end
-    return yield("char",tok)
+    return "char",tok
 end
 
 local function cdump(tok)
-    return yield('comment',tok)
+    return 'comment',tok
 end
 
 local function wsdump (tok)
-    return yield("space",tok)
+    return "space",tok
 end
 
 local function pdump (tok)
-    return yield('prepro',tok)
+    return 'prepro',tok
 end
 
 local function plain_vdump(tok)
-    return yield("iden",tok)
+    return "iden",tok
 end
 
 local function lua_vdump(tok)
     if lua_keyword[tok] then
-        return yield("keyword",tok)
+        return "keyword",tok
     else
-        return yield("iden",tok)
+        return "iden",tok
     end
 end
 
 local function cpp_vdump(tok)
     if cpp_keyword[tok] then
-        return yield("keyword",tok)
+        return "keyword",tok
     else
-        return yield("iden",tok)
+        return "iden",tok
     end
 end
 
@@ -151,106 +150,81 @@ function lexer.scan (s,matches,filter,options)
         end
         matches = plain_matches
     end
-    function lex ()
-        local i1,i2,idx,res1,res2,tok,pat,fun,capt
-        local line = 1
-        if file then
-            s = file:read()
-            if not s then return nil end -- empty file
-            s = s ..'\n'
-         end
-        local sz = #s
-        local idx = 1
-        if sz == 0 then return nil end -- empty file
-        --print('sz',sz)
-        while true do
-            for _,m in ipairs(matches) do
-                pat = m[1]
-                fun = m[2]
-                if fun == nil then print(pat); os.exit() end
-                i1,i2 = strfind(s,pat,idx)
-                if i1 then
-                    tok = strsub(s,i1,i2)
-                    idx = i2 + 1
-                    if not (filter and filter[fun]) then
-                        lexer.finished = idx > sz
-                        res1,res2 = fun(tok,options)
-                    end
-                    if res1 then
-                        local tp = type(res1)
-                        -- insert a token list
-                        if tp=='table' then
-                            yield('','')
-                            for _,t in ipairs(res1) do
-                                yield(t[1],t[2])
-                            end
-                        elseif tp == 'string' then -- or search up to some special pattern
-                            i1,i2 = strfind(s,res1,idx)
-                            if i1 then
-                                tok = strsub(s,i1,i2)
-                                idx = i2 + 1
-                                yield('',tok)
-                            else
-                                yield('','')
-                                idx = sz + 1
-                            end
-                            --if idx > sz then return end
-                        else
-                            yield(line,idx)
-                        end
-                    end
-                    if idx > sz then
-                        if file then
-                            --repeat -- next non-empty line
-                                line = line + 1
-                                s = file:read()
-                                if not s then return end
-                            --until not s:match '^%s*$'
-                            s = s .. '\n'
-                            idx ,sz = 1,#s
-                            break
-                        else
-                            return
-                        end
-                    else break end
+    local i1,i2,idx,res1,res2,tok,pat,fun,capt
+    local line = 1
+    if file then
+        s = file:read()
+        if not s then return nil end -- empty file
+        s = s ..'\n'
+     end
+    local sz = #s
+    local idx = 1
+    if sz == 0 then return nil end -- empty file
+
+    local res = {}
+    local mt = {}
+    mt.__index = mt
+    setmetatable(res,mt)
+
+    function mt.lineno() return line end
+
+    function mt.getline()
+        if idx < sz then
+            tok = strsub(s,idx,-2)
+            idx = sz + 1
+            line = line + 1
+            return tok
+        else
+            idx = sz + 1
+            line = line + 1
+            return file:read()
+        end
+    end
+
+    function mt.next (tok)
+        local t,v = tok()
+        while t == 'space' do
+            t,v = tok()
+        end
+        return t,v
+    end
+
+    function mt.__call ()
+      while true do
+        for _,m in ipairs(matches) do
+            pat,fun = m[1],m[2]
+            if fun == nil then error("no match for "..pat) end
+            i1,i2 = strfind(s,pat,idx)
+            if i1 then
+                tok = strsub(s,i1,i2)
+                idx = i2 + 1
+                if not (filter and filter[fun]) then
+                    lexer.finished = idx > sz
+                    return fun(tok,options)
                 end
             end
         end
-    end
-    return wrap(lex)
-end
-
-local function isstring (s)
-    return type(s) == 'string'
-end
-
---- insert tokens into a stream.
--- @param tok a token stream
--- @param a1 a string is the type, a table is a token list and
--- a function is assumed to be a token-like iterator (returns type & value)
--- @param a2 a string is the value
-function lexer.insert (tok,a1,a2)
-    if not a1 then return end
-    local ts
-    if isstring(a1) and isstring(a2) then
-        ts = {{a1,a2}}
-    elseif type(a1) == 'function' then
-        ts = {}
-        for t,v in a1() do
-            append(ts,{t,v})
+        if idx > sz then
+            if file then
+                line = line + 1
+                s = file:read()
+                if not s then return end
+                s = s .. '\n'
+                idx ,sz = 1,#s
+            else
+                return
+            end
         end
-    else
-        ts = a1
+      end
     end
-    tok(ts)
+    return res
 end
 
 --- get everything in a stream upto a newline.
 -- @param tok a token stream
 -- @return a string
 function lexer.getline (tok)
-    local t,v = tok('.-\n')
-    return v
+    return tok:getline()
 end
 
 --- get current line number. <br>
@@ -258,15 +232,7 @@ end
 -- @param tok a token stream
 -- @return the line number and current column
 function lexer.lineno (tok)
-    return tok(0)
-end
-
---- get the rest of the stream.
--- @param tok a token stream
--- @return a string
-function lexer.getrest (tok)
-    local t,v = tok('.+')
-    return v
+    return tok:lineno()
 end
 
 --- get the Lua keywords as a set-like table.
@@ -445,11 +411,7 @@ end
 --- get the next non-space token from the stream.
 -- @param tok the token stream.
 function lexer.skipws (tok)
-    local t,v = tok()
-    while t == 'space' do
-        t,v = tok()
-    end
-    return t,v
+    return tok:next()
 end
 
 local skipws = lexer.skipws
