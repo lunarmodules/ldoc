@@ -408,9 +408,13 @@ For example, to process all files in the 'lua' directory:
 
 Thereafter the `docs` directory will contain `index.html` which points to individual modules in the `modules` subdirectory.  The `--dir` flag can specify where the output is generated, and will ensure that the directory exists. The output structure is like LuaDoc: there is an `index.html` and the individual modules are in the `modules` subdirectory.
 
-If your modules use `module(...)` then the module name has to be deduced. If `ldoc` is run from the root of the package, then this deduction does not need any help - e.g. if your package was `foo` then `ldoc foo` will work as expected. If we were actually in the `foo` directory then `ldoc -b .. .` will correctly deduce the module names.
+If your modules use `module(...)` then the module name has to be deduced. If `ldoc` is run from the root of the package, then this deduction does not need any help - e.g. if your package was `foo` then `ldoc foo` will work as expected. If we were actually in the `foo` directory then `ldoc -b .. .` will correctly deduce the module names. Another example would be generating documentation for LuaDoc itself:
 
-For new-style modules, that don't use `module()`, it is recommended that the module comment has an explicit `@module PACKAGE.NAME`. If it does not, then `ldoc` will still attempt to deduce the module name, but may need help with `--package` as above.
+   $ ldoc -b .. /path/to/luadoc
+
+Without the `-b` setting the base of the package to  the _parent_ of the directory, then implicit modules like `luadoc.config` will be incorrectly placed in the global namespace.
+
+For new-style modules, that don't use `module()`, it is recommended that the module comment has an explicit `@module PACKAGE.NAME`. If it does not, then `ldoc` will still attempt to deduce the module name, but may need help with `--package/-b` as above.
 
 It is common to use an alias for the package name with new-style modules. Here an alias is explicitly specified, so that `ldoc` knows that functions qualified with `A` are part of the module `simple_alias`:
 
