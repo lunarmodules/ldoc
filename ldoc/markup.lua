@@ -76,7 +76,11 @@ function markup.add_sections(F, txt)
 end
 
 local function handle_reference (ldoc, name)
-   local ref,err = markup.process_reference(name)
+   local qname,label = utils.splitv(name,':')
+   if not qname then
+      qname = name
+   end
+   local ref,err = markup.process_reference(qname)
    if not ref then
       if ldoc.item then ldoc.item:warning(err)
       else
@@ -84,7 +88,9 @@ local function handle_reference (ldoc, name)
       end
       return ''
    end
-   local label = ref.label
+   if not label then
+      label = ref.label
+   end
    if not ldoc.plain then -- a nastiness with markdown.lua and underscores
       label = label:gsub('_','\\_')
    end
@@ -96,7 +102,7 @@ local ldoc_handle_reference
 
 -- inline <references> use same lookup as @see
 local function resolve_inline_references (ldoc, txt)
-   return (txt:gsub('@{([%w_%.%-]-)}',ldoc_handle_reference))
+   return (txt:gsub('@{([^}]-)}',ldoc_handle_reference))
 end
 
 function markup.create (ldoc, format)
