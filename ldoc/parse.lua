@@ -119,9 +119,6 @@ local function parse_file(fname,lang, package)
       if t == 'comment' then
          local comment = {}
          local ldoc_comment,block = lang:start_comment(v)
-         if ldoc_comment and v:match '%-+$' then
-            ldoc_comment = false
-         end
 
          if ldoc_comment and block then
             t,v = lang:grab_block_comment(v,tok)
@@ -150,8 +147,11 @@ local function parse_file(fname,lang, package)
                F:warning("first comment must be a doc comment!")
                break
             end
-            first_comment = false
-            item_follows, is_local = lang:item_follows(t,v,tok)
+            if first_comment then
+               first_comment = false
+            else
+               item_follows, is_local = lang:item_follows(t,v,tok)
+            end
             if item_follows or comment:find '@'then
                tags = extract_tags(comment)
                if doc.project_level(tags.class) then
