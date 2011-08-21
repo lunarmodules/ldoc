@@ -184,8 +184,12 @@ local abspath = tools.abspath
 -- a special case: 'ldoc .' can get all its parameters from config.ld
 if args.file == '.' then
    local err
-   config_dir,err = read_ldoc_config('./'..args.config)
-   if err then quit("no "..quote(args.config).." found here") end
+   config_dir,err = read_ldoc_config(args.config)
+   if err then quit("no "..quote(args.config).." found") end
+   local config_path = path.dirname(args.config)
+   if config_path ~= '' then
+      lfs.chdir(config_path)
+   end
    config_is_read = true
    args.file = ldoc.file or '.'
    if args.file == '.' then
