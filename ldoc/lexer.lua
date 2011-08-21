@@ -117,6 +117,23 @@ local function cpp_vdump(tok)
     end
 end
 
+local function count_lines(line, text)
+   local index, limit = 1, #text
+   while index <= limit do
+      local start, stop = text:find('\r\n', index, true)
+      if not start then
+         start, stop = text:find('[\r\n\f]', index)
+         if not start then break end
+      end
+      index = stop + 1
+      line = line + 1
+   end
+   return line
+end
+
+local multiline = { comment = true, space = true }
+
+
 --- create a plain token iterator from a string or file-like object.
 -- @param s the string
 -- @param matches an optional match table (set of pattern-action pairs)
@@ -200,7 +217,11 @@ function lexer.scan (s,matches,filter,options)
                 idx = i2 + 1
                 if not (filter and filter[fun]) then
                     lexer.finished = idx > sz
-                    return fun(tok,options)
+                    local t,v = fun(tok,options)
+                    if not file and multiline[t] then
+                        line = count_lines(line,v)
+                    end
+                    return t,v
                 end
             end
         end
