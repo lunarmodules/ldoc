@@ -76,7 +76,7 @@ function markup.add_sections(F, txt)
 end
 
 local function handle_reference (ldoc, name)
-   local qname,label = utils.splitv(name,':')
+   local qname,label = utils.splitv(name,'%s*:')
    if not qname then
       qname = name
    end
