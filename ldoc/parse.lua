@@ -41,8 +41,15 @@ local function extract_tags (s)
    if s:match '^%s*$' then return {} end
    local preamble,tag_items = parse_tags(s)
    local strip = tools.strip
-   local summary,description = preamble:match('^(.-[%.?])(.+)')
-   if not summary then summary = preamble end  --  and strip(description) ?
+   local summary, description = preamble:match('^(.-[%.?])(%s.+)')
+   if not summary then
+      -- perhaps the first sentence did not have a . or ? terminating it.
+      -- Then try split at linefeed
+      summary, description = preamble:match('^(.-\n\n)(.+)')
+      if not summary then
+         summary = preamble
+      end
+   end  --  and strip(description) ?
    local tags = {summary=summary and strip(summary),description=description}
    for _,item in ipairs(tag_items) do
       local tag,value = item[1],item[2]

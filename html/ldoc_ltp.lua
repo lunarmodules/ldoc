@@ -124,8 +124,7 @@ return [==[
     <strong>$(display_name(item))</strong>
     </dt>
     <dd>
-    $(M(item.summary))
-    $(M(item.description))
+    $(M(item.summary..' '..(item.description or '')))
 
 #  if show_parms and item.params and #item.params > 0 then
     <h3>$(module.kinds:type_of(item).subnames):</h3>
