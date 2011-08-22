@@ -85,7 +85,7 @@ function html.generate_output(ldoc, args, project)
 
    local module_template,err = utils.readfile (path.join(args.template,ldoc.templ))
    if not module_template then
-      quit("template not found. Use -l to specify directory containing ldoc.ltp")
+      quit("template not found at '"..args.template.."' Use -l to specify directory containing ldoc.ltp")
    end
 
    local css = ldoc.css

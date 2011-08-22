@@ -14,7 +14,7 @@ local lapp = require 'pl.lapp'
 app.require_here()
 
 local args = lapp [[
-ldoc, a documentation generator for Lua, vs 0.5
+ldoc, a documentation generator for Lua, vs 0.6
   -d,--dir (default docs) output directory
   -o,--output  (default 'index') output name
   -v,--verbose          verbose
@@ -118,7 +118,7 @@ end
 local ldoc_contents = {
    'alias','add_language_extension','new_type','add_section',
    'file','project','title','package','format','output','dir','ext',
-   'one','style','description','examples','readme','all','extended_markdown'
+   'one','style','template','description','examples','readme','all','extended_markdown'
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
@@ -126,6 +126,9 @@ ldoc_contents = tablex.makeset(ldoc_contents)
 -- handled specially. It will be loaded using 'ldoc' as the environment.
 local function read_ldoc_config (fname)
    local directory = path.dirname(fname)
+   if directory == '' then
+      directory = '.'
+   end
    local err
    print('reading configuration from '..fname)
    local txt,not_found = utils.readfile(fname)
@@ -460,11 +463,24 @@ if args.one then
    ldoc.css = 'ldoc_one.css'
 end
 
--- '!' here means 'use same directory as ldoc.lua
-local ldoc_html = path.join(ldoc_dir,'html')
-if args.style == '!' then args.style = ldoc_html end
-if args.template == '!' then args.template = ldoc_html end
-
+if args.style == '!' or args.template == '!' then
+   -- '!' here means 'use built-in templates'
+   local tmpdir = path.join(path.is_windows and os.getenv('TMP') or '/tmp','ldoc')
+   if not path.isdir(tmpdir) then
+      lfs.mkdir(tmpdir)
+   end
+   local function tmpwrite (name)
+      utils.writefile(path.join(tmpdir,name),require('html.'..name:gsub('%.','_')))
+   end
+   if args.style == '!' then
+      tmpwrite(ldoc.templ)
+      args.style = tmpdir
+   end
+   if args.template == '!' then
+      tmpwrite(ldoc.css)
+      args.template = tmpdir
+   end
+end
 
 -- create the function that renders text (descriptions and summaries)
 ldoc.markup = markup.create(ldoc, args.format)

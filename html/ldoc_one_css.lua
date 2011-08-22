@@ -1,3 +1,4 @@
+return [==[
 /* BEGIN RESET
 
 Copyright (c) 2010, Yahoo! Inc. All rights reserved.
@@ -273,3 +274,4 @@ dl.table h3, dl.function h3 {font-size: .95em;}
 .string  { color: #8888AA; }
 .comment { color: #666600; }
 .prepro { color: #006666; }
+]==]
