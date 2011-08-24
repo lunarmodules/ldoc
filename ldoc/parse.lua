@@ -50,7 +50,7 @@ local function extract_tags (s)
          summary = preamble
       end
    end  --  and strip(description) ?
-   local tags = {summary=summary and strip(summary),description=description}
+   local tags = {summary=summary and strip(summary) or '',description=description or ''}
    for _,item in ipairs(tag_items) do
       local tag,value = item[1],item[2]
       tag = Item.check_tag(tags,tag)
