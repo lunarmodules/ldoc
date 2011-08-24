@@ -331,7 +331,7 @@ function M.grab_block_comment (v,tok,end1,end2)
    local res = {v}
    repeat
       v = lexer.getline(tok)
-      if v:match '%]%]' then break end
+      if v:match '%]=*%]' then break end
       append(res,v)
       append(res,'\n')
    until false
