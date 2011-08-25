@@ -207,6 +207,7 @@ function lexer.scan (s,matches,filter,options)
     end
 
     function mt.__call ()
+      if not s then return end
       while true do
         for _,m in ipairs(matches) do
             pat,fun = m[1],m[2]
