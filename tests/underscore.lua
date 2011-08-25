@@ -20,7 +20,7 @@ Indented code blocks may also follow immediately.
 
 ----------
 -- A function.
--- Can also use @{_TWO_ :second function}
+-- Can also use @{_TWO_ |second function}
 function _ONE_() end
 
 -----------
