@@ -327,11 +327,11 @@ end
 -- The PL Lua lexer does not do block comments
 -- when used in line-grabbing mode, so this function grabs each line
 -- until we meet the end of the comment
-function M.grab_block_comment (v,tok,end1,end2)
+function M.grab_block_comment (v,tok,patt)
    local res = {v}
    repeat
       v = lexer.getline(tok)
-      if v:match '%]=*%]' then break end
+      if v:match (patt) then break end
       append(res,v)
       append(res,'\n')
    until false

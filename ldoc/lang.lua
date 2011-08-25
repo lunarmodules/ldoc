@@ -29,7 +29,7 @@ end
 
 function Lang:grab_block_comment(v,tok)
    v = v:gsub(self.block_comment,'')
-   return tools.grab_block_comment(v,tok,self.end_block1,self.end_block2)
+   return tools.grab_block_comment(v,tok,self.end_comment)
 end
 
 function Lang:find_module(tok,t,v)
@@ -62,8 +62,6 @@ function Lua:_init()
    self.line_comment = '^%-%-+' -- used for stripping
    self.start_comment_ = '^%-%-%-+'     -- used for doc comment line start
    self.block_comment = '^%-%-%[=*%[%-+' -- used for block doc comments
-   self.end_block1 = ']'
-   self.end_block2 = ']'
    self:finalize()
 end
 
@@ -72,6 +70,13 @@ function Lua.lexer(fname)
    if not f then quit(e) end
    return lexer.lua(f,{}),f
 end
+
+function Lua:grab_block_comment(v,tok)
+   local equals = v:match('^%-%-%[(=*)%[')
+   v = v:gsub(self.block_comment,'')
+   return tools.grab_block_comment(v,tok,'%]'..equals..'%]')
+end
+
 
 function Lua:parse_module_call(tok,t,v)
    t,v = tnext(tok)
@@ -167,6 +172,8 @@ function Lua:parse_extra (tags,tok)
    end
 end
 
+-- note a difference here: we scan C/C++ code in full-text mode, not line by line.
+-- This is because we can't detect multiline comments in line mode
 
 class.CC(Lang)
 
