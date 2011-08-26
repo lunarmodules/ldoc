@@ -90,7 +90,7 @@ local function parse_file(fname,lang, package)
 
    function F:warning (msg,kind)
       kind = kind or 'warning'
-      io.stderr:write(kind..' '..fname..':'..lineno()..' '..msg,'\n')
+      io.stderr:write(kind..' '..fname..':'..lineno()..': '..msg,'\n')
    end
 
    function F:error (msg)

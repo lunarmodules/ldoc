@@ -297,7 +297,7 @@ function Item:warning(msg)
    local name = self.file and self.file.filename
    if type(name) == 'table' then pretty.dump(name); name = '?' end
    name = name or '?'
-   io.stderr:write(name,':',self.lineno or '?',' ',msg,'\n')
+   io.stderr:write(name,':',self.lineno or '1',': ',msg,'\n')
    return nil
 end
 
