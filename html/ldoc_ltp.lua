@@ -32,7 +32,7 @@ return [==[
 
 <h1>$(ldoc.project)</h1>
 
-# if not ldoc.single then -- reference back to project index
+# if not ldoc.single and module then -- reference back to project index
 <ul>
   <li><a href="../$(ldoc.output).html">Index</a></li>
 </ul>
