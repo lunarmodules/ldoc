@@ -410,7 +410,7 @@ if args.dump then
    end
    os.exit()
 end
-if args.tags then
+if args.tags ~= 'none' then
    local taglist = {[args.tags] = true}
    for mod in module_list:iter() do
       mod:dump_tags(taglist)
