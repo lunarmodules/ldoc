@@ -32,6 +32,7 @@ ldoc, a documentation generator for Lua, vs 0.6
   -c,--config (default config.ld) configuration name
   --dump                debug output dump
   --filter (default none) filter output as Lua data (e.g pl.pretty.dump)
+  --tags (default none) show all references to a given tag
   <file> (string) source file or directory containing source
 ]]
 
@@ -406,6 +407,13 @@ end
 if args.dump then
    for mod in module_list:iter() do
       mod:dump(true)
+   end
+   os.exit()
+end
+if args.tags then
+   local taglist = {[args.tags] = true}
+   for mod in module_list:iter() do
+      mod:dump_tags(taglist)
    end
    os.exit()
 end

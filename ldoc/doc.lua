@@ -17,7 +17,8 @@ local split_dotted_name = tools.split_dotted_name
 local known_tags = {
    param = 'M', see = 'M', usage = 'M', ['return'] = 'M', field = 'M', author='M';
    class = 'id', name = 'id', pragma = 'id', alias = 'id';
-   copyright = 'S', summary = 'S', description = 'S', release = 'S', license = 'S';
+   copyright = 'S', summary = 'S', description = 'S', release = 'S', license = 'S',
+   fixme = 'S', todo = 'S', warning = 'S';
    module = 'T', script = 'T', example = 'T', topic = 'T', -- project-level
    ['function'] = 'T', lfunction = 'T', table = 'T', section = 'T', type = 'T'; -- module-level
    ['local'] = 'N';
@@ -406,6 +407,21 @@ end
 -- for indicating 'private' content of a module.
 function Module:mask_locals ()
    self.kinds['Local Functions'] = nil
+end
+
+function Item:dump_tags (taglist)
+   for tag, value in pairs(self.tags) do
+      if not taglist or taglist[tag] then
+         Item.warning(self,self.name..' '..tag..' '..tostring(value))
+      end
+   end
+end
+
+function Module:dump_tags (taglist)
+   Item.dump_tags(self,taglist)
+   for item in self.items:iter() do
+      item:dump_tags(taglist)
+   end
 end
 
 --------- dumping out modules and items -------------
