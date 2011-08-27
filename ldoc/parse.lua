@@ -101,7 +101,7 @@ local function parse_file(fname,lang, package)
    local function add_module(tags,module_found,old_style)
       tags.name = module_found
       tags.class = 'module'
-      local item = F:new_item(tags,pcall(lineno) or 1)
+      local item = F:new_item(tags,lineno())
       item.old_style = old_style
    end
 
