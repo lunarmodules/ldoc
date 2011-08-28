@@ -307,6 +307,8 @@ function Item:error(msg)
    os.exit(1)
 end
 
+Module.warning, Module.error = Item.warning, Item.error
+
 function Module:hunt_for_reference (packmod, modules)
    local mod_ref
    local package = self.package or ''
@@ -380,7 +382,6 @@ end
 -- and try to to resolve this.
 function Module:resolve_references(modules)
    local found = List()
-
    for item in self.items:iter() do
       local see = item.tags.see
       if see then -- this guy has @see references

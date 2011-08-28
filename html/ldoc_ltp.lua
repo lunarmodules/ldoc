@@ -88,6 +88,7 @@ return [==[
 # if ldoc.body then -- verbatim HTML as contents; 'non-code' entries
     $(ldoc.body)
 # elseif module then -- module documentation
+#   ldoc.item = module  -- context for M()
 <p>$(M(module.summary))</p>
 <p>$(M(module.description))</p>
 

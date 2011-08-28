@@ -88,9 +88,10 @@ local function parse_file(fname,lang, package)
 
    function filename () return fname end
 
-   function F:warning (msg,kind)
+   function F:warning (msg,kind,line)
       kind = kind or 'warning'
-      io.stderr:write(kind..' '..fname..':'..lineno()..': '..msg,'\n')
+      line = line or lineno()
+      io.stderr:write(kind..' '..fname..':'..line..': '..msg,'\n')
    end
 
    function F:error (msg)
@@ -183,7 +184,7 @@ local function parse_file(fname,lang, package)
             add_module(tags,module_found,old_style)
             tags = nil
             if not t then
-               io.stderr:write('warning: ',fname,' contains no items\n')
+               F:warning(fname,' contains no items\n','warning',1)
                break;
             end -- run out of file!
             -- if we did bump into a doc comment, then we can continue parsing it
