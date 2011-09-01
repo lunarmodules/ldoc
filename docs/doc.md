@@ -539,6 +539,47 @@ Thanks to mitchell's [TextAdept](http://code.google.com/p/textadept/) project, L
     start
     length
 
+## Anatomy of a LDoc-generated Page
+
+[winapi](http://stevedonovan.github.com/winapi/api.html) can be used as a good example of a module that uses extended LDoc features.
+
+The _navigation section_ down the left has several parts:
+
+    # The project name (`project' in the config)
+    # A project description ('description')
+    # ''Contents'' of the current page
+    # ''Modules'' listing all the modules in this project
+
+Note that `description` will be passed through Markdown, if it has been specified for the project. This gives you an opportunity to make lists of links, etc; any '##' headers will be formatted like the other top-level items on the navigation bar.
+
+'Contents' is automatically generated. It will contain any explicit sections, if they have been used. Otherwise you will get the usual categories: 'Functions' and 'Tables'.
+
+'Modules' will appear for any project providing Lua libraries; there may also be a 'Scripts' section if the project contains Lua scripts. For example,  [LuaMacro](http://stevedonovan.github.com/LuaMacro/docs/api.html) has a driver script `luam` in this section. The [builtin](http://stevedonovan.github.com/LuaMacro/docs/modules/macro.builtin.html) module only defines macros, which are defined as a [custom tag type](!).
+
+
+## Including source examples and a readme file
+
+It has been long known that documentation generated just from the source is not really adequate to explain _how_ to use a library.  People like reading narrative documentation, and they like looking at examples.  Previously I found myself dealing with source-generated and writer-generated documentation using different tools, and having to match these up.
+
+LDoc allows for source examples to be included in the documentation. For example, see the online documentation for [winapi](http://stevedonovan.github.com/winapi/api.html). The function `utf8_expand` has a @see reference to 'testu.lua' and following that link gives you a pretty-printed version of the code.
+
+The line in the `config.ld` that enables this is:
+
+    examples = {'examples', exclude = {'examples/slow.lua'}}
+
+That is, all files in the `examples` folder are to be pretty-printed, except for `slow.lua` which is meant to be called from one of the examples. The see-reference to `testu.lua` resolves to 'examples/testu.lua.html'.
+
+Examples may link back to the API documentation, for instance the example `input.lua` has a `@{spawn_process}` inline reference.
+
+Like all good Github projects, Winapi has a `readme.md`:
+
+    readme = "readme.md"
+
+This goes under the 'Topics' global section; the 'Contents' of this document is generated from the second-level (##) headings of the readme.
+
+Readme files are always processed with Markdown, but may also contain `@{}` references back to the documentation and to example files. As with doc comments, a link to a standard Lua function like @{os.execute}` will work as well. Any code sections will be pretty-printed as well; this may be not want you want, so if the first line of an indented code block is '@nocode' then that block will not be pretty-printed.
+
+
 ## Fields allowed in `config.ld`
 
 These mostly have the same meaning as the corresponding parameters:
