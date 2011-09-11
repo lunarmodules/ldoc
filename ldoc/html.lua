@@ -71,8 +71,9 @@ function html.generate_output(ldoc, args, project)
    end
 
    function ldoc.display_name(item)
-      if item.type == 'function' then return item.name..'&nbsp;'..item.args
-      else return item.name end
+      local name = item.display_name or item.name
+      if item.type == 'function' then return name..'&nbsp;'..item.args
+      else return name end
    end
 
    function ldoc.no_spaces(s) return (s:gsub('%s','_')) end

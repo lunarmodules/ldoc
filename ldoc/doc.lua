@@ -153,6 +153,7 @@ function File:finish()
                -- if it was a class, then the name should be 'Class.foo'
                if this_mod.section.type == 'type' then
                   item.name = this_mod.section.name .. '.' .. item.name
+                  item.display_name = this_mod.section.name .. ':' .. item.name
                end
                section_description = this_mod.section.description
             else -- otherwise, just goes into the default sections (Functions,Tables,etc)
