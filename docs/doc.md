@@ -1,8 +1,6 @@
-# LDoc - A Lua Documentation Tool
+## LDoc - A Lua Documentation Tool
 
-## LDoc as an improved LuaDoc
-
-Generally, LuaDoc style documentation will be accepted.
+LDoc follows the conventions established by Javadoc and later by LuaDoc.
 
 Only 'doc comments' are parsed; these can be started with at least 3 hyphens, or by a empty comment line with at least 3 hypens:
 
@@ -13,15 +11,16 @@ Only 'doc comments' are parsed; these can be started with at least 3 hyphens, or
     -----------------
     -- This will also do.
 
-However, comments like these are not considered to be doc comments:
+You can also use Lua block comments:
 
-    ----- not a doc comment -----
-    -- a common style when just specifying an informative comment
-    -- May start with a doc comment but has trailing hyphens
+   --[[--
+   Summary. A description
+   ..;
+   ]]
 
 Any module or script must start with a doc comment; any other files are ignored and a warning issued. The only exception is if the module starts with an explicit `module` statement.
 
-All doc comments start with a _summary_ sentence, that ends with a period or a question mark. An optional _description_ may follow. Usually the summary sentence will appear in the summary of module contents.
+All doc comments start with a summary sentence, that ends with a period or a question mark. An optional description may follow. Normally the summary sentence will appear in the module contents.
 
 After this descriptive text, there will typically be _tags_. These follow the convention established by Javadoc and widely used in tools for other languages.
 
@@ -33,7 +32,7 @@ After this descriptive text, there will typically be _tags_. These follow the co
     ....
     end
 
-Obviously there may be multiple 'param' tags, which should document each formal parameter of the function. For Lua, there can also be multiple 'return' tags
+There may be multiple 'param' tags, which should document each formal parameter of the function. For Lua, there can also be multiple 'return' tags
 
     --- solvers for common equations.
     module("solvers", package.seeall)
@@ -90,7 +89,7 @@ It is common to use a local name for a module when declaring its contents. In th
 
     return M
 
-`M` and `_M` are used commonly enough that LDoc will recognize them as aliases anyway, but 'alias' allows you to use any identifier.
+`M` and `_M` are used commonly enough that LDoc will recognize them as aliases automatically, but 'alias' allows you to use any identifier.
 
 LDoc tries to deduce the function name and the formal parameter names from examining the code after the doc comment. It also recognizes the 'unsugared' way of defining functions as explicit assignment to a variable:
 
@@ -118,7 +117,7 @@ Modules can of course export tables and other values. The classic way to documen
 
 Here the kind of item is made explicit by the 'table' tag; tables have 'fields' in the same way as functions have parameters.
 
-This can get tedious so LDoc will attempt to extract table documentation from code:
+This can get tedious, so LDoc will attempt to extract table documentation from code:
 
     --- a useful table of constants
     M.constants = {
@@ -142,27 +141,15 @@ When the code analysis would lead to the wrong type, you can always be explicit.
    -- @field _CONTENTS
    M._CONTENTS = {constants=true,one=true,...}
 
-Finally, you may use block comments, like so:
-
-    --[[--
-    A simple function.
-    @param a first parm
-    @param b second parm
-    ]]
-
-    function simple(a,b)
-
-This is useful for the initial module comment, which has the job of explaining the overall use of a module.
-
 The order of tags is not important, but as always, consistency is useful.  Tags like 'param' and 'return' can be specified multiple times, whereas a type tag like 'function' can only occur once in a comment. The basic rule is that a single doc comment can only document one entity.
 
 By default, LDoc will process any file ending in '.lua' or '.luadoc' in a specified directory; you may point it to a single file as well. A 'project' usually consists of many modules in one or more _packages_. The generated `index.html` will point to the generated documentation for each of these modules.
 
-If only one module or script is documented for a project, then the `index.html` generated contains the documentation for that module, since an index consisting of one module would be redundant.
+If only one module or script is documented for a project, then the `index.html` generated contains the documentation for that module, since an index pointing to one module would be redundant.
 
  (If you want to document a script, there is a project-level type 'script' for that.)  By default it will process any file ending in `.lua` or `.luadoc`.
 
-## @see and @{} References
+## @see References
 
 The tag 'see' is used to reference other parts of the documentation, and 'usage' can provide examples of use:
 
@@ -209,7 +196,6 @@ References may be made inline using the `@{ref}` syntax. This may appear anywher
     -- @field duration
     -- @field viscosity
     -- @table stdvars
-
 
 
 ## Sections
@@ -436,7 +422,7 @@ It is common to use an alias for the package name with new-style modules. Here a
 
 It's semi-standard to use 'M' or '_M' for the module alias; LDoc will recognize these automatically.
 
-By default, comments are treated verbatim and traditionally contain HTML. This is irritating for the human reader of the comments and tedious for the writer, so there is an option to use [Markdown](http://daringfireball.net/projects/markdown); `--format markdown`. This requires [markdown.lua](http://www.frykholm.se/files/markdown.lua) by Niklas Frykholm to be installed (this can be most easily done with `luarocks install markdown`.)  `format = 'markdown'` can be used in your `config.ld`.
+This requires [markdown.lua](http://www.frykholm.se/files/markdown.lua) by Niklas Frykholm to be installed (this can be most easily done with `luarocks install markdown`.)  `format = 'markdown'` can be used in your `config.ld`.
 
 A special case is if you simply say 'ldoc .'. Then there _must_ be a `config.ld` file available in the directory, and it can specify the file:
 
