@@ -91,6 +91,10 @@ local file_types = {
 local ldoc = {}
 local add_language_extension
 
+local function override (field)
+   if ldoc[field] then args[field] = ldoc[field] end
+end
+
 -- aliases to existing tags can be defined. E.g. just 'p' for 'param'
 function ldoc.alias (a,tag)
    doc.add_alias(a,tag)
@@ -252,14 +256,14 @@ end
 -- where it is a list of files or directories. If specified on the command-line, we have
 -- to find an optional associated config.ld, if not already loaded.
 
-local function process_file (f, file_list)
+local function process_file (f, flist)
    local ext = path.extension(f)
    local ftype = file_types[ext]
    if ftype then
       if args.verbose then print(path.basename(f)) end
       local F,err = parse.file(f,ftype,args)
       if err then quit(err) end
-      file_list:append(F)
+      flist:append(F)
    end
 end
 
@@ -308,6 +312,9 @@ else
    quit ("file or directory does not exist: "..quote(args.file))
 end
 
+-- create the function that renders text (descriptions and summaries)
+override 'format'
+ldoc.markup = markup.create(ldoc, args.format)
 
 local multiple_files = #file_list > 1
 local first_module
@@ -331,7 +338,7 @@ local function add_special_project_entity (f,tags,process)
    F:finish()
    file_list:append(F)
    item.body = text
-   return item
+   return item, F
 end
 
 if type(ldoc.examples) == 'string' then
@@ -339,24 +346,26 @@ if type(ldoc.examples) == 'string' then
 end
 if type(ldoc.examples) == 'table' then
    local prettify = require 'ldoc.prettify'
-   local formatter = markup.create(ldoc,'plain')
-   prettify.resolve_inline_references = markup.resolve_inline_references
 
-   local function process_example (f, file_list)
+   process_file_list (ldoc.examples, '*.lua', function(f)
       local item = add_special_project_entity(f,{
          class = 'example',
       })
-      item.postprocess = prettify.lua
-   end
-
-   process_file_list (ldoc.examples, '*.lua', process_example, file_list)
+      -- wrap prettify for this example so it knows which file to blame
+      -- if there's a problem
+      item.postprocess = function(code) return prettify.lua(f,code) end
+   end)
 end
 
 if type(ldoc.readme) == 'string' then
-   local item = add_special_project_entity(ldoc.readme,{
+   local item, F = add_special_project_entity(ldoc.readme,{
       class = 'topic'
    }, markup.add_sections)
-   item.postprocess = markup.create(ldoc, 'markdown')
+   -- add_sections above has created sections corresponding to the 2nd level
+   -- headers in the readme, which are attached to the File. So
+   -- we pass the File to the postprocesser can insert the section markers
+   -- and resolve inline @ references.
+   item.postprocess = function(txt) return ldoc.markup(txt,F) end
 end
 
 ---- extract modules from the file objects, resolve references and sort appropriately ---
@@ -442,9 +451,6 @@ local function style_dir (sname)
    end
 end
 
-local function override (field)
-   if ldoc[field] then args[field] = ldoc[field] end
-end
 
 -- the directories for template and stylesheet can be specified
 -- either by command-line '--template','--style' arguments or by 'template and
@@ -457,7 +463,6 @@ style_dir 'style'
 style_dir 'template'
 
 -- can specify format, output, dir and ext in config.ld
-override 'format'
 override 'output'
 override 'dir'
 override 'ext'
@@ -489,9 +494,6 @@ if args.style == '!' or args.template == '!' then
       args.template = tmpdir
    end
 end
-
--- create the function that renders text (descriptions and summaries)
-ldoc.markup = markup.create(ldoc, args.format)
 
 
 ldoc.single = not multiple_files and first_module or nil

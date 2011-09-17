@@ -58,56 +58,70 @@ function markup.insert_markdown_lines (txt)
    return res
 end
 
--- for readme text, the idea here is to insert module sections at ## so that
--- they can appear in the contents list as a ToC
+-- inline <references> use same lookup as @see
+local function resolve_inline_references (ldoc, txt, item)
+   return (txt:gsub('@{([^}]-)}',function (name)
+      local qname,label = utils.splitv(name,'%s*|')
+      if not qname then
+         qname = name
+      end
+      local ref,err = markup.process_reference(qname)
+      if not ref then
+         err = err .. ' ' .. qname
+         if item then item:warning(err)
+         else
+           io.stderr:write('nofile error: ',err,'\n')
+         end
+         return '???'
+      end
+      if not label then
+         label = ref.label
+      end
+      if not markup.plain then -- a nastiness with markdown.lua and underscores
+         label = label:gsub('_','\\_')
+      end
+      local res = ('<a href="%s">%s</a>'):format(ldoc.href(ref),label)
+      return res
+   end))
+end
+
+-- for readme text, the idea here is to create module sections at ## so that
+-- they can appear in the contents list as a ToC.
 function markup.add_sections(F, txt)
-   local res, append = {}, table.insert
+   local sections, L = {}, 1
    for line in stringx.lines(txt) do
       local title = line:match '^##[^#]%s*(.+)'
       if title then
-         local section = F:add_document_section(title)
-         append(res,('<a id="%s"></a>\n'):format(section))
-         append(res,line)
-      else
-         append(res,line)
+         sections[L] = F:add_document_section(title)
       end
+      L = L + 1
+   end
+   F.sections = sections
+   return txt
+end
+
+local function process_multiline_markdown(ldoc, txt, F)
+   local res, L, append = {}, 1, table.insert
+   local err_item = {
+      warning = function (self,msg)
+         io.stderr:write(F.filename..':'..L..': '..msg,'\n')
+      end
+   }
+   for line in stringx.lines(txt) do
+      line = resolve_inline_references(ldoc, line, err_item)
+      local section = F.sections[L]
+      if section then
+         append(res,('<a name="%s"></a>'):format(section))
+      end
+      append(res,line)
+      L = L + 1
    end
    return concat(res,'\n')
 end
 
-local function handle_reference (ldoc, name)
-   local qname,label = utils.splitv(name,'%s*|')
-   if not qname then
-      qname = name
-   end
-   local ref,err = markup.process_reference(qname)
-   if not ref then
-      if ldoc.item then ldoc.item:warning(err)
-      else
-        io.stderr:write(err,'\n')
-      end
-      return ''
-   end
-   if not label then
-      label = ref.label
-   end
-   if not ldoc.plain then -- a nastiness with markdown.lua and underscores
-      label = label:gsub('_','\\_')
-   end
-   local res = ('<a href="%s">%s</a>'):format(ldoc.href(ref),label)
-   return res
-end
-
-local ldoc_handle_reference
-
--- inline <references> use same lookup as @see
-local function resolve_inline_references (ldoc, txt)
-   return (txt:gsub('@{([^}]-)}',ldoc_handle_reference))
-end
 
 function markup.create (ldoc, format)
    local processor
-   ldoc_handle_reference = utils.bind1(handle_reference,ldoc)
    markup.plain = true
    markup.process_reference = function(name)
       local mod = ldoc.single or ldoc.module
@@ -118,27 +132,31 @@ function markup.create (ldoc, format)
    end
 
    if format == 'plain' then
-      processor = function(txt)
+      processor = function(txt, item)
          if txt == nil then return '' end
-         return resolve_inline_references(ldoc, txt)
+         return resolve_inline_references(ldoc, txt, item)
       end
    else
       local ok,formatter = pcall(require,format)
       if not ok then quit("cannot load formatter: "..format) end
       markup.plain = false
-      processor = function (txt)
+      processor = function (txt,item)
          if txt == nil then return '' end
-         txt = resolve_inline_references(ldoc, txt)
+         if utils.is_type(item,doc.File) then
+            txt = process_multiline_markdown(ldoc, txt, item)
+         else
+            txt = resolve_inline_references(ldoc, txt, item)
+         end
          if txt:find '\n' and ldoc.extended_markdown then -- multiline text
             txt = markup.insert_markdown_lines(txt)
          end
-         txt = formatter   (txt)
+         txt = formatter(txt)
          -- We will add our own paragraph tags, if needed.
          return (txt:gsub('^%s*<p>(.+)</p>%s*$','%1'))
       end
    end
-   markup.resolve_inline_references = function(txt)
-      return resolve_inline_references(ldoc, txt)
+   markup.resolve_inline_references = function(txt, errfn)
+      return resolve_inline_references(ldoc, txt, errfn)
    end
    markup.processor = processor
    prettify.resolve_inline_references = markup.resolve_inline_references

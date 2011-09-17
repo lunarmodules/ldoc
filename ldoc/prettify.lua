@@ -25,19 +25,24 @@ end
 
 local spans = {keyword=true,number=true,string=true,comment=true}
 
-function prettify.lua (code)
+function prettify.lua (fname, code)
    local res = List()
    res:append(header)
    res:append '<pre>\n'
 
    local tok = lexer.lua(code,{},{})
+   local error_reporter = {
+      warning = function (self,msg)
+         io.stderr:write(fname..':'..tok:lineno()..': '..msg,'\n')
+      end
+   }
    local t,val = tok()
    if not t then return nil,"empty file" end
    while t do
       val = escape(val)
       if spans[t] then
          if t == 'comment' then -- may contain @{ref}
-            val = prettify.resolve_inline_references(val)
+            val = prettify.resolve_inline_references(val,error_reporter)
          end
          res:append(span(t,val))
       else

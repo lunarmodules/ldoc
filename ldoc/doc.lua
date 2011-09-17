@@ -150,10 +150,9 @@ function File:finish()
             local section_description
             if this_mod.section then
                item.section = this_mod.section.display_name
-               -- if it was a class, then the name should be 'Class.foo'
+               -- if it was a class, then the name should be 'Class:foo'
                if this_mod.section.type == 'type' then
-                  item.name = this_mod.section.name .. '.' .. item.name
-                  item.display_name = this_mod.section.name .. ':' .. item.name
+                  item.name = this_mod.section.name .. ':' .. item.name
                end
                section_description = this_mod.section.description
             else -- otherwise, just goes into the default sections (Functions,Tables,etc)

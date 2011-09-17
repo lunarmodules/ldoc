@@ -126,7 +126,7 @@ function html.generate_output(ldoc, args, project)
          for m in modules() do
             ldoc.module = m
             ldoc.body = m.body
-            if ldoc.body then
+            if ldoc.body and m.postprocess then
                ldoc.body = m.postprocess(ldoc.body)
             end
             out,err = template.substitute(module_template,{
