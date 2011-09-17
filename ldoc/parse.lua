@@ -165,6 +165,9 @@ local function parse_file(fname,lang, package)
                if doc.project_level(tags.class) then
                   module_found = tags.name
                end
+               doc.expand_annotation_item(tags)
+               -- if the item has an explicit name or defined meaning
+               -- then don't continue to do any code analysis!
                if tags.name then
                   item_follows, is_local = false, false
                end

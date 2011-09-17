@@ -20,7 +20,8 @@ local known_tags = {
    copyright = 'S', summary = 'S', description = 'S', release = 'S', license = 'S',
    fixme = 'S', todo = 'S', warning = 'S';
    module = 'T', script = 'T', example = 'T', topic = 'T', -- project-level
-   ['function'] = 'T', lfunction = 'T', table = 'T', section = 'T', type = 'T'; -- module-level
+   ['function'] = 'T', lfunction = 'T', table = 'T', section = 'T', type = 'T',
+   annotation = 'T'; -- module-level
    ['local'] = 'N';
 }
 known_tags._alias = {}
@@ -29,6 +30,9 @@ known_tags._project_level = {
    script = true,
    example = true,
    topic = true
+}
+known_tags._annotation_tags = {
+   fixme = true, todo = true, warning = true
 }
 
 local TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE,TAG_FLAG = 'M','id','S','T','N'
@@ -61,6 +65,23 @@ end
 -- is it a section tag, like 'type' (class) or 'section'?
 function doc.section_tag (tag)
    return tag == 'section' or tag == 'type'
+end
+
+-- is it an annotation tag, like fixme or todo?
+function doc.annotation_tag (tag)
+   return known_tags._annotation_tags[tag]
+end
+
+local acount = 1
+
+function doc.expand_annotation_item (tags)
+   local tag, value = next(tags)
+   if doc.annotation_tag(tag) then
+      tags.class = 'annotation'
+      tags.summary = value
+      tags.name = tag..acount
+      acount = acount+1
+   end
 end
 
 -- we process each file, resulting in a File object, which has a list of Item objects.
@@ -403,11 +424,12 @@ function Module:resolve_references(modules)
    end
 end
 
--- suppress the display of local functions.
+-- suppress the display of local functions and annotations.
 -- This is just a placeholder hack until we have a more general scheme
 -- for indicating 'private' content of a module.
 function Module:mask_locals ()
    self.kinds['Local Functions'] = nil
+   self.kinds['Annotations'] = nil
 end
 
 function Item:dump_tags (taglist)
