@@ -31,9 +31,6 @@ known_tags._project_level = {
    example = true,
    topic = true
 }
-known_tags._annotation_tags = {
-   fixme = true, todo = true, warning = true
-}
 
 local TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE,TAG_FLAG = 'M','id','S','T','N'
 doc.TAG_MULTI,doc.TAG_ID,doc.TAG_SINGLE,doc.TAG_TYPE,doc.TAG_FLAG =
@@ -67,20 +64,22 @@ function doc.section_tag (tag)
    return tag == 'section' or tag == 'type'
 end
 
--- is it an annotation tag, like fixme or todo?
-function doc.annotation_tag (tag)
-   return known_tags._annotation_tags[tag]
-end
+
+-- annotation tags can appear anywhere in the code and may contain of these tags:
+known_tags._annotation_tags = {
+   fixme = true, todo = true, warning = true
+}
 
 local acount = 1
 
-function doc.expand_annotation_item (tags)
+function doc.expand_annotation_item (tags, last_item)
    local tag, value = next(tags)
-   if doc.annotation_tag(tag) then
+   if known_tags._annotation_tags[tag] then
       tags.class = 'annotation'
       tags.summary = value
-      tags.name = tag..acount
-      acount = acount+1
+      local item_name = last_item and last_item.tags.name or '?'
+      tags.name = item_name..'-'..tag..acount
+      acount = acount + 1
    end
 end
 

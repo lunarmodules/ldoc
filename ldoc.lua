@@ -421,9 +421,12 @@ if args.dump then
    os.exit()
 end
 if args.tags ~= 'none' then
-   local taglist = {[args.tags] = true}
+   local tagset = {}
+   for t in stringx.split(args.tags,','):iter() do
+      tagset[t] = true
+   end
    for mod in module_list:iter() do
-      mod:dump_tags(taglist)
+      mod:dump_tags(tagset)
    end
    os.exit()
 end

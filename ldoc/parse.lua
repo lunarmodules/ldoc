@@ -79,6 +79,7 @@ local function parse_file(fname,lang, package)
    local line,f = 1
    local F = File(fname)
    local module_found, first_comment = false,true
+   local current_item
 
    local tok,f = lang.lexer(fname)
 
@@ -165,7 +166,7 @@ local function parse_file(fname,lang, package)
                if doc.project_level(tags.class) then
                   module_found = tags.name
                end
-               doc.expand_annotation_item(tags)
+               doc.expand_annotation_item(tags,current_item)
                -- if the item has an explicit name or defined meaning
                -- then don't continue to do any code analysis!
                if tags.name then
@@ -208,7 +209,8 @@ local function parse_file(fname,lang, package)
                tags.class = 'lfunction'
             end
             if tags.name then
-               F:new_item(tags,line).inferred = item_follows ~= nil
+               current_item = F:new_item(tags,line)
+               current_item.inferred = item_follows ~= nil
             end
             if not t then break end
          end
