@@ -1,8 +1,14 @@
 ---------------
 -- ldoc, a Lua documentation generator.
 -- Compatible with luadoc-style annoations, but providing
--- easier customization options. C/C++ support is provided.
--- Steve Donovan, 2011
+-- easier customization options.
+--
+-- C/C++ support for Lua extensions is provided.
+--
+-- @author Steve Donovan
+-- @copyright 2011
+-- @license MIT/X11
+-- @script ldoc
 
 require 'pl'
 
@@ -13,8 +19,9 @@ local lapp = require 'pl.lapp'
 -- so we can find our private modules
 app.require_here()
 
-local args = lapp [[
-ldoc, a documentation generator for Lua, vs 0.6
+--- @usage
+local usage = [[
+ldoc, a documentation generator for Lua, vs 1.0.0
   -d,--dir (default docs) output directory
   -o,--output  (default 'index') output name
   -v,--verbose          verbose
@@ -32,9 +39,12 @@ ldoc, a documentation generator for Lua, vs 0.6
   -c,--config (default config.ld) configuration name
   --dump                debug output dump
   --filter (default none) filter output as Lua data (e.g pl.pretty.dump)
-  --tags (default none) show all references to a given tag
+  --tags (default none) show all references to given tags, comma-separated
   <file> (string) source file or directory containing source
+
+  `ldoc .` means read options from an `config.ld` file in same directory.
 ]]
+local args = lapp(usage)
 
 local doc = require 'ldoc.doc'
 local lang = require 'ldoc.lang'
@@ -373,7 +383,7 @@ if type(ldoc.readme) == 'string' then
    item.postprocess = function(txt) return ldoc.markup(txt,F) end
 end
 
----- extract modules from the file objects, resolve references and sort appropriately ---
+-- extract modules from the file objects, resolve references and sort appropriately ---
 
 local project = ProjectMap()
 
