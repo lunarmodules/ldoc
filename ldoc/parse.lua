@@ -173,6 +173,18 @@ local function parse_file(fname,lang, package)
                -- then don't continue to do any code analysis!
                if tags.name then
                   item_follows, is_local = false, false
+                elseif tags.summary == '' and tags.usage then
+                  -- For Lua, a --- @usage comment means that a long
+                  -- string containing the usage follows, which we
+                  -- use to update the module usage tag
+                  item_follows(tags,tok)
+                  local res, value = lang:parse_usage(tags,tok)
+                  if not res then F:warning(fname,value,1); break
+                  else
+                     current_item.tags.usage = {value}
+                     -- don't continue to make an item!
+                     ldoc_comment = false
+                  end
                end
             end
          end

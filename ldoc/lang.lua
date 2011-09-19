@@ -55,6 +55,10 @@ end
 function Lang:parse_extra (tags,tok)
 end
 
+function Lang:parse_usage (tags, tok)
+   return nil, "@usage deduction not implemented for this language"
+end
+
 
 class.Lua(Lang)
 
@@ -171,6 +175,16 @@ function Lua:parse_extra (tags,tok)
       parse_lua_table (tags,tok)
    end
 end
+
+function Lua:parse_usage (tags, tok)
+   if tags.class ~= 'field' then return nil,"cannot deduce @usage" end
+   local t1= tnext(tok)
+   local t2 = tok()
+   if t1 ~= '[' or t1 ~= '[' then return nil, 'not a long string' end
+   t, v = tools.grab_block_comment('',tok,'%]%]')
+   return true, v
+end
+
 
 -- note a difference here: we scan C/C++ code in full-text mode, not line by line.
 -- This is because we can't detect multiline comments in line mode
