@@ -147,13 +147,15 @@ local function parse_file(fname,lang, package)
                t,v = tok()
             end
          end
+
          if not t then break end -- no more file!
 
          if t == 'space' then t,v = tnext(tok) end
 
-         local item_follows, tags, is_local
+         local item_follows, tags, is_local, case
          if ldoc_comment or first_comment then
             comment = table.concat(comment)
+
             if not ldoc_comment and first_comment then
                F:warning("first comment must be a doc comment!")
                break
@@ -161,7 +163,7 @@ local function parse_file(fname,lang, package)
             if first_comment then
                first_comment = false
             else
-               item_follows, is_local = lang:item_follows(t,v,tok)
+               item_follows, is_local, case = lang:item_follows(t,v,tok)
             end
             if item_follows or comment:find '@'then
                tags = extract_tags(comment)
@@ -215,7 +217,7 @@ local function parse_file(fname,lang, package)
                if item_follows then -- parse the item definition
                   item_follows(tags,tok)
                else
-                  lang:parse_extra(tags,tok)
+                  lang:parse_extra(tags,tok,case)
                end
             end
             -- local functions treated specially

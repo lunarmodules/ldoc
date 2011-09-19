@@ -129,10 +129,11 @@ end
 -- Depending on the case successfully detected, returns a function which
 -- will be called later to fill in inferred item tags
 function Lua:item_follows(t,v,tok)
-   local parser
+   local parser, case
    local is_local = t == 'keyword' and v == 'local'
    if is_local then t,v = tnext(tok) end
    if t == 'keyword' and v == 'function' then -- case [1]
+      case = 1
       parser = parse_lua_function_header
    elseif t == 'iden' then
       local name,t,v = tools.get_fun_name(tok,v)
@@ -140,39 +141,37 @@ function Lua:item_follows(t,v,tok)
       t,v = tnext(tok)
       if t == 'keyword' and v == 'function' then -- case [2]
          tnext(tok) -- skip '('
+         case = 2
          parser = function(tags,tok)
             tags.name = name
             parse_lua_parameters(tags,tok)
          end
       elseif t == '{' then -- case [3]
+         case = 3
          parser = function(tags,tok)
             tags.class = 'table'
             tags.name = name
             parse_lua_table (tags,tok)
          end
       else -- case [4]
+         case = 4
          parser = function(tags)
             tags.class = 'field'
             tags.name = name
          end
       end
    end
-   return parser, is_local
+   return parser, is_local, case
 end
 
 
--- this is called, whether the tag was inferred or not.
--- Currently tries to fill in the fields of a table from comments
-function Lua:parse_extra (tags,tok)
-   if tags.class == 'table' and not tags.field then
-      local res, stat
-      if t ~= '{' then
-         stat,t,v = pcall(tok)
-         if not stat then return nil end
-         res,t,v = self:search_for_token(tok,'{','{',tok())
-         if not res then return nil,t,v end
-      end
-      parse_lua_table (tags,tok)
+-- we only call the function returned by the item_follows above if there
+-- is not already a name and a type.
+-- Otherwise, this is called. Currrently only tries to fill in the fields
+-- of a table from a table definition as identified above
+function Lua:parse_extra (tags,tok,case)
+   if tags.class == 'table' and not tags.field and case == 3 then
+      parse_lua_table(tags,tok)
    end
 end
 
