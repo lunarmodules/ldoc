@@ -282,6 +282,7 @@ ul ol { margin-top: 0px; }
 .string  { color: #8888AA; }
 .comment { color: #666600; }
 .prepro { color: #006666; }
+.global { color: #800080; }
 ]==]
 
 

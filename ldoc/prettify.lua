@@ -5,6 +5,7 @@
 -- `@{example:test-fun}`.
 require 'pl'
 local lexer = require 'ldoc.lexer'
+local globals = require 'builtin.globals'
 local tnext = lexer.skipws
 local prettify = {}
 
@@ -23,7 +24,7 @@ local function span(t,val)
    return ('<span class="%s">%s</span>'):format(t,val)
 end
 
-local spans = {keyword=true,number=true,string=true,comment=true}
+local spans = {keyword=true,number=true,string=true,comment=true,global=true}
 
 function prettify.lua (fname, code)
    local res = List()
@@ -40,6 +41,9 @@ function prettify.lua (fname, code)
    if not t then return nil,"empty file" end
    while t do
       val = escape(val)
+      if globals.functions[val] or globals.tables[val] then
+         t = 'global'
+      end
       if spans[t] then
          if t == 'comment' then -- may contain @{ref}
             val = prettify.resolve_inline_references(val,error_reporter)
