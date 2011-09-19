@@ -26,15 +26,16 @@ end
 
 local spans = {keyword=true,number=true,string=true,comment=true,global=true}
 
-function prettify.lua (fname, code)
+function prettify.lua (fname, code, initial_lineno)
    local res = List()
    res:append(header)
    res:append '<pre>\n'
+   intial_lineno = initial_lineno or 0
 
    local tok = lexer.lua(code,{},{})
    local error_reporter = {
       warning = function (self,msg)
-         io.stderr:write(fname..':'..tok:lineno()..': '..msg,'\n')
+         io.stderr:write(fname..':'..tok:lineno()+initial_lineno..': '..msg,'\n')
       end
    }
    local t,val = tok()
