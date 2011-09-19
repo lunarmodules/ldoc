@@ -1,10 +1,10 @@
 -------
 -- global functions and tables
 local tools = require 'ldoc.tools'
+local globals = {}
 
 
-
-local functions = {
+globals.functions = {
    assert = true,
    collectgarbage = true,
    dofile = true,
@@ -32,8 +32,9 @@ local functions = {
    module = true,
    require = true,
 }
+local functions = globals.functions
 
-local tables = {
+globals.tables = {
    io = '5.7',
    package = '5.3',
    math = '5.6',
@@ -43,9 +44,15 @@ local tables = {
    coroutine = '5.2',
    debug = '5.9'
 }
+local tables = globals.tables
 
-local manual = 'http://www.lua.org/manual/5.1/manual.html#'
-local fun_ref = manual..'pdf-'
+local manual, fun_ref
+
+function globals.set_manual_url(url)
+    manual = url .. '#'
+    fun_ref = manual..'pdf-'
+end
+globals.set_manual_url 'http://www.lua.org/manual/5.1/manual.html'
 
 local function function_ref (name)
    return {href = fun_ref..name, label = name}
@@ -55,7 +62,7 @@ local function module_ref (name)
    return {href = manual..tables[name], label = name}
 end
 
-local function lua_manual_ref (name)
+function globals.lua_manual_ref (name)
    local tbl,fname = tools.split_dotted_name(name)
    if not tbl then -- plain symbol
       if functions[name] then
@@ -72,8 +79,4 @@ local function lua_manual_ref (name)
    return nil
 end
 
-return {
-   functions = functions,
-   tables = tables,
-   lua_manual_ref = lua_manual_ref
-}
+return globals
