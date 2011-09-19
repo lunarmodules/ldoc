@@ -58,7 +58,7 @@ ModuleMap:add_kind('function','Functions','Parameters')
 ModuleMap:add_kind('table','Tables','Fields')
 ModuleMap:add_kind('field','Fields')
 ModuleMap:add_kind('lfunction','Local Functions','Parameters')
-ModuleMap:add_kind('annotation','Annotations')
+ModuleMap:add_kind('annotation','Issues')
 
 
 class.ProjectMap(KindMap)

@@ -73,13 +73,16 @@ known_tags._annotation_tags = {
 local acount = 1
 
 function doc.expand_annotation_item (tags, last_item)
-   local tag, value = next(tags)
-   if known_tags._annotation_tags[tag] then
-      tags.class = 'annotation'
-      tags.summary = value
-      local item_name = last_item and last_item.tags.name or '?'
-      tags.name = item_name..'-'..tag..acount
-      acount = acount + 1
+   if tags.summary ~= '' then return false end
+   for tag, value in pairs(tags) do
+      if known_tags._annotation_tags[tag] then
+         tags.class = 'annotation'
+         tags.summary = value
+         local item_name = last_item and last_item.tags.name or '?'
+         tags.name = item_name..'-'..tag..acount
+         acount = acount + 1
+         return true
+      end
    end
 end
 

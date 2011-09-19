@@ -16,7 +16,8 @@ local tnext, append = lexer.skipws, table.insert
 
 -- a pattern particular to LuaDoc tag lines: the line must begin with @TAG,
 -- followed by the value, which may extend over several lines.
-local luadoc_tag = '^%s*@(%a+)%s(.+)'
+local luadoc_tag = '^%s*@(%a+)'
+local luadoc_tag_value = luadoc_tag..'(.*)'
 
 -- assumes that the doc comment consists of distinct tag lines
 function parse_tags(text)
@@ -25,7 +26,7 @@ function parse_tags(text)
    local tag_items = {}
    local follows
    while line do
-      local tag,rest = line:match(luadoc_tag)
+      local tag,rest = line:match(luadoc_tag_value)
       follows, line = tools.grab_while_not(lines,luadoc_tag)
       append(tag_items,{tag, rest .. '\n' .. follows})
    end
@@ -56,6 +57,7 @@ local function extract_tags (s)
       tag = Item.check_tag(tags,tag)
       value = strip(value)
       local old_value = tags[tag]
+
       if old_value then
          if type(old_value)=='string' then tags[tag] = List{old_value} end
          tags[tag]:append(value)

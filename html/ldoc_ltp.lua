@@ -90,6 +90,15 @@ return [==[
 # elseif module then -- module documentation
 <p>$(M(module.summary,module))</p>
 <p>$(M(module.description,module))</p>
+#   if module.usage then
+#     local li,il = use_li(module.usage)
+    <h3>Usage:</h3>
+    <ul>
+#     for usage in iter(module.usage) do
+        $(li)<pre class="example">$(usage)</pre>$(il)
+#     end -- for
+    </ul>
+#   end -- if usage
 
 # if not ldoc.no_summary then
 # -- bang out the tables of item types for this module (e.g Functions, Tables, etc)
