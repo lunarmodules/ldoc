@@ -49,7 +49,7 @@ local args = lapp(usage)
 local doc = require 'ldoc.doc'
 local lang = require 'ldoc.lang'
 local tools = require 'ldoc.tools'
-local global = require 'builtin.globals'
+local global = require 'ldoc.builtin.globals'
 local markup = require 'ldoc.markup'
 local parse = require 'ldoc.parse'
 local KindMap = tools.KindMap
@@ -501,7 +501,7 @@ if args.style == '!' or args.template == '!' then
       lfs.mkdir(tmpdir)
    end
    local function tmpwrite (name)
-      utils.writefile(path.join(tmpdir,name),require('html.'..name:gsub('%.','_')))
+      utils.writefile(path.join(tmpdir,name),require('ldoc.html.'..name:gsub('%.','_')))
    end
    if args.style == '!' then
       tmpwrite(ldoc.templ)

@@ -5,7 +5,7 @@
 -- `@{example:test-fun}`.
 require 'pl'
 local lexer = require 'ldoc.lexer'
-local globals = require 'builtin.globals'
+local globals = require 'ldoc.builtin.globals'
 local tnext = lexer.skipws
 local prettify = {}
 

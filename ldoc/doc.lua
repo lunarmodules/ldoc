@@ -5,7 +5,7 @@
 require 'pl'
 
 local doc = {}
-local global = require 'builtin.globals'
+local global = require 'ldoc.builtin.globals'
 local tools = require 'ldoc.tools'
 local split_dotted_name = tools.split_dotted_name
 
