@@ -12,7 +12,7 @@ local markup = {}
 
 -- inline <references> use same lookup as @see
 local function resolve_inline_references (ldoc, txt, item, plain)
-   return (txt:gsub('@{([^}]-)}',function (name)
+   local res = (txt:gsub('@{([^}]-)}',function (name)
       local qname,label = utils.splitv(name,'%s*|')
       if not qname then
          qname = name
@@ -35,6 +35,7 @@ local function resolve_inline_references (ldoc, txt, item, plain)
       local res = ('<a href="%s">%s</a>'):format(ldoc.href(ref),label)
       return res
    end))
+   return res
 end
 
 -- for readme text, the idea here is to create module sections at ## so that
@@ -44,6 +45,7 @@ function markup.add_sections(F, txt)
    for line in stringx.lines(txt) do
       local title = line:match '^##[^#]%s*(.+)'
       if title then
+         title = title:gsub('##$','')
          sections[L] = F:add_document_section(title)
       end
       L = L + 1
