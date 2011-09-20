@@ -1,6 +1,6 @@
 project='LDoc'
 title='LDoc documentation'
 description='A Lua documentation tool'
-format='markdown'
+format='discount'
 file='ldoc.lua'
 readme='docs/doc.md'

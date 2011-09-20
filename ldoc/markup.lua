@@ -89,9 +89,20 @@ local function process_multiline_markdown(ldoc, txt, F)
       indent, line = indent_line(line)
       if indent >= 4 then -- indented code block
          code = {}
+         local plain
          while indent >= 4 or not non_blank(line) do
-            if not start_indent then start_indent = indent end
-            append(code,line:sub(start_indent))
+            if not start_indent then
+               start_indent = indent
+               if line:match '^%s*@plain%s*$' then
+                  plain = true
+                  line = getline()
+               end
+            end
+            if not plain then
+               append(code,line:sub(start_indent))
+            else
+               append(res, line)
+            end
             line = getline()
             if line == nil then break end
             indent, line = indent_line(line)
@@ -100,7 +111,7 @@ local function process_multiline_markdown(ldoc, txt, F)
          if #code > 1 then table.remove(code) end
          code = concat(code,'\n')
          if code ~= '' then
-            code, err = prettify.lua(filename,code,L)
+            code, err = prettify.lua(filename,code..'\n',L)
             append(res, code)
             append(res,'</pre>')
          else

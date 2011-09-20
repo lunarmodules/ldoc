@@ -1,10 +1,10 @@
 ## Introduction
 
-LDoc is a second-generation documentation tool that can be used as a replacement for LuaDoc. It arose out of my need to document my own projects and only depends on the [Penlight]() libraries.
+LDoc is a second-generation documentation tool that can be used as a replacement for [LuaDoc](http://keplerproject.github.com/luadoc/). It arose out of my need to document my own projects and only depends on the [Penlight](https://github.com/stevedonovan/Penlight) libraries.
 
 It is mostly compatible with LuaDoc, except that certain workarounds are no longer needed. For instance, it is not so married to the idea that Lua modules should be defined using the `module()` function; this is not only a matter of taste since `module` is deprecated in Lua 5.2.
 
-Otherwise, the output is very similar, which is no accident since the HTML templates are based directly on LuaDoc. You have an option to ship your own customized templates and style sheets with your project, however. You have an option to use Markdown to process the documentation, which means no ugly HTML is needed in doc comments.  C/C++ extension modules may be documented in a similar way, although naturally less can be inferred from the code itself.
+Otherwise, the output is very similar, which is no accident since the HTML templates are based directly on LuaDoc. You can ship your own customized templates and style sheets with your project, however. You have an option to use Markdown to process the documentation, which means no ugly HTML is needed in doc comments.  C/C++ extension modules may be documented in a similar way, although naturally less can be inferred from the code itself.
 
 LDoc can provide integrated documentation, with traditional function comments, any readme in Markdown format, and specified source examples. Lua source in examples and the readme will be prettified.
 
@@ -149,9 +149,9 @@ That is, a module may contain exported functions, local functions, tables and fi
 
 When the code analysis would lead to the wrong type, you can always be explicit.
 
-   --- module contents.
-   -- @field _CONTENTS
-   M._CONTENTS = {constants=true,one=true,...}
+    --- module contents.
+    -- @field _CONTENTS
+    M._CONTENTS = {constants=true,one=true,...}
 
 The order of tags is not important, but as always, consistency is useful.  Tags like 'param' and 'return' can be specified multiple times, whereas a type tag like 'function' can only occur once in a comment. The basic rule is that a single doc comment can only document one entity.
 
@@ -276,6 +276,7 @@ This is because type names (like 'function', 'module', 'table', etc) can functio
 
 LDoc will also work with C/C++ files, since extension writers clearly have the same documentation needs as Lua module writers:
 
+    @plain
     /***
     Create a table with given array and hash slots.
     @function createtable
@@ -383,6 +384,7 @@ See 'tests/examples/mylib.c' for the full example.
 
 The command-line options are:
 
+    @plain
     ldoc, a documentation generator for Lua, vs 0.5
       -d,--dir (default docs) output directory
       -o,--output  (default 'index') output name
@@ -395,7 +397,7 @@ The command-line options are:
       -1,--one              use one-column output layout
       -p,--project (default ldoc) project name
       -t,--title (default Reference) page title
-      -f,--format (default plain) formatting - can be markdown or plain
+      -f,--format (default plain) formatting - can be markdown, discount or plain
       -b,--package  (default .) top-level package basename (needed for module(...))
       -x,--ext (default html) output file extension
       -c,--config (default config.ld) configuration name
@@ -418,7 +420,7 @@ Without the `-b` setting the base of the package to  the _parent_ of the directo
 
 For new-style modules, that don't use `module()`, it is recommended that the module comment has an explicit `@module PACKAGE.NAME`. If it does not, then `ldoc` will still attempt to deduce the module name, but may need help with `--package/-b` as above.
 
-`format = 'markdown'` can be used in your `config.ld` and will be used to process summaries and descriptions. This requires [markdown.lua](http://www.frykholm.se/files/markdown.lua) by Niklas Frykholm to be installed (this can be most easily done with `luarocks install markdown`.)
+`format = 'markdown'` can be used in your `config.ld` and will be used to process summaries and descriptions. This requires [markdown.lua](http://www.frykholm.se/files/markdown.lua) by Niklas Frykholm to be installed (this can be most easily done with `luarocks install markdown`.)  A much faster alternative is [lua-discount](http://asbradbury.org/projects/lua-discount/) which you can use by setting `format` to 'discount' after installing using `luarocks install lua-discount`)
 
 A special case is if you simply say 'ldoc .'. Then there _must_ be a `config.ld` file available in the directory, and it can specify the file:
 
@@ -443,6 +445,7 @@ The default sections used by LDoc are 'Functions', 'Tables' and 'Fields', corres
 
 There is an option to simply dump the results of parsing modules. Consider the C example `tests/example/mylib.c':
 
+    @plain
     $ ldoc --dump mylib.c
     ----
     module: mylib   A sample C extension.
@@ -470,6 +473,7 @@ to see a raw dump of the data. (Simply using `dump` as the value here would be a
 
 LDoc takes this idea of data dumping one step further. If used with the `-m` flag it will look up an installed Lua module and parse it. If it has been marked up in LuaDoc-style then you will get a handy summary of the contents:
 
+    @plain
     $ ldoc -m pl.pretty
     ----
     module: pl.pretty       Pretty-printing Lua tables.
@@ -480,6 +484,7 @@ LDoc takes this idea of data dumping one step further. If used with the `-m` fla
 
 You can specify a fully qualified function to get more information:
 
+    @plain
     $ ldoc -m pl.pretty.write
 
     function        write(tbl, space, not_clever)
@@ -492,6 +497,7 @@ You can specify a fully qualified function to get more information:
 
 LDoc knows about the basic Lua libraries, so that it can be used as a handy console reference:
 
+    @plain
     $> ldoc -m assert
 
     function        assert(v, message)
@@ -504,6 +510,7 @@ LDoc knows about the basic Lua libraries, so that it can be used as a handy cons
 
 Thanks to mitchell's [TextAdept](http://code.google.com/p/textadept/) project, LDoc has a set of `.luadoc` files for all the standard tables, plus [LuaFileSystem](http://keplerproject.github.com/luafilesystem/) and [LPeg](http://www.inf.puc-rio.br/~roberto/lpeg/lpeg.html).
 
+    @plain
     $> ldoc -m lfs.lock
 
     function        lock(filehandle, mode, start, length)
@@ -526,7 +533,7 @@ Thanks to mitchell's [TextAdept](http://code.google.com/p/textadept/) project, L
 
 The _navigation section_ down the left has several parts:
 
-  - The project name (`project' in the config)
+  - The project name ('project' in the config)
   - A project description ('description')
   - ''Contents'' of the current page
   - ''Modules'' listing all the modules in this project
@@ -558,7 +565,7 @@ Like all good Github projects, Winapi has a `readme.md`:
 
 This goes under the 'Topics' global section; the 'Contents' of this document is generated from the second-level (##) headings of the readme.
 
-Readme files are always processed with Markdown, but may also contain @\{} references back to the documentation and to example files. As with doc comments, a link to a standard Lua function like @\{os.execute} will work as well. Any code sections will be pretty-printed as well.
+Readme files are always processed with Markdown, but may also contain @\{} references back to the documentation and to example files. As with doc comments, a link to a standard Lua function like @\{os.execute} will work as well. Any code sections will be pretty-printed as well, unless the first indented line is '@plain'.
 
 ## Fields allowed in `config.ld`
 
@@ -569,7 +576,7 @@ These mostly have the same meaning as the corresponding parameters:
   - `title` page title, default 'Reference'
   - `package`
   - `all` show local functions, etc as well in the docs
-  - `format` markup processor, can be 'none' (default) or 'markdown'
+  - `format` markup processor, can be 'plain' (default), 'markdown' or 'discount'
   - `output` output name (default 'index')
   - `dir` directory for output files (default 'docs')
   - `ext` extension for output (default 'html')
@@ -605,4 +612,4 @@ This is then styled with `ldoc.css`. Currently the template and stylesheet is ve
 
 You may customize how you generate your documentation by specifying an alternative style sheet and/or template, which can be deployed with your project. The parameters are `--style` and `--template`, which give the directories where `ldoc.css` and `ldoc.ltp` are to be found. If `config.ld` contains these variables, they are interpreted slightly differently; if they are true, then it means 'use the same directory as config.ld'; otherwise they must be a valid directory relative to the ldoc invocation. An example of fully customized documentation is `tests/example/style': this is what you could call 'minimal Markdown style' where there is no attempt to tag things (except emphasizing parameter names). The narrative ought to be sufficient, if it is written appropriately.
 
-Of course, there's no reason why LDoc must always generate HTML. `--ext' defines what output extension to use; this can also be set in the configuration file. So it's possible to write a template that converts LDoc output to LaTex, for instance.
+Of course, there's no reason why LDoc must always generate HTML. `--ext` defines what output extension to use; this can also be set in the configuration file. So it's possible to write a template that converts LDoc output to LaTex, for instance.
