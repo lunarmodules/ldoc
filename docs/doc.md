@@ -1,4 +1,16 @@
-## LDoc - A Lua Documentation Tool
+## Introduction
+
+LDoc is a second-generation documentation tool that can be used as a replacement for LuaDoc. It arose out of my need to document my own projects and only depends on the [Penlight]() libraries.
+
+It is mostly compatible with LuaDoc, except that certain workarounds are no longer needed. For instance, it is not so married to the idea that Lua modules should be defined using the `module()` function; this is not only a matter of taste since `module` is deprecated in Lua 5.2.
+
+Otherwise, the output is very similar, which is no accident since the HTML templates are based directly on LuaDoc. You have an option to ship your own customized templates and style sheets with your project, however. You have an option to use Markdown to process the documentation, which means no ugly HTML is needed in doc comments.  C/C++ extension modules may be documented in a similar way, although naturally less can be inferred from the code itself.
+
+LDoc can provide integrated documentation, with traditional function comments, any readme in Markdown format, and specified source examples. Lua source in examples and the readme will be prettified.
+
+Although there are a fair number of command-line options, the preferred route is to write a `config.ld` configuration file in Lua format. By convention, if LDoc is simply invoked as `ldoc .` it will read this file first. In this way, the aim is to make it very easy for end-users to build your documentation using this simple command.
+
+## Commenting Conventions
 
 LDoc follows the conventions established by Javadoc and later by LuaDoc.
 
@@ -13,10 +25,10 @@ Only 'doc comments' are parsed; these can be started with at least 3 hyphens, or
 
 You can also use Lua block comments:
 
-   --[[--
-   Summary. A description
-   ..;
-   ]]
+    --[[--
+     Summary. A description
+     ...;
+    ]]
 
 Any module or script must start with a doc comment; any other files are ignored and a warning issued. The only exception is if the module starts with an explicit `module` statement.
 
@@ -149,7 +161,7 @@ If only one module or script is documented for a project, then the `index.html` 
 
  (If you want to document a script, there is a project-level type 'script' for that.)  By default it will process any file ending in `.lua` or `.luadoc`.
 
-## @see References
+## See References
 
 The tag 'see' is used to reference other parts of the documentation, and 'usage' can provide examples of use:
 
@@ -165,6 +177,7 @@ The tag 'see' is used to reference other parts of the documentation, and 'usage'
 
 Here it's assumed that 'split' is a function defined in the same module. If you wish to link to a function in another module, then the reference has to be qualified.
 
+References to methods use a colon: `myclass:method`; this is for instance how you would refer to members of a `@type` section.
 
 The example at `tests/complex` shows how @see references are interpreted:
 
@@ -197,10 +210,13 @@ References may be made inline using the `@{ref}` syntax. This may appear anywher
     -- @field viscosity
     -- @table stdvars
 
+`@{ref}` is very useful for referencing your API from code samples and readme text.
 
 ## Sections
 
-LDoc supports _explicit_ sections. The need occurs when a module has a lot of functions that need to be put into logical sections.
+LDoc supports _explicit_ sections. By default, the sections correspond to the pre-existing types in a module: 'Functions', 'Tables' and 'Fields' (There is another default section 'Local Functions' which only appears if LDoc is invoked with the `--all` flag.) But new sections can be added; the first mechanism is when you define a new type (say 'macro') you can define a new section ('Macros') to contain these types. There is also a way to declare ad-hoc sections using the `@section` tag.
+
+The need occurs when a module has a lot of functions that need to be put into logical sections.
 
     --- File functions.
     -- Useful utilities for opening foobar format files.
@@ -237,6 +253,8 @@ A specialized kind of section is `type`: it is used for documenting classes. The
 
 (In an ideal world, we would use the word 'class' instead of 'type', but this would conflict with the LuaDoc usage.)
 
+A section continues until the next section is found, or end of file.
+
 ## Differences from LuaDoc
 
 LDoc only does 'module' documentation, so the idea of 'files' is redundant.
@@ -272,13 +290,9 @@ LDoc does not pretend to understand C/C++, so in this case it is necessary to sp
 
 LDoc gives the documenter the option to use Markdown to parse the contents of comments.
 
+## Adding new Tags
 
-
-## LDoc is Extensible
-
-LDoc tries to be faithful to LuaDoc, but provides some extensions.
-
-'@function zero_fun' is short for the common sequence '@class function \ @name zero_fun'. In general, any type ('function','table',etc) can be used as a tag:
+LDoc tries to be faithful to LuaDoc, but provides some extensions. Aliases for tags can be defined, and new types declared.
 
     --- zero function. Two new ldoc features here; item types
     -- can be used directly as tags, and aliases for tags
@@ -343,7 +357,9 @@ Simularly, function parameter comments can be directly used:
         ...
     end
 
-## Supporting Extension modules written in C
+As always, explicit tags can override this behaviour if it is inappropriate.
+
+## Extension modules written in C
 
 LDoc can process C/C++ files:
 
@@ -402,27 +418,7 @@ Without the `-b` setting the base of the package to  the _parent_ of the directo
 
 For new-style modules, that don't use `module()`, it is recommended that the module comment has an explicit `@module PACKAGE.NAME`. If it does not, then `ldoc` will still attempt to deduce the module name, but may need help with `--package/-b` as above.
 
-It is common to use an alias for the package name with new-style modules. Here an alias is explicitly specified, so that `ldoc` knows that functions qualified with `A` are part of the module `simple_alias`:
-
-    ------------
-    -- A new-style module.
-    -- @alias A
-
-    local simple_alias = {}
-    local A = simple_alias
-
-    --- return the answer. And complete the description
-    function A.answer()
-      return 42
-    end
-
-    return simple_alias
-
-(Here the actual module name is deduced from the file name, just like with `module(...)`)
-
-It's semi-standard to use 'M' or '_M' for the module alias; LDoc will recognize these automatically.
-
-This requires [markdown.lua](http://www.frykholm.se/files/markdown.lua) by Niklas Frykholm to be installed (this can be most easily done with `luarocks install markdown`.)  `format = 'markdown'` can be used in your `config.ld`.
+`format = 'markdown'` can be used in your `config.ld` and will be used to process summaries and descriptions. This requires [markdown.lua](http://www.frykholm.se/files/markdown.lua) by Niklas Frykholm to be installed (this can be most easily done with `luarocks install markdown`.)
 
 A special case is if you simply say 'ldoc .'. Then there _must_ be a `config.ld` file available in the directory, and it can specify the file:
 
@@ -441,10 +437,9 @@ A special case is if you simply say 'ldoc .'. Then there _must_ be a `config.ld`
     $ ldoc --output mylib mylib.lua --> results in docs/mylib.html
     $ ldoc --output mylib --dir html mylib.lua --> results in html/mylib.html
 
-
 The default sections used by LDoc are 'Functions', 'Tables' and 'Fields', corresponding to the built-in types 'function', 'table' and 'field'. If `config.ld` contains something like `new_type("macro","Macros")` then this adds a new section 'Macros' which contains items of 'macro' type - 'macro' is registered as a new valid tag name.  The default template then presents items under their corresponding section titles, in order of definition.
 
-## Dumping and getting Help about a Module
+## Getting Help about a Module
 
 There is an option to simply dump the results of parsing modules. Consider the C example `tests/example/mylib.c':
 
@@ -471,7 +466,7 @@ There is a more customizable way to process the data, using the `--filter` param
 
     $ ldoc --filter pl.pretty.dump mylib.c
 
-to see a raw dump of the data. (Simply using `dump` here would be a shorthand for `pl.pretty.dump`.)
+to see a raw dump of the data. (Simply using `dump` as the value here would be a shorthand for `pl.pretty.dump`.)  This is potentially very powerful, since you may write arbitrary Lua code to extract the information you need from your project.
 
 LDoc takes this idea of data dumping one step further. If used with the `-m` flag it will look up an installed Lua module and parse it. If it has been marked up in LuaDoc-style then you will get a handy summary of the contents:
 
@@ -540,14 +535,14 @@ Note that `description` will be passed through Markdown, if it has been specifie
 
 'Contents' is automatically generated. It will contain any explicit sections, if they have been used. Otherwise you will get the usual categories: 'Functions' and 'Tables'.
 
-'Modules' will appear for any project providing Lua libraries; there may also be a 'Scripts' section if the project contains Lua scripts. For example,  [LuaMacro](http://stevedonovan.github.com/LuaMacro/docs/api.html) has a driver script `luam` in this section. The [builtin](http://stevedonovan.github.com/LuaMacro/docs/modules/macro.builtin.html) module only defines macros, which are defined as a [custom tag type](!).
+'Modules' will appear for any project providing Lua libraries; there may also be a 'Scripts' section if the project contains Lua scripts. For example,  [LuaMacro](http://stevedonovan.github.com/LuaMacro/docs/api.html) has a driver script `luam` in this section. The [builtin](http://stevedonovan.github.com/LuaMacro/docs/modules/macro.builtin.html) module only defines macros, which are defined as a _custom tag type_. ?ref to config.ld for LM
 
 
-## Including source examples and a readme file
+## Including examples and a readme file
 
 It has been long known that documentation generated just from the source is not really adequate to explain _how_ to use a library.  People like reading narrative documentation, and they like looking at examples.  Previously I found myself dealing with source-generated and writer-generated documentation using different tools, and having to match these up.
 
-LDoc allows for source examples to be included in the documentation. For example, see the online documentation for [winapi](http://stevedonovan.github.com/winapi/api.html). The function `utf8_expand` has a @see reference to 'testu.lua' and following that link gives you a pretty-printed version of the code.
+LDoc allows for source examples to be included in the documentation. For example, see the online documentation for [winapi](http://stevedonovan.github.com/winapi/api.html). The function `utf8_expand` has a `@see` reference to 'testu.lua' and following that link gives you a pretty-printed version of the code.
 
 The line in the `config.ld` that enables this is:
 
@@ -563,7 +558,7 @@ Like all good Github projects, Winapi has a `readme.md`:
 
 This goes under the 'Topics' global section; the 'Contents' of this document is generated from the second-level (##) headings of the readme.
 
-Readme files are always processed with Markdown, but may also contain `@{}` references back to the documentation and to example files. As with doc comments, a link to a standard Lua function like @{os.execute}` will work as well. Any code sections will be pretty-printed as well; this may be not want you want, so if the first line of an indented code block is '@nocode' then that block will not be pretty-printed.
+Readme files are always processed with Markdown, but may also contain `@{}` references back to the documentation and to example files. As with doc comments, a link to a standard Lua function like @{os.execute}` will work as well. Any code sections will be pretty-printed as well.
 
 
 ## Fields allowed in `config.ld`
@@ -588,7 +583,6 @@ These only appear in `config.ld`:
   - `examples` a directory or file: can be a table
   - `readme` name of readme file (to be processed with Markdown)
 
-
 Available functions are:
 
   - `alias(a,tag)` provide an alias `a` for the tag `tag`, for instance `p` as short for `param`
@@ -597,11 +591,9 @@ Available functions are:
   - `new_type(tag,header,project_level)` used to add new tags, which are put in their own section `header`. They may be 'project level'.
 
 
-
-
 ## Generating HTML
 
-LDoc, like LuaDoc, generates output HTML using a template, in this case `ldoc.ltp`. This is expanded by the powerful but simple preprocessor devised originally by [Rici Lake](http://lua-users.org/wiki/SlightlyLessSimpleLuaPreprocessor) which is now part of Penlight. There are two rules - any line starting with '#' is Lua code, which can also be embedded with '$(...)'.
+LDoc, like LuaDoc, generates output HTML using a template, in this case `ldoc_ltp.lua`. This is expanded by the powerful but simple preprocessor devised originally by [Rici Lake](http://lua-users.org/wiki/SlightlyLessSimpleLuaPreprocessor) which is now part of Penlight. There are two rules - any line starting with '#' is Lua code, which can also be embedded with '$(...)'.
 
     <h2>Contents</h2>
     <ul>
