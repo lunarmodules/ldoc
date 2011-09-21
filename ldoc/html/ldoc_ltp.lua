@@ -50,6 +50,17 @@ return [==[
 </ul>
 # end
 
+
+# if ldoc.no_summary and module then -- bang out the functions on the side
+# for kind, items in module.kinds() do
+<h2>$(kind)</h2>
+<ul>
+# for item in items() do
+    <li><a href="#$(item.name)">$(display_name(item))</a></li>
+# end
+</ul>
+# end
+# end
 # -------- contents of project ----------
 # if not ldoc.no_summary then
 # local this_mod = module and module.name
@@ -67,15 +78,7 @@ return [==[
 # end
 #end
 </ul>
-# else
-<ul>
-# for kind, items in module.kinds() do
-<h2>$(kind)</h2>
-# for item in items() do
-    <li><a href="#$(item.name)">$(display_name(item))</a></li>
-# end end
-</ul>
-#end
+# end
 
 </div>
 

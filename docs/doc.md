@@ -253,7 +253,7 @@ A specialized kind of section is `type`: it is used for documenting classes. The
 
 (In an ideal world, we would use the word 'class' instead of 'type', but this would conflict with the LuaDoc usage.)
 
-A section continues until the next section is found, or end of file.
+A section continues until the next section is found, `@section end`, or end of file.
 
 ## Differences from LuaDoc
 
@@ -308,14 +308,14 @@ Here an alias for 'param' has been defined. If a file `config.ld` is found in th
     project = "testmod"
     alias("p","param")
 
-Extra tag types can be defined:
+Extra tag _types_ can be defined:
 
     new_type("macro","Macros")
 
-And then used as any other tag:
+And then used as any other type:
 
     -----
-    -- A useful macro. This is an example of a custom 'kind'.
+    -- A useful macro. This is an example of a custom type.
     -- @macro first_macro
     -- @see second_function
 
@@ -323,7 +323,7 @@ This will also create a new module section called 'Macros'.
 
 ## Inferring more from Code
 
-The qualified name of a function will be inferred from any `function` keyword following the doc comment. LDoc goes further with code analysis, however.
+The qualified name of a function will be inferred from any `function` keyword following the doc comment. LDoc goes further with this kind of code analysis, however.
 
 Instead of:
 
@@ -374,7 +374,7 @@ LDoc can process C/C++ files:
     static int l_createtable (lua_State *L) {
     ....
 
-Both `/**` and `///` are recognized as starting a comment block. Otherwise, the tags are processed in exactly the same way. It is necessary to specify that this is a function with a given name, since this cannot be reliably be inferred from code.
+Both `/**` and `///` are recognized as starting a comment block. Otherwise, the tags are processed in exactly the same way. It is necessary to specify that this is a function with a given name, since this cannot be reliably be inferred from code. Such a file will need a module comment, which is treated exactly as in Lua.
 
 An unknown extension can be associated with a language using a call like `add_language_extension('lc','c')` in `config.ld`. (Currently the language can only be 'c' or 'lua'.)
 
@@ -382,45 +382,22 @@ See 'tests/examples/mylib.c' for the full example.
 
 ## Basic Usage
 
-The command-line options are:
-
-    @plain
-    ldoc, a documentation generator for Lua, vs 0.5
-      -d,--dir (default docs) output directory
-      -o,--output  (default 'index') output name
-      -v,--verbose          verbose
-      -a,--all              show local functions, etc, in docs
-      -q,--quiet            suppress output
-      -m,--module           module docs as text
-      -s,--style (default !) directory for style sheet (ldoc.css)
-      -l,--template (default !) directory for template (ldoc.ltp)
-      -1,--one              use one-column output layout
-      -p,--project (default ldoc) project name
-      -t,--title (default Reference) page title
-      -f,--format (default plain) formatting - can be markdown, discount or plain
-      -b,--package  (default .) top-level package basename (needed for module(...))
-      -x,--ext (default html) output file extension
-      -c,--config (default config.ld) configuration name
-      --dump                debug output dump
-      --filter (default none) filter output as Lua data (e.g pl.pretty.dump)
-      <file> (string) source file or directory containing source
-
 For example, to process all files in the 'lua' directory:
 
     $ ldoc lua
     output written to docs/
 
-Thereafter the `docs` directory will contain `index.html` which points to individual modules in the `modules` subdirectory.  The `--dir` flag can specify where the output is generated, and will ensure that the directory exists. The output structure is like LuaDoc: there is an `index.html` and the individual modules are in the `modules` subdirectory.
+Thereafter the `docs` directory will contain `index.html` which points to individual modules in the `modules` subdirectory.  The `--dir` flag can specify where the output is generated, and will ensure that the directory exists. The output structure is like LuaDoc: there is an `index.html` and the individual modules are in the `modules` subdirectory. This applies to all project-level types, so that you can also get `scripts`, `examples` and `topics` directories.
 
-If your modules use `module(...)` then the module name has to be deduced. If `ldoc` is run from the root of the package, then this deduction does not need any help - e.g. if your package was `foo` then `ldoc foo` will work as expected. If we were actually in the `foo` directory then `ldoc -b .. .` will correctly deduce the module names. Another example would be generating documentation for LuaDoc itself:
+If your modules use `module(...)` then the module name has to be deduced. If `ldoc` is run from the root of the package, then this deduction does not need any help - e.g. if your package was `foo` then `ldoc foo` will work as expected. If we were actually in the `foo` directory then `ldoc -b .. .` will correctly deduce the module names. An example would be generating documentation for LuaDoc itself:
 
     $ ldoc -b .. /path/to/luadoc
 
-Without the `-b` setting the base of the package to  the _parent_ of the directory, then implicit modules like `luadoc.config` will be incorrectly placed in the global namespace.
+Without the `-b` setting the base of the package to  the _parent_ of the directory, implicit modules like `luadoc.config` will be incorrectly placed in the global namespace.
 
 For new-style modules, that don't use `module()`, it is recommended that the module comment has an explicit `@module PACKAGE.NAME`. If it does not, then `ldoc` will still attempt to deduce the module name, but may need help with `--package/-b` as above.
 
-`format = 'markdown'` can be used in your `config.ld` and will be used to process summaries and descriptions. This requires [markdown.lua](http://www.frykholm.se/files/markdown.lua) by Niklas Frykholm to be installed (this can be most easily done with `luarocks install markdown`.)  A much faster alternative is [lua-discount](http://asbradbury.org/projects/lua-discount/) which you can use by setting `format` to 'discount' after installing using `luarocks install lua-discount`)
+`format = 'markdown'` can be used in your `config.ld` and will be used to process summaries and descriptions. This requires [markdown.lua](http://www.frykholm.se/files/markdown.lua) by Niklas Frykholm to be installed (this can be most easily done with `luarocks install markdown`.)  A much faster alternative is [lua-discount](http://asbradbury.org/projects/lua-discount/) which you can use by setting `format` to 'discount' after installing using `luarocks install lua-discount`)  The [discount](http://www.pell.portland.or.us/~orc/Code/discount/) Markdown processor additionally has more features than the pure Lua version, such as PHP-Extra style tables.
 
 A special case is if you simply say 'ldoc .'. Then there _must_ be a `config.ld` file available in the directory, and it can specify the file:
 
@@ -429,6 +406,8 @@ A special case is if you simply say 'ldoc .'. Then there _must_ be a `config.ld`
     description = "mymod does some simple but useful things"
 
 `file` can of course point to a directory, just as with the `--file` option. This mode makes it particularly easy for the user to build the documentation, by allowing you to specify everything explicitly in the configuration.
+
+In `config.ld`, `file` may be a Lua table, containing file names or directories; if it has an `exclude` field then that will be used to exclude files from the list, for example `{'examples', exclude = {'examples/slow.lua'}}`.
 
 
 ## Processing Single Modules
@@ -542,8 +521,41 @@ Note that `description` will be passed through Markdown, if it has been specifie
 
 'Contents' is automatically generated. It will contain any explicit sections, if they have been used. Otherwise you will get the usual categories: 'Functions', 'Tables' and 'Fields'.
 
-'Modules' will appear for any project providing Lua libraries; there may also be a 'Scripts' section if the project contains Lua scripts. For example,  [LuaMacro](http://stevedonovan.github.com/LuaMacro/docs/api.html) has a driver script `luam` in this section. The [builtin](http://stevedonovan.github.com/LuaMacro/docs/modules/macro.builtin.html) module only defines macros, which are defined as a _custom tag type_. ?ref to config.ld for LM
+'Modules' will appear for any project providing Lua libraries; there may also be a 'Scripts' section if the project contains Lua scripts. For example,  [LuaMacro](http://stevedonovan.github.com/LuaMacro/docs/api.html) has a driver script `luam` in this section. The [builtin](http://stevedonovan.github.com/LuaMacro/docs/modules/macro.builtin.html) module only defines macros, which are defined as a _custom tag type_.
 
+The _content section_ on the right shows:
+
+  - The module summary and description
+  - The contents summary, per section as above
+  - The detailed documentation for each item
+
+As before, the description can use Markdown. The summary contains the contents of each section as a table, with links to the details. This is where the difference between an item's summary and an item's description is important; the first will appear in the contents summary. The item details show the item name and its summary again, followed by the description. There are then sections for the following tags: 'param', 'usage', 'return' and 'see' in that order. (For tables, 'Fields' is used instead of 'Parameters' but internally fields of a table are stored as the 'param' tag.)
+
+You can of course customize the default template, but there are some parameters that can control what the template will generate. Setting `one` to `true` in your configuration file will give a _one-column_ layout, which can be easier to use as a programming reference.  You can suppress the contents summary with `no_summary`.
+
+## Customizing the Page
+
+Setting `no_return_or_parms` to `true` will suppress the display of 'param' and 'return' tags. This may appeal to programmers who dislike the traditional @tag soup xDoc style and prefer to comment functions just with a description. This is particularly useful when using Markdown in a stylized way to specify arguments:
+
+    ---------
+    -- This extracts the shortest common substring from the strings _s1_ and _s2_
+    function M.common_substring(s1,s2)
+
+Here I've chosen to italicise parameter names; the main thing is to be consistent.
+
+This style is close to the Python [documentation standard](http://docs.python.org/library/array.html#module-array), especially when used with `no_summary`.
+
+It is also very much how the Lua documentation is ordered. For instance, this configuration file formats the built-in documentation for the Lua global functions in a way which is close to the original:
+
+    project = 'Lua'
+    description = 'Lua Standard Libraries'
+    file = {'ldoc/builtin',exclude = {'ldoc/builtin/globals.lua'}}
+    no_summary = true
+    no_return_or_parms = true
+    format = 'discount'
+
+
+Generally, using Markdown gives you the opportunity to structure your documentation in any way you want; particularly if using lua-discount and its [table syntax](http://michelf.com/projects/php-markdown/extra/#table); the desired result can often be achieved then by using a custom style sheet.
 
 ## Including examples and a readme file
 
@@ -588,6 +600,7 @@ These only appear in `config.ld`:
   - `description` a project description used under the project title
   - `examples` a directory or file: can be a table
   - `readme` name of readme file (to be processed with Markdown)
+  - `no_return_or_parms` don't show parameters or return values in output
 
 Available functions are:
 
