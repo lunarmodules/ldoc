@@ -1,11 +1,11 @@
---- io.
+--- Reading and Writing Files.
 
 module 'io'
 
 ---
 -- Equivalent to `file:close()`. Without a `file`, closes the default
 -- output file.
-function io.close([file]) end
+function io.close(file) end
 
 ---
 -- Equivalent to `file:flush` over the default output file.
@@ -18,7 +18,7 @@ function io.flush() end
 -- called without parameters, it returns the current default input file.
 -- In case of errors this function raises the error, instead of returning an
 -- error code.
-function io.input([file]) end
+function io.input(file) end
 
 ---
 -- Opens the given file name in read mode and returns an iterator function
@@ -31,7 +31,7 @@ function io.input([file]) end
 -- The call `io.lines()` (with no file name) is equivalent to
 -- `io.input():lines()`; that is, it iterates over the lines of the default
 -- input file. In this case it does not close the file when the loop ends.
-function io.lines([filename]) end
+function io.lines(filename) end
 
 ---
 -- This function opens a file, in the mode specified in the string `mode`. It
@@ -47,18 +47,18 @@ function io.lines([filename]) end
 -- The `mode` string can also have a '`b`' at the end, which is needed in
 -- some systems to open the file in binary mode. This string is exactly what
 -- is used in the standard C function `fopen`.
-function io.open(filename [, mode]) end
+function io.open(filename , mode) end
 
 ---
 -- Similar to `io.input`, but operates over the default output file.
-function io.output([file]) end
+function io.output(file) end
 
 ---
 -- Starts program `prog` in a separated process and returns a file handle
 -- that you can use to read data from this program (if `mode` is `"r"`,
 -- the default) or to write data to this program (if `mode` is `"w"`).
 -- This function is system dependent and is not available on all platforms.
-function io.popen(prog [, mode]) end
+function io.popen(prog , mode) end
 
 ---
 -- Equivalent to `io.input():read`.
@@ -134,7 +134,7 @@ function file:read(...) end
 -- it; the call `file:seek("set")` sets the position to the beginning of the
 -- file (and returns 0); and the call `file:seek("end")` sets the position
 -- to the end of the file, and returns its size.
-function file:seek([whence] [, offset]) end
+function file:seek(whence , offset) end
 
 ---
 -- Sets the buffering mode for an output file. There are three available
@@ -147,7 +147,7 @@ function file:seek([whence] [, offset]) end
 --   there is any input from some special files (such as a terminal device).
 -- For the last two cases, `size` specifies the size of the buffer, in
 -- bytes. The default is an appropriate size.
-function file:setvbuf(mode [, size]) end
+function file:setvbuf(mode , size) end
 
 ---
 -- Writes the value of each of its arguments to the `file`. The arguments

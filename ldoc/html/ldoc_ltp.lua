@@ -29,15 +29,13 @@ return [==[
 <!-- Menu -->
 
 <div id="navigation">
-
+<br/>
 <h1>$(ldoc.project)</h1>
 
 # if not ldoc.single and module then -- reference back to project index
 <ul>
   <li><a href="../$(ldoc.output).html">Index</a></li>
 </ul>
-# else
-<p>$(ldoc.description)</p>
 # end
 
 # --------- contents of module -------------
@@ -62,7 +60,7 @@ return [==[
 # end
 # end
 # -------- contents of project ----------
-# if not ldoc.no_summary then
+# -- if not ldoc.no_summary then
 # local this_mod = module and module.name
 # for kind, mods, type in ldoc.kinds() do
 #  if not ldoc.kinds_allowed or ldoc.kinds_allowed[type] then
@@ -76,7 +74,7 @@ return [==[
 #   end
 #  end
 # end
-#end
+# -- end
 </ul>
 # end
 
@@ -184,7 +182,10 @@ return [==[
 # else -- if module; project-level contents
 
 # if ldoc.description then
-  <p>$(M(ldoc.description,nil))</p>
+  <h2>$(M(ldoc.description,nil))</h2>
+# end
+# if ldoc.full_description then
+  <p>$(M(ldoc.full_description,nil))</p>
 # end
 
 # for kind, mods in ldoc.kinds() do

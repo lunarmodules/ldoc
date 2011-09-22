@@ -1,4 +1,4 @@
---- math.
+--- standard mathematical functions.
 
 module 'math'
 
@@ -112,7 +112,7 @@ function math.rad(x) end
 -- `math.random` returns a uniform pseudo-random integer in the range *[1,
 -- m]*. When called with two integer numbers `m` and `n`, `math.random`
 -- returns a uniform pseudo-random integer in the range *[m, n]*.
-function math.random([m [, n]]) end
+function math.random(m , n) end
 
 ---
 -- Sets `x` as the "seed" for the pseudo-random generator: equal seeds

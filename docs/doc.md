@@ -557,7 +557,7 @@ It is also very much how the Lua documentation is ordered. For instance, this co
 
 Generally, using Markdown gives you the opportunity to structure your documentation in any way you want; particularly if using lua-discount and its [table syntax](http://michelf.com/projects/php-markdown/extra/#table); the desired result can often be achieved then by using a custom style sheet.
 
-## Including examples and a readme file
+## Examples and readme files
 
 It has been long known that documentation generated just from the source is not really adequate to explain _how_ to use a library.  People like reading narrative documentation, and they like looking at examples.  Previously I found myself dealing with source-generated and writer-generated documentation using different tools, and having to match these up.
 

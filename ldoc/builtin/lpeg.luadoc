@@ -1,4 +1,4 @@
---- LPeg.
+--- LPeg PEG pattern matching.
 
 module 'lpeg'
 
@@ -18,7 +18,7 @@ module 'lpeg'
 -- So, if we want to find a pattern anywhere in a string, we must either write a
 -- loop in Lua or write a pattern that matches anywhere. This second approach is
 -- easy and quite efficient; see examples.
-function lpeg.match(pattern, subject [, init]) end
+function lpeg.match(pattern, subject , init) end
 
 ---
 -- If the given value is a pattern, returns the string "pattern". Otherwise
@@ -102,7 +102,7 @@ function lpeg.V(v) end
 --
 -- If called with an argument table, then it creates those fields inside the
 -- given table and returns that table.
-function lpeg.locale([table]) end
+function lpeg.locale(table) end
 
 ---
 -- Creates a simple capture, which captures the substring of the subject that
@@ -128,7 +128,7 @@ function lpeg.Cb(name) end
 ---
 -- Creates a constant capture. This pattern matches the empty string and
 -- produces all given values as its captured values.
-function lpeg.Cc([value, ...]) end
+function lpeg.Cc(...) end
 
 ---
 -- Creates a fold capture. If patt produces a list of captures C1 C2 ... Cn,
@@ -169,7 +169,7 @@ function lpeg.Cf(patt, func) end
 -- capture. A named group has a different behavior. In most situations, a named
 -- group returns no values at all. Its values are only relevant for a following
 -- back capture or when used inside a table capture.
-function lpeg.Cg(patt [, name]) end
+function lpeg.Cg(patt , name) end
 
 ---
 -- Creates a position capture. It matches the empty string and captures the

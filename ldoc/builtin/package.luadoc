@@ -1,4 +1,4 @@
---- package.
+--- controlling how `require` finds packages.
 
 module 'package'
 

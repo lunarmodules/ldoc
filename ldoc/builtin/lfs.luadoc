@@ -1,4 +1,4 @@
---- LuaFileSystem.
+--- File and Directory manipulation
 
 module 'lfs'
 
@@ -13,18 +13,18 @@ module 'lfs'
 -- reference of os.time:
 --
 --   - dev: on Unix systems, this represents the device that the inode resides on.
---        On Windows systems, represents the drive number of the disk containing
---        the file
+--   On Windows systems, represents the drive number of the disk containing
+--   the file
 --   - ino: on Unix systems, this represents the inode number. On Windows systems
---        this has no meaning
+--   this has no meaning
 --   - mode: string representing the associated protection mode (the values could
---         be file, directory, link, socket, named pipe, char device, block
---         device or other)
+--   be file, directory, link, socket, named pipe, char device, block
+--   device or other)
 --   - nlink: number of hard links to the file
 --   - uid: user-id of owner (Unix only, always 0 on Windows)
 --   - gid: group-id of owner (Unix only, always 0 on Windows)
 --   - rdev: on Unix systems, represents the device type, for special file inodes.
---         On Windows systems represents the same as dev
+--   On Windows systems represents the same as dev
 --   - access: time of last access
 --   - modification: time of last data modification
 --   - change: time of last file status change
@@ -35,7 +35,7 @@ module 'lfs'
 -- link, it is followed (if it points to another link the chain is followed
 -- recursively) and the information is about the file it refers to. To obtain
 -- information about the link itself, see function lfs.symlinkattributes.
-function lfs.attributes(filepath [, aname]) end
+function lfs.attributes(filepath , aname) end
 
 ---
 -- Changes the current working directory to the given path.
@@ -50,7 +50,7 @@ function lfs.chdir(path) end
 -- lock:free().
 -- In case of any errors it returns nil and the error message. In particular,
 -- if the lock exists and is not stale it returns the "File exists" message.
-function lfs.lock_dir(path, [seconds_stale]) end
+function lfs.lock_dir(path, seconds_stale) end
 
 ---
 -- Returns a string with the current working directory or nil plus an error
@@ -73,7 +73,7 @@ function lfs.dir(path) end
 -- and its length; both should be numbers.
 -- Returns true if the operation was successful; in case of error, it returns
 -- nil plus an error string.
-function lfs.lock(filehandle, mode[, start[, length]])
+function lfs.lock(filehandle, mode, start, length)
 
 ---
 -- Creates a new directory. The argument is the name of the new directory.
@@ -99,7 +99,7 @@ function lfs.setmode(file, mode) end
 -- itself (not the file it refers to). This function is not available in Windows
 -- so you may want to make sure that lfs.symlinkattributes exists before using
 -- it.
-function lfs.symlinkattributes(filepath [, aname]) end
+function lfs.symlinkattributes(filepath , aname) end
 
 ---
 -- Set access and modification times of a file. This function is a bind to utime
@@ -110,7 +110,7 @@ function lfs.symlinkattributes(filepath [, aname]) end
 -- time provided is used; if both times are omitted, the current time is used.
 -- Returns true if the operation was successful; in case of error, it returns
 -- nil plus an error string.
-function lfs.touch(filepath [, atime [, mtime]]) end
+function lfs.touch(filepath , atime , mtime) end
 
 ---
 -- Unlocks a file or a part of it. This function works on open files; the file
@@ -119,4 +119,4 @@ function lfs.touch(filepath [, atime [, mtime]]) end
 -- should be numbers.
 -- Returns true if the operation was successful; in case of error, it returns
 -- nil plus an error string.
-function lfs.unlock(filehandle[, start[, length]]) end
+function lfs.unlock(filehandle, start, length) end

@@ -139,7 +139,7 @@ local ldoc_contents = {
    'alias','add_language_extension','new_type','add_section',
    'file','project','title','package','format','output','dir','ext',
    'one','style','template','description','examples','readme','all','manual_url',
-   'no_return_or_parms','no_summary'
+   'no_return_or_parms','no_summary','full_description'
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
@@ -185,7 +185,7 @@ local config_dir
 
 
 local ldoc_dir = arg[0]:gsub('[^/\\]+$','')
-local doc_path = ldoc_dir..'builtin/?.luadoc'
+local doc_path = ldoc_dir..'/ldoc/builtin/?.luadoc'
 
 
 -- ldoc -m is expecting a Lua package; this converts this to a file path

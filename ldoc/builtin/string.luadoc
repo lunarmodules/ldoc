@@ -1,4 +1,4 @@
---- string.
+--- string operations like searching and matching.
 
 module 'string'
 
@@ -7,7 +7,7 @@ module 'string'
 -- ..., `s[j]`. The default value for `i` is 1; the default value for `j`
 -- is `i`.
 -- Note that numerical codes are not necessarily portable across platforms.
-function string.byte(s [, i [, j]]) end
+function string.byte(s , i , j) end
 
 ---
 -- Receives zero or more integers. Returns a string with length equal to
@@ -33,7 +33,7 @@ function string.dump(function) end
 -- "magic". Note that if `plain` is given, then `init` must be given as well.
 -- If the pattern has captures, then in a successful match the captured values
 -- are also returned, after the two indices.
-function string.find(s, pattern [, init [, plain]]) end
+function string.find(s, pattern , init , plain) end
 
 ---
 -- Returns a formatted version of its variable number of arguments following
@@ -126,7 +126,7 @@ function string.gmatch(s, pattern) end
 --     local t = {name="lua", version="5.1"}
 --     x = string.gsub("$name-$version.tar.gz", "%$(%w+)", t)
 --     --> x="lua-5.1.tar.gz"
-function string.gsub(s, pattern, repl [, n]) end
+function string.gsub(s, pattern, repl , n) end
 
 ---
 -- Receives a string and returns its length. The empty string `""` has
@@ -145,7 +145,7 @@ function string.lower(s) end
 -- it returns nil. If `pattern` specifies no captures, then the whole match
 -- is returned. A third, optional numerical argument `init` specifies where
 -- to start the search; its default value is 1 and can be negative.
-function string.match(s, pattern [, init]) end
+function string.match(s, pattern , init) end
 
 ---
 -- Returns a string that is the concatenation of `n` copies of the string
@@ -162,7 +162,7 @@ function string.reverse(s) end
 -- be equal to -1 (which is the same as the string length). In particular,
 -- the call `string.sub(s,1,j)` returns a prefix of `s` with length `j`, and
 -- `string.sub(s, -i)` returns a suffix of `s` with length `i`.
-function string.sub(s, i [, j]) end
+function string.sub(s, i , j) end
 
 ---
 -- Receives a string and returns a copy of this string with all lowercase

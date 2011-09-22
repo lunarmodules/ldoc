@@ -1,4 +1,4 @@
---- os.
+--- Operating System facilities like date, time and program execution.
 
 module 'os'
 
@@ -34,7 +34,7 @@ function os.clock() end
 -- When called without arguments, `date` returns a reasonable date and time
 -- representation that depends on the host system and on the current locale
 -- (that is, `os.date()` is equivalent to `os.date("%c")`).
-function os.date([format [, time]]) end
+function os.date(format , time) end
 
 ---
 -- Returns the number of seconds from time `t1` to time `t2`. In POSIX,
@@ -46,12 +46,12 @@ function os.difftime(t2, t1) end
 -- `command` to be executed by an operating system shell. It returns a status
 -- code, which is system-dependent. If `command` is absent, then it returns
 -- nonzero if a shell is available and zero otherwise.
-function os.execute([command]) end
+function os.execute(command) end
 
 ---
 -- Calls the C function `exit`, with an optional `code`, to terminate the
 -- host program. The default value for `code` is the success code.
-function os.exit([code]) end
+function os.exit(code) end
 
 ---
 -- Returns the value of the process environment variable `varname`, or
@@ -80,7 +80,7 @@ function os.rename(oldname, newname) end
 -- the current locale is set to the standard C locale.
 -- When called with nil as the first argument, this function only returns
 -- the name of the current locale for the given category.
-function os.setlocale(locale [, category]) end
+function os.setlocale(locale , category) end
 
 ---
 -- Returns the current time when called without arguments, or a time
@@ -93,7 +93,7 @@ function os.setlocale(locale [, category]) end
 -- of seconds since some given start time (the "epoch"). In other systems,
 -- the meaning is not specified, and the number returned by `time` can be
 -- used only as an argument to `date` and `difftime`.
-function os.time([table]) end
+function os.time(table) end
 
 ---
 -- Returns a string with a file name that can be used for a temporary

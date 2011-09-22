@@ -6,7 +6,7 @@ module 'global'
 -- Issues an error when the value of its argument `v` is false (i.e.,
 -- nil or false); otherwise, returns all its arguments. `message` is an error
 -- message; when absent, it defaults to "assertion failed!"
-function assert(v [, message]) end
+function assert(v , message) end
 
 ---
 -- This function is a generic interface to the garbage collector. It
@@ -25,7 +25,7 @@ function assert(v [, message]) end
 --   * "setstepmul": sets `arg` as the new value for the *step multiplier*
 --   of the collector (see §2.10). Returns the previous value for *step*.
 --
-function collectgarbage(opt [, arg]) end
+function collectgarbage(opt , arg) end
 
 ---
 -- Opens the named file and executes its contents as a Lua chunk. When
@@ -44,7 +44,7 @@ function dofile(filename) end
 -- `error` function was called. Level 2 points the error to where the function
 -- that called `error` was called; and so on. Passing a level 0 avoids the
 -- addition of error position information to the message.
-function error(message [, level]) end
+function error(message , level) end
 
 ---
 -- A global variable (not a function) that holds the global environment
@@ -60,7 +60,7 @@ function error(message [, level]) end
 -- stack level: Level 1 is the function calling `getfenv`. If the given
 -- function is not a Lua function, or if `f` is 0, `getfenv` returns the
 -- global environment. The default for `f` is 1.
-function getfenv([f]) end
+function getfenv(f) end
 
 ---
 -- If `object` does not have a metatable, returns nil. Otherwise, if the
@@ -85,19 +85,19 @@ function ipairs(t) end
 -- is the global environment.
 -- `chunkname` is used as the chunk name for error messages and debug
 -- information. When absent, it defaults to "`=(load)`".
-function load(func [, chunkname]) end
+function load(func , chunkname) end
 
 ---
 -- Similar to `load`, but gets the chunk from file `filename` or from the
 -- standard input, if no file name is given.
-function loadfile([filename]) end
+function loadfile(filename) end
 
 ---
 -- Similar to `load`, but gets the chunk from the given string.
 -- To load and run a given string, use the idiom
 --   assert(loadstring(s))()
 -- When absent, `chunkname` defaults to the given string.
-function loadstring(string [, chunkname]) end
+function loadstring(string , chunkname) end
 
 ---
 -- Allows a program to traverse all fields of a table. Its first argument is
@@ -118,7 +118,7 @@ function loadstring(string [, chunkname]) end
 -- The behavior of `next` is *undefined* if, during the traversal, you assign
 -- any value to a non-existent field in the table. You may however modify
 -- existing fields. In particular, you may clear existing fields.
-function next(table [, index]) end
+function next(table , index) end
 
 ---
 -- Returns three values: the `next` function, the table `t`, and nil,
@@ -194,7 +194,7 @@ function setmetatable(table, metatable) end
 -- 11, and so forth, with '`Z`' representing 35. In base 10 (the default),
 -- the number can have a decimal part, as well as an optional exponent part
 -- (see §2.1). In other bases, only unsigned integers are accepted.
-function tonumber(e [, base]) end
+function tonumber(e , base) end
 
 ---
 -- Receives an argument of any type and converts it to a string in a
@@ -218,7 +218,7 @@ function type(v) end
 -- except that the above code can be written only for a fixed number of
 -- elements. By default, `i` is 1 and `j` is the length of the list, as
 -- defined by the length operator (see §2.5.5).
-function unpack(list [, i [, j]]) end
+function unpack(list , i , j) end
 
 ---
 -- A global variable (not a function) that holds a string containing the
@@ -255,7 +255,7 @@ function xpcall(f, err) end
 -- module table in field `c` of field `b` of global `a`.
 -- This function can receive optional *options* after the module name, where
 -- each option is a function to be applied over the module.
-function module(name [, ...]) end
+function module(name , ...) end
 
 ---
 -- Loads the given module. The function starts by looking into the

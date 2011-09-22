@@ -1,4 +1,4 @@
---- debug.
+--- getting runtime debug information.
 
 module 'debug'
 
@@ -20,7 +20,7 @@ function debug.getfenv(o) end
 -- Returns the current hook settings of the thread, as three values: the
 -- current hook function, the current hook mask, and the current hook count
 -- (as set by the `debug.sethook` function).
-function debug.gethook([thread]) end
+function debug.gethook(thread) end
 
 ---
 -- Returns a table with information about a function. You can give the
@@ -30,6 +30,9 @@ function debug.gethook([thread]) end
 -- level 1 is the function that called `getinfo`; and so on. If `function`
 -- is a number larger than the number of active functions, then `getinfo`
 -- returns nil.
+--
+-- `thread` and `what` are optional.
+--
 -- The returned table can contain all the fields returned by `lua_getinfo`,
 -- with the string `what` describing which fields to fill in. The default for
 -- `what` is to get all information available, except the table of valid
@@ -40,7 +43,7 @@ function debug.gethook([thread]) end
 -- with a name for the current function, if a reasonable name can be found,
 -- and the expression `debug.getinfo(print)` returns a table with all available
 -- information about the `print` function.
-function debug.getinfo([thread,] function [, what]) end
+function debug.getinfo(thread, function , what) end
 
 ---
 -- This function returns the name and the value of the local variable with
@@ -51,7 +54,7 @@ function debug.getinfo([thread,] function [, what]) end
 -- of range. (You can call `debug.getinfo` to check whether the level is valid.)
 -- Variable names starting with '`(`' (open parentheses) represent internal
 -- variables (loop control variables, temporaries, and C function locals).
-function debug.getlocal([thread,] level, local) end
+function debug.getlocal(thread, level, local) end
 
 ---
 -- Returns the metatable of the given `object` or nil if it does not have
@@ -96,7 +99,7 @@ function debug.setfenv(object, table) end
 -- function, and level 1 is the hook function), unless the event is `"tail
 -- return"`. In this case, Lua is only simulating the return, and a call to
 -- `getinfo` will return invalid data.
-function debug.sethook([thread,] hook, mask [, count]) end
+function debug.sethook(thread, hook, mask , count) end
 
 ---
 -- This function assigns the value `value` to the local variable with
@@ -105,7 +108,7 @@ function debug.sethook([thread,] hook, mask [, count]) end
 -- an error when called with a `level` out of range. (You can call `getinfo`
 -- to check whether the level is valid.) Otherwise, it returns the name of
 -- the local variable.
-function debug.setlocal([thread,] level, local, value) end
+function debug.setlocal(thread, level, local, value) end
 
 ---
 -- Sets the metatable for the given `object` to the given `table` (which
