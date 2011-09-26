@@ -1,6 +1,7 @@
 ---------------
--- ldoc, a Lua documentation generator.
--- Compatible with luadoc-style annoations, but providing
+-- ## ldoc, a Lua documentation generator.
+--
+-- Compatible with luadoc-style annotations, but providing
 -- easier customization options.
 --
 -- C/C++ support for Lua extensions is provided.
@@ -33,7 +34,7 @@ ldoc, a documentation generator for Lua, vs 1.0.0
   -1,--one              use one-column output layout
   -p,--project (default ldoc) project name
   -t,--title (default Reference) page title
-  -f,--format (default plain) formatting - can be markdown or plain
+  -f,--format (default plain) formatting - can be markdown, discount or plain
   -b,--package  (default .) top-level package basename (needed for module(...))
   -x,--ext (default html) output file extension
   -c,--config (default config.ld) configuration name
