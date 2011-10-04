@@ -292,9 +292,14 @@ function Item:finish()
          params = tags.field or List()
       end
       tags.param = nil
-      local names,comments = List(),List()
+      local names, comments, modifiers = List(), List(), List()
       for p in params:iter() do
-         local name,comment = p:match('%s*([%w_%.:]+)(.*)')
+         local line, mods
+         if type(p)=='string' then line, mods = p, { }
+         else line, mods = p[1], p.modifiers or { } end 
+         modifiers:append(mods)
+         local name, comment = line :match('%s*([%w_%.:]+)(.*)')
+         assert(name, "bad param name format")
          names:append(name)
          comments:append(comment)
       end
@@ -310,10 +315,24 @@ function Item:finish()
          end
       end
       self.params = names
+      self.modifiers = modifiers
       for i,name in ipairs(self.params) do
          self.params[name] = comments[i]
       end
-      self.args = '('..self.params:join(', ')..')'
+      local buffer, npending = { }, 0
+      local function acc(x) table.insert(buffer, x) end
+      for i = 1, #names  do
+        local m = modifiers[i]
+        if not m.optchain then
+            acc ((']'):rep(npending))
+            npending=0
+        end
+        if m.opt or m.optchain then acc('['); npending=npending+1 end
+        if i>1 then acc (', ') end
+        acc(names[i])
+      end
+      acc ((']'):rep(npending))
+      self.args = '('..table.concat(buffer)..')'
    end
 end
 

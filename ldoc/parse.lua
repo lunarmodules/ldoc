@@ -18,6 +18,7 @@ local tnext, append = lexer.skipws, table.insert
 -- followed by the value, which may extend over several lines.
 local luadoc_tag = '^%s*@(%a+)'
 local luadoc_tag_value = luadoc_tag..'(.*)'
+local luadoc_tag_mod_and_value = luadoc_tag..'%[(.*)%](.*)'
 
 -- assumes that the doc comment consists of distinct tag lines
 function parse_tags(text)
@@ -26,9 +27,21 @@ function parse_tags(text)
    local tag_items = {}
    local follows
    while line do
-      local tag,rest = line:match(luadoc_tag_value)
+      local tag, mod_string, rest = line :match(luadoc_tag_mod_and_value)
+      if not tag then tag, rest = line :match (luadoc_tag_value) end
+      local modifiers
+      if mod_string then
+         modifiers  = { }
+         for x in mod_string :gmatch "[^,]+" do
+            local k, v = x :match "^([^=]+)=(.*)$"
+            if not k then k, v = x, x end
+            modifiers[k] = v
+         end
+      end
+      -- follows: end of current tag
+      -- line: beginning of next tag (for next iteration)
       follows, line = tools.grab_while_not(lines,luadoc_tag)
-      append(tag_items,{tag, rest .. '\n' .. follows})
+      append(tag_items,{tag, rest .. '\n' .. follows, modifiers})
    end
    return preamble,tag_items
 end
@@ -53,16 +66,18 @@ local function extract_tags (s)
    end  --  and strip(description) ?
    local tags = {summary=summary and strip(summary) or '',description=description or ''}
    for _,item in ipairs(tag_items) do
-      local tag,value = item[1],item[2]
+      local tag, value, modifiers = unpack(item)
       tag = Item.check_tag(tags,tag)
       value = strip(value)
+      if modifiers then value = { value, modifiers=modifiers } end
       local old_value = tags[tag]
 
-      if old_value then
-         if type(old_value)=='string' then tags[tag] = List{old_value} end
-         tags[tag]:append(value)
-      else
+      if not old_value then -- first element
          tags[tag] = value
+      elseif type(old_value)=='table' and old_value.append then -- append to existing list 
+         old_value :append (value)      
+      else -- upgrade string->list
+         tags[tag] = List{old_value, value}
       end
    end
    return Map(tags)
