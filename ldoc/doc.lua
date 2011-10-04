@@ -296,7 +296,7 @@ function Item:finish()
       for p in params:iter() do
          local line, mods
          if type(p)=='string' then line, mods = p, { }
-         else line, mods = p[1], p.modifiers or { } end 
+         else line, mods = p[1], p.modifiers or { } end
          modifiers:append(mods)
          local name, comment = line :match('%s*([%w_%.:]+)(.*)')
          assert(name, "bad param name format")
@@ -323,11 +323,13 @@ function Item:finish()
       local function acc(x) table.insert(buffer, x) end
       for i = 1, #names  do
         local m = modifiers[i]
-        if not m.optchain then
-            acc ((']'):rep(npending))
-            npending=0
+        if m then
+            if not m.optchain then
+                acc ((']'):rep(npending))
+                npending=0
+            end
+            if m.opt or m.optchain then acc('['); npending=npending+1 end
         end
-        if m.opt or m.optchain then acc('['); npending=npending+1 end
         if i>1 then acc (', ') end
         acc(names[i])
       end
