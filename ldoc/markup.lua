@@ -32,7 +32,9 @@ local function resolve_inline_references (ldoc, txt, item, plain)
       if not plain then -- a nastiness with markdown.lua and underscores
          label = label:gsub('_','\\_')
       end
-      local res = ('<a href="%s">%s</a>'):format(ldoc.href(ref),label)
+      local html = ldoc.href(ref) or '#'
+      label = label or '?que'
+      local res = ('<a href="%s">%s</a>'):format(html,label)
       return res
    end))
    return res
