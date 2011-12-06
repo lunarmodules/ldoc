@@ -18,11 +18,11 @@ local known_tags = {
    param = 'M', see = 'M', usage = 'M', ['return'] = 'M', field = 'M', author='M';
    class = 'id', name = 'id', pragma = 'id', alias = 'id';
    copyright = 'S', summary = 'S', description = 'S', release = 'S', license = 'S',
-   fixme = 'S', todo = 'S', warning = 'S';
+   fixme = 'S', todo = 'S', warning = 'S', raise = 'S';
    module = 'T', script = 'T', example = 'T', topic = 'T', -- project-level
    ['function'] = 'T', lfunction = 'T', table = 'T', section = 'T', type = 'T',
    annotation = 'T'; -- module-level
-   ['local'] = 'N';
+   ['local'] = 'N', export = 'N';
 }
 known_tags._alias = {}
 known_tags._project_level = {
@@ -112,6 +112,17 @@ function File:new_item(tags,line)
    return item
 end
 
+function File:export_item (name)
+   for item in self.items:iter() do
+      local tags = item.tags
+      if tags.name == name then
+         if tags['local'] then
+            tags['local'] = false
+         end
+      end
+   end
+end
+
 function File:finish()
    local this_mod
    local items = self.items
@@ -187,7 +198,6 @@ function File:finish()
             these_items.by_name[item.name] = item
             these_items:append(item)
 
-            -- register this item with the iterator
             this_mod.kinds:add(item,these_items,section_description)
 
          else
@@ -226,55 +236,116 @@ function Item:_init(tags,file,line)
    self.formal_args = tags.formal_args
    tags.formal_args = nil
    for tag,value in pairs(tags) do
-      local ttype = known_tags[tag]
-      if ttype == TAG_MULTI then
-         if type(value) == 'string' then
-            value = List{value}
-         end
-         self.tags[tag] = value
-      elseif ttype == TAG_ID then
-         if type(value) ~= 'string' then
-            -- such tags are _not_ multiple, e.g. name
-            self:error("'"..tag.."' cannot have multiple values")
-         else
-            self.tags[tag] = tools.extract_identifier(value)
-         end
-      elseif ttype == TAG_SINGLE then
-         self.tags[tag] = value
-      elseif ttype == TAG_FLAG then
-         self.tags[tag] = true
-      else
-         self:warning ("unknown tag: '"..tag.."' "..tostring(ttype))
+      self:set_tag(tag,value)
+   end
+end
+
+function Item:set_tag (tag,value)
+   local ttype = known_tags[tag]
+   if ttype == TAG_MULTI then
+      if getmetatable(value) ~= List then
+         value = List{value}
       end
+      self.tags[tag] = value
+   elseif ttype == TAG_ID then
+      if type(value) ~= 'string' then
+         -- such tags are _not_ multiple, e.g. name
+         self:error("'"..tag.."' cannot have multiple values")
+      else
+         self.tags[tag] = tools.extract_identifier(value)
+      end
+   elseif ttype == TAG_SINGLE then
+      self.tags[tag] = value
+   elseif ttype == TAG_FLAG then
+      self.tags[tag] = true
+   else
+      self:warning ("unknown tag: '"..tag.."' "..tostring(ttype))
    end
 end
 
 -- preliminary processing of tags. We check for any aliases, and for tags
 -- which represent types. This implements the shortcut notation.
-function Item.check_tag(tags,tag)
-   tag = doc.get_alias(tag) or tag
+function Item.check_tag(tags,tag, value, modifiers)
+   local alias = doc.get_alias(tag)
+   if alias then
+      if type(alias) == 'string' then
+         tag = alias
+      else
+         local avalue,amod
+         tag, avalue, amod = alias[1],alias.value,alias.modifiers
+         if avalue then value = avalue..' '..value end
+         if amod then
+            modifiers = modifiers or {}
+            for m,v in pairs(amod) do
+               local idx = v:match('^%$(%d+)')
+               if idx then
+                  v, value = value:match('(%S+)%s+(.+)')
+               end
+               modifiers[m] = v
+            end
+         end
+      end
+   end
    local ttype = known_tags[tag]
    if ttype == TAG_TYPE then
       tags.class = tag
       tag = 'name'
    end
-   return tag
+   return tag, value, modifiers
+end
+
+-- any tag (except name and classs) may have associated modifiers,
+-- in the form @tag[m1,...] where  m1 is either name1=value1 or name1.
+-- At this stage, these are encoded
+-- in the tag value table and need to be extracted.
+
+local function extract_value_modifier (p)
+   if type(p)=='string' then
+      return p, { }
+   elseif type(p) == 'table' then
+      return p[1], p.modifiers or { }
+   else
+      return 'que?',{}
+   end
+end
+
+local function extract_tag_modifiers (tags)
+   local modifiers = {}
+   for tag, value in pairs(tags) do
+      if type(value)=='table' and value.append then
+         local tmods = {}
+         for i, v in ipairs(value) do
+            v, mods = extract_value_modifier(v)
+            tmods[i] = mods
+            value[i] = v
+         end
+         modifiers[tag] = tmods
+      else
+         value, mods = extract_value_modifier(value)
+         modifiers[tag] = mods
+         tags[tag] = value
+      end
+   end
+   return modifiers
+end
+
+local function read_del (tags,name)
+   local ret = tags[name]
+   tags[name] = nil
+   return ret
 end
 
 
 function Item:finish()
    local tags = self.tags
-   self.name = tags.name
-   self.type = tags.class
-   self.usage = tags.usage
-   tags.name = nil
-   tags.class = nil
-   tags.usage = nil
+   self.name = read_del(tags,'name')
+   self.type = read_del(tags,'class')
+   self.modifiers = extract_tag_modifiers(tags)
+   self.usage = read_del(tags,'usage')
    -- see tags are multiple, but they may also be comma-separated
    if tags.see then
-      tags.see = tools.expand_comma_list(tags.see)
+      tags.see = tools.expand_comma_list(read_del(tags,'see'))
    end
-   --if self.type ~= 'function' then print(self.name,self.type) end
    if  doc.project_level(self.type) then
       -- we are a module, so become one!
       self.items = List()
@@ -282,61 +353,91 @@ function Item:finish()
       setmetatable(self,Module)
    elseif not doc.section_tag(self.type) then
       -- params are either a function's arguments, or a table's fields, etc.
-      local params
       if self.type == 'function' then
-         params = tags.param or List()
-         if tags['return'] then
-            self.ret = tags['return']
+         self.parameter = 'param'
+         self.ret = read_del(tags,'return')
+         self.raise = read_del(tags,'raise')
+         if tags['local'] then
+            self.type = 'lfunction'
          end
       else
-         params = tags.field or List()
+         self.parameter = 'field'
       end
-      tags.param = nil
+      local params = read_del(tags,self.parameter)
       local names, comments, modifiers = List(), List(), List()
-      for p in params:iter() do
-         local line, mods
-         if type(p)=='string' then line, mods = p, { }
-         else line, mods = p[1], p.modifiers or { } end
-         modifiers:append(mods)
-         local name, comment = line :match('%s*([%w_%.:]+)(.*)')
-         assert(name, "bad param name format")
-         names:append(name)
-         comments:append(comment)
+      if params then
+         for line in params:iter() do
+            local name, comment = line :match('%s*([%w_%.:]+)(.*)')
+            assert(name, "bad param name format")
+            names:append(name)
+            comments:append(comment)
+         end
       end
       -- not all arguments may be commented --
       if self.formal_args then
          -- however, ldoc allows comments in the arg list to be used
          local fargs = self.formal_args
-         for a in fargs:iter() do
-            if not names:index(a) then
-               names:append(a)
-               comments:append (fargs.comments[a] or '')
+         for i,name in ipairs(fargs) do
+            if params then -- explicit set of param tags
+               if names[i] ~= name then
+                  self:warning("param and formal argument name mismatch: '"..name.."' '"..tostring(names[i]).."'")
+               end
+            else
+               names:append(name)
+               local comment = fargs.comments[name]
+               comments:append (comment or '')
             end
          end
       end
+
+      -- the comments are associated with each parameter by
+      -- adding name-value pairs to the params list (this is
+      -- also done for any associated modifiers)
       self.params = names
-      self.modifiers = modifiers
+      local pmods = self.modifiers[self.parameter]
       for i,name in ipairs(self.params) do
          self.params[name] = comments[i]
+         if pmods then
+            pmods[name] = pmods[i]
+         end
       end
+
+      -- build up the string representation of the argument list,
+      -- using any opt and optchain modifiers if present.
+      -- For instance, '(a [, b])' if b is marked as optional
+      -- with @param[opt] b
       local buffer, npending = { }, 0
       local function acc(x) table.insert(buffer, x) end
       for i = 1, #names  do
-        local m = modifiers[i]
-        if m then
+         local m = pmods and pmods[i]
+         if m then
             if not m.optchain then
-                acc ((']'):rep(npending))
-                npending=0
+               acc ((']'):rep(npending))
+               npending=0
             end
             if m.opt or m.optchain then acc('['); npending=npending+1 end
-        end
-        if i>1 then acc (', ') end
-        acc(names[i])
+         end
+         if i>1 then acc (', ') end
+         acc(names[i])
       end
       acc ((']'):rep(npending))
       self.args = '('..table.concat(buffer)..')'
    end
 end
+
+function Item:type_of_param(p)
+   local mods = self.modifiers[self.parameter]
+   if not mods then return '' end
+   local mparam = mods[p]
+   return mparam and mparam.type or ''
+end
+
+function Item:type_of_ret(idx)
+   local rparam = self.modifiers['return'][idx]
+   return rparam and rparam.type or ''
+end
+
+
 
 function Item:warning(msg)
    local name = self.file and self.file.filename
@@ -376,6 +477,9 @@ end
 
 function Module:process_see_reference (s,modules)
    local mod_ref,fun_ref,name,packmod
+   if not s:match '^[%w_%.%:]+$' or not s:match '[%w_]$' then
+      return nil, "malformed see reference: '"..s..'"'
+   end
    -- is this a fully qualified module name?
    local mod_ref = modules.by_name[s]
    if mod_ref then return reference(s, mod_ref,nil) end
@@ -513,7 +617,7 @@ function Item:dump(verbose)
 end
 
 function doc.filter_objects_through_function(filter, module_list)
-   local quit = utils.quit
+   local quit, quote = utils.quit, tools.quote
    if filter == 'dump' then filter = 'pl.pretty.dump' end
    local mod,name = tools.split_dotted_name(filter)
    local ok,P = pcall(require,mod)

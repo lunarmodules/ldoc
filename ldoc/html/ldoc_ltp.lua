@@ -134,13 +134,14 @@ return [==[
     <strong>$(display_name(item))</strong>
     </dt>
     <dd>
-    $(M(item.summary..' '..(item.description or ''),item))
+    $(M((item.summary or '?')..' '..(item.description or ''),item))
 
 #  if show_parms and item.params and #item.params > 0 then
     <h3>$(module.kinds:type_of(item).subnames):</h3>
     <ul>
 #   for p in iter(item.params) do
-       <li><code><em>$(p)</em></code>: $(M(item.params[p],item))</li>
+#     local tp = ldoc.typename(item:type_of_param(p))
+       <li><code><em>$(p)</em></code>: $(tp)$(M(item.params[p],item))</li>
 #   end -- for
     </ul>
 #   end -- if params
@@ -159,11 +160,17 @@ return [==[
 #     local li,il = use_li(item.ret)
     <h3>Returns:</h3>
     <ol>
-#     for r in iter(item.ret) do
-        $(li)$(M(r,item))$(il)
+#     for i,r in ldoc.ipairs(item.ret) do
+#       local tp = ldoc.typename(item:type_of_ret(i))
+        $(li)$(tp)$(M(r,item))$(il)
 #     end -- for
     </ol>
 #   end -- if returns
+
+#   if show_return and item.raise then
+    <h3>Raises:</h3>
+    $(M(item.raise,item))
+#   end
 
 #   if item.see then
 #     local li,il = use_li(item.see)

@@ -15,7 +15,7 @@
 
 local template = require 'pl.template'
 local tools = require 'ldoc.tools'
-
+local markup = require 'ldoc.markup'
 local html = {}
 
 
@@ -84,6 +84,18 @@ function html.generate_output(ldoc, args, project)
       end))
    end
 
+   function ldoc.typename (tp)
+      if not tp then return '' end
+      return (tp:gsub('%a[%w_%.]*',function(name)
+         local ref,err = markup.process_reference(name)
+         if ref then
+            return ('<a href="%s">%s</a> '):format(ldoc.href(ref),name)
+         else
+            return '<strong>'..name..'</strong> '
+         end
+      end))
+   end
+
    local module_template,err = utils.readfile (path.join(args.template,ldoc.templ))
    if not module_template then
       quit("template not found at '"..args.template.."' Use -l to specify directory containing ldoc.ltp")
@@ -91,6 +103,7 @@ function html.generate_output(ldoc, args, project)
 
    local css = ldoc.css
    ldoc.output = args.output
+   ldoc.ipairs = ipairs
 
    -- in single mode there is one module and the 'index' is the
    -- documentation for that module.

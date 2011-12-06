@@ -269,7 +269,9 @@ function M.get_parameters (tok,endtoken,delim)
    end
 
    for i = 1,#ltl do
+      --print('check',i,ltl[i],#ltl[i])
       local tl = ltl[i]
+      if #tl > 0 then
       if type_of(tl[1]) == 'comment' then
          if i > 1 then set_comment(i-1,tl[1]) end
          if #tl > 1 then
@@ -283,6 +285,7 @@ function M.get_parameters (tok,endtoken,delim)
          if #tl > 1 and type_of(last_tok) == 'comment' then
             set_comment(i,last_tok)
          end
+      end
       end
    end
 
@@ -340,9 +343,17 @@ function M.grab_block_comment (v,tok,patt)
    return 'comment',res
 end
 
+local prel = path.normcase('/[^/]-/%.%.')
+
 
 function M.abspath (f)
-   return path.normcase(path.abspath(f))
+   local count
+   local res = path.normcase(path.abspath(f))
+   while true do
+      res,count = res:gsub(prel,'')
+      if count == 0 then break end
+   end
+   return res
 end
 
 function M.process_file_list (list, mask, operation, ...)

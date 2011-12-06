@@ -25,11 +25,11 @@ static int l_createtable (lua_State *L) {
 /***
 Solve a quadratic equation.
 @function solve
-@param a coefficient of x^2
-@param b coefficient of x
-@param c constant
-@return first root
-@return second root
+@tparam num a coefficient of x^2
+@tparam num b coefficient of x
+@tparam num c constant
+@treturn num first root
+@treturn num second root
 */
 static int l_solve (lua_State *L) {
     double a = lua_tonumber(L,1);  // coeff of x*x

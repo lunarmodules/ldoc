@@ -55,8 +55,12 @@ end
 function Lang:parse_extra (tags,tok)
 end
 
-function Lang:parse_usage (tags, tok)
-   return nil, "@usage deduction not implemented for this language"
+function Lang:is_module_modifier ()
+   return false
+end
+
+function Lang:parse_module_modifier (tags, tok)
+   return nil, "@usage or @exports deduction not implemented for this language"
 end
 
 
@@ -160,6 +164,15 @@ function Lua:item_follows(t,v,tok)
             tags.name = name
          end
       end
+   elseif t == 'keyword' and v == 'return' then -- case [5]
+      case = 5
+      if tnext(tok) ~= '{' then
+         return nil
+      end
+      parser = function(tags,tok)
+         tags.class = 'table'
+         parse_lua_table(tags,tok)
+      end
    end
    return parser, is_local, case
 end
@@ -175,13 +188,32 @@ function Lua:parse_extra (tags,tok,case)
    end
 end
 
-function Lua:parse_usage (tags, tok)
-   if tags.class ~= 'field' then return nil,"cannot deduce @usage" end
-   local t1= tnext(tok)
-   local t2 = tok()
-   if t1 ~= '[' or t1 ~= '[' then return nil, 'not a long string' end
-   t, v = tools.grab_block_comment('',tok,'%]%]')
-   return true, v
+-- For Lua, a --- @usage comment means that a long
+-- string containing the usage follows, which we
+-- use to update the module usage tag. Likewise, the @export
+-- tag alone in a doc comment refers to the following returned
+-- Lua table of functions
+
+
+function Lua:is_module_modifier (tags)
+   return tags.summary == '' and (tags.usage or tags.export)
+end
+
+function Lua:parse_module_modifier (tags, tok, F)
+   if tags.usage then
+      if tags.class ~= 'field' then return nil,"cannot deduce @usage" end
+      local t1= tnext(tok)
+      local t2 = tok()
+      if t1 ~= '[' or t2 ~= '[' then return nil, 'not a long string' end
+      t, v = tools.grab_block_comment('',tok,'%]%]')
+      return true, v, 'usage'
+   elseif tags.export then
+      if tags.class ~= 'table' then return nil, "cannot deduce @export" end
+      for f in tags.formal_args:iter() do
+         F:export_item(f)
+      end
+      return true
+   end
 end
 
 

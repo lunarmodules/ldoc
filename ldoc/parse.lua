@@ -66,21 +66,26 @@ local function extract_tags (s)
    end  --  and strip(description) ?
    local tags = {summary=summary and strip(summary) or '',description=description or ''}
    for _,item in ipairs(tag_items) do
-      local tag, value, modifiers = unpack(item)
-      tag = Item.check_tag(tags,tag)
+      local tag, value, modifiers = Item.check_tag(tags,unpack(item))
       value = strip(value)
+
       if modifiers then value = { value, modifiers=modifiers } end
       local old_value = tags[tag]
 
       if not old_value then -- first element
          tags[tag] = value
-      elseif type(old_value)=='table' and old_value.append then -- append to existing list 
-         old_value :append (value)      
+      elseif type(old_value)=='table' and old_value.append then -- append to existing list
+         old_value :append (value)
       else -- upgrade string->list
          tags[tag] = List{old_value, value}
       end
    end
    return Map(tags)
+end
+
+local _xpcall = xpcall
+if true then
+   _xpcall = function(f) return true, f() end
 end
 
 
@@ -96,7 +101,7 @@ local function parse_file(fname,lang, package)
    local line,f = 1
    local F = File(fname)
    local module_found, first_comment = false,true
-   local current_item
+   local current_item, module_item
 
    local tok,f = lang.lexer(fname)
 
@@ -122,6 +127,7 @@ local function parse_file(fname,lang, package)
       tags.class = 'module'
       local item = F:new_item(tags,lineno())
       item.old_style = old_style
+      module_item = item
    end
 
    local mod
@@ -141,6 +147,7 @@ local function parse_file(fname,lang, package)
          end
       end
    end
+   local ok, err = xpcall(function()
    while t do
       if t == 'comment' then
          local comment = {}
@@ -163,7 +170,7 @@ local function parse_file(fname,lang, package)
             end
          end
 
-         if not t then break end -- no more file!
+--         if not t then break end -- no more file!
 
          if t == 'space' then t,v = tnext(tok) end
 
@@ -189,16 +196,23 @@ local function parse_file(fname,lang, package)
                -- if the item has an explicit name or defined meaning
                -- then don't continue to do any code analysis!
                if tags.name then
+                  if not tags.class then
+                     F:warning("no type specified, assuming function: '"..tags.name.."'")
+                     tags.class = 'function'
+                  end
                   item_follows, is_local = false, false
-                elseif tags.summary == '' and tags.usage then
-                  -- For Lua, a --- @usage comment means that a long
-                  -- string containing the usage follows, which we
-                  -- use to update the module usage tag
+                elseif lang:is_module_modifier (tags) then
+                  if not item_follows then
+                     F:warning("@usage or @export followed by unknown code")
+                     break
+                  end
                   item_follows(tags,tok)
-                  local res, value = lang:parse_usage(tags,tok)
+                  local res, value, tagname = lang:parse_module_modifier(tags,tok,F)
                   if not res then F:warning(fname,value,1); break
                   else
-                     current_item.tags.usage = {value}
+                     if tagname then
+                        module_item.set_tag(tagname,value)
+                     end
                      -- don't continue to make an item!
                      ldoc_comment = false
                   end
@@ -227,7 +241,7 @@ local function parse_file(fname,lang, package)
 
          -- end of a block of document comments
          if ldoc_comment and tags then
-            local line = t ~= nil and lineno() or 666
+            local line = t ~= nil and lineno()
             if t ~= nil then
                if item_follows then -- parse the item definition
                   item_follows(tags,tok)
@@ -235,9 +249,8 @@ local function parse_file(fname,lang, package)
                   lang:parse_extra(tags,tok,case)
                end
             end
-            -- local functions treated specially
-            if tags.class == 'function' and (is_local or tags['local']) then
-               tags.class = 'lfunction'
+            if is_local or tags['local'] then
+               tags['local'] = true
             end
             if tags.name then
                current_item = F:new_item(tags,line)
@@ -248,14 +261,17 @@ local function parse_file(fname,lang, package)
       end
       if t ~= 'comment' then t,v = tok() end
    end
+   end,debug.traceback)
+   if not ok then return F, err end
    if f then f:close() end
    return F
 end
 
 function parse.file(name,lang, args)
    local F,err = parse_file(name,lang, args.package)
-   if err then return nil,err end
-   F:finish()
+   if err then return F,err end
+   local ok,err = xpcall(function() F:finish() end,debug.traceback)
+   if not ok then return F,err end
    return F
 end
 

@@ -112,6 +112,12 @@ function ldoc.alias (a,tag)
    doc.add_alias(a,tag)
 end
 
+-- standard aliases --
+
+ldoc.alias('tparam',{'param',modifiers={type="$1"}})
+ldoc.alias('treturn',{'return',modifiers={type="$1"}})
+ldoc.alias('tfield',{'field',modifiers={type="$1"}})
+
 function ldoc.add_language_extension(ext,lang)
    lang = (lang=='c' and cc) or (lang=='lua' and lua) or quit('unknown language')
    if ext:sub(1,1) ~= '.' then ext = '.'..ext end
@@ -152,7 +158,9 @@ local function read_ldoc_config (fname)
       directory = '.'
    end
    local err
-   print('reading configuration from '..fname)
+   if args.filter == 'none' then
+      print('reading configuration from '..fname)
+   end
    local txt,not_found = utils.readfile(fname)
    if txt then
        -- Penlight defines loadin for Lua 5.1 as well
@@ -280,7 +288,12 @@ local function process_file (f, flist)
    if ftype then
       if args.verbose then print(path.basename(f)) end
       local F,err = parse.file(f,ftype,args)
-      if err then quit(err) end
+      if err then
+         if F then
+            F:warning("internal LDoc error")
+         end
+         quit(err)
+      end
       flist:append(F)
    end
 end
