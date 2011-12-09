@@ -22,7 +22,7 @@ app.require_here()
 
 --- @usage
 local usage = [[
-ldoc, a documentation generator for Lua, vs 1.0.0
+ldoc, a documentation generator for Lua, vs 1.1.0
   -d,--dir (default docs) output directory
   -o,--output  (default 'index') output name
   -v,--verbose          verbose
@@ -43,7 +43,8 @@ ldoc, a documentation generator for Lua, vs 1.0.0
   --tags (default none) show all references to given tags, comma-separated
   <file> (string) source file or directory containing source
 
-  `ldoc .` means read options from an `config.ld` file in same directory.
+  `ldoc .` reads options from an `config.ld` file in same directory;
+  `ldoc -c path/to/myconfig.ld .` reads options from `path/to/myconfig.ld`
 ]]
 local args = lapp(usage)
 

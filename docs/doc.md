@@ -274,20 +274,7 @@ One added convenience is that it is easier to name entities:
 
 This is because type names (like 'function', 'module', 'table', etc) can function as tags. LDoc also provides a means to add new types (e.g. 'macro') using a configuration file which can be shipped with the source. If you become bored with typing 'param' repeatedly then you can define an alias for it, such as 'p'. This can also be specified in the configuration file.
 
-LDoc will also work with C/C++ files, since extension writers clearly have the same documentation needs as Lua module writers:
-
-    @plain
-    /***
-    Create a table with given array and hash slots.
-    @function createtable
-    @param narr initial array slots, default 0
-    @param nrec initial hash slots, default 0
-    @return the new table
-    */
-    static int l_createtable (lua_State *L) {
-    ....
-
-LDoc does not pretend to understand C/C++, so in this case it is necessary to specify the name and type explicitly.
+LDoc will also work with C/C++ files, since extension writers clearly have the same documentation needs as Lua module writers.
 
 LDoc gives the documenter the option to use Markdown to parse the contents of comments.
 
@@ -364,6 +351,7 @@ As always, explicit tags can override this behaviour if it is inappropriate.
 
 LDoc can process C/C++ files:
 
+    @plain
     /***
     Create a table with given array and hash slots.
     @function createtable
@@ -551,7 +539,7 @@ It is also very much how the Lua documentation is ordered. For instance, this co
 
 Generally, using Markdown gives you the opportunity to structure your documentation in any way you want; particularly if using lua-discount and its [table syntax](http://michelf.com/projects/php-markdown/extra/#table); the desired result can often be achieved then by using a custom style sheet.
 
-## Examples and readme files
+## Examples and Readme files
 
 It has been long known that documentation generated just from the source is not really adequate to explain _how_ to use a library.  People like reading narrative documentation, and they like looking at examples.  Previously I found myself dealing with source-generated and writer-generated documentation using different tools, and having to match these up.
 
@@ -571,7 +559,26 @@ Like all good Github projects, Winapi has a `readme.md`:
 
 This goes under the 'Topics' global section; the 'Contents' of this document is generated from the second-level (##) headings of the readme.
 
-Readme files are always processed with Markdown, but may also contain @\{} references back to the documentation and to example files. As with doc comments, a link to a standard Lua function like @\{os.execute} will work as well. Any code sections will be pretty-printed as well, unless the first indented line is '@plain'.
+Readme files are always processed with Markdown, but may also contain @\{} references back to the documentation and to example files. As with doc comments, a link to a standard Lua function like @\{os.execute} will work as well. Any code sections will be pretty-printed as Lua, unless the first indented line is '@plain'.
+
+## Tag Modifiers
+
+New with this release is the idea of _tag modifiers_. For instance, you may say @\param[type=number] and this associates the modifier `type` with value `number` with this particular param tag. A shorthand can be introduced for this common case, which is "@\tparam <type> <parmname> <comment>"; in the same way @\treturn is defined.
+
+The exact form of `<type>` is not defined, but here is a suggested scheme:
+
+    number  -- a plain type
+    Bonzo   -- a known type; a reference link will be generated
+    {string,number}  -- a 'list' tuple, built from type expressions
+    {A=string,N=number} -- a 'struct' tuple, ditto
+    {Bonzo,...}   -- an array of Bonzo objects
+    {[string]=Bonzo,...} -- a map of Bonzo objects with string keys
+
+Currently the `type` modifier is the only one known and used by LDoc when generating HTML output. However, any other modifiers are allowed and are available for use with your own templates or for extraction by your own tools.
+
+The `alias` function within configuration files has been extended so that alias tags can be defined as a tag plus a set of modifiers.  So `tparam` is defined as:
+
+    alias('tparam',{'param',modifiers={type="$1"}})
 
 ## Fields allowed in `config.ld`
 
@@ -603,6 +610,29 @@ Available functions are:
   - `add_section`
   - `new_type(tag,header,project_level)` used to add new tags, which are put in their own section `header`. They may be 'project level'.
 
+## Annotations and Searching for Tags
+
+Annotations are special tags that can be used to keep track of internal development status. The known annotations are 'todo', 'fixme' and 'warning'. They may occur in regular function/table doc comments, or on their own anywhere in the code.
+
+    --- Testing annotations
+    -- @module annot1
+    ...
+    --- first function.
+    -- @todo check if this works!
+    function annot1.first ()
+        if boo then
+
+        end
+        --- @fixme what about else?
+    end
+
+Although not currently rendered by the template as HTML, they can be extracted by the `--tags` flag, which is given a comma-separated list of tags to list.
+
+    @plain
+    D:\dev\lua\LDoc\tests> ldoc --tags todo,fixme annot1.lua
+    d:\dev\lua\ldoc\tests\annot1.lua:14: first: todo check if this works!
+    d:\dev\lua\ldoc\tests\annot1.lua:19: first-fixme1: fixme what about else?
+
 
 ## Generating HTML
 
@@ -617,7 +647,7 @@ LDoc, like LuaDoc, generates output HTML using a template, in this case `ldoc_lt
 
 This is then styled with `ldoc.css`. Currently the template and stylesheet is very much based on LuaDoc, so the results are mostly equivalent; the main change that the template has been more generalized. The default location (indicated by '!') is the directory of `ldoc.lua`.
 
-You may customize how you generate your documentation by specifying an alternative style sheet and/or template, which can be deployed with your project. The parameters are `--style` and `--template`, which give the directories where `ldoc.css` and `ldoc.ltp` are to be found. If `config.ld` contains these variables, they are interpreted slightly differently; if they are true, then it means 'use the same directory as config.ld'; otherwise they must be a valid directory relative to the ldoc invocation. An example of fully customized documentation is `tests/example/style': this is what you could call 'minimal Markdown style' where there is no attempt to tag things (except emphasizing parameter names). The narrative ought to be sufficient, if it is written appropriately.
+You may customize how you generate your documentation by specifying an alternative style sheet and/or template, which can be deployed with your project. The parameters are `--style` and `--template`, which give the directories where `ldoc.css` and `ldoc.ltp` are to be found. If `config.ld` contains these variables, they are interpreted slightly differently; if they are true, then it means 'use the same directory as config.ld'; otherwise they must be a valid directory relative to the ldoc invocation. An example of fully customized documentation is `tests/example/style`: this is what you could call 'minimal Markdown style' where there is no attempt to tag things (except emphasizing parameter names). The narrative ought to be sufficient, if it is written appropriately.
 
 Of course, there's no reason why LDoc must always generate HTML. `--ext` defines what output extension to use; this can also be set in the configuration file. So it's possible to write a template that converts LDoc output to LaTex, for instance.
 
@@ -662,4 +692,6 @@ For instance, to find all functions which don't have a @return tag:
 
 The internal naming is not always so consistent; `ret` corresponds to @return, and `params` corresponds to @param.  `item.params` is an array of the function parameters, in order; it is also a map from these names to the individual descriptions of the parameters.
 
-`item.modifiers` is a table where the keys are the tags and the values are arrays of modifier tables.  The standard tag aliases `tparam` and `treturn` attach a `type` modifier to their tags.  So
+`item.modifiers` is a table where the keys are the tags and the values are arrays of modifier tables.  The standard tag aliases `tparam` and `treturn` attach a `type` modifier to their tags.
+
+

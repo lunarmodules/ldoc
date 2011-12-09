@@ -203,8 +203,8 @@ function Lua:parse_module_modifier (tags, tok, F)
    if tags.usage then
       if tags.class ~= 'field' then return nil,"cannot deduce @usage" end
       local t1= tnext(tok)
-      local t2 = tok()
-      if t1 ~= '[' or t2 ~= '[' then return nil, 'not a long string' end
+      --local t2 = tok()
+      if t1 ~= '[' then return nil, t1..' '..': not a long string' end
       t, v = tools.grab_block_comment('',tok,'%]%]')
       return true, v, 'usage'
    elseif tags.export then

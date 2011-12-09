@@ -114,11 +114,12 @@ local function parse_file(fname,lang, package)
    function F:warning (msg,kind,line)
       kind = kind or 'warning'
       line = line or lineno()
-      io.stderr:write(kind..' '..fname..':'..line..': '..msg,'\n')
+      io.stderr:write(fname..':'..line..': '..msg,'\n')
    end
 
    function F:error (msg)
       self:warning(msg,'error')
+      io.stderr:write('LDoc error\n')
       os.exit(1)
    end
 
@@ -208,10 +209,10 @@ local function parse_file(fname,lang, package)
                   end
                   item_follows(tags,tok)
                   local res, value, tagname = lang:parse_module_modifier(tags,tok,F)
-                  if not res then F:warning(fname,value,1); break
+                  if not res then F:warning(value); break
                   else
                      if tagname then
-                        module_item.set_tag(tagname,value)
+                        module_item:set_tag(tagname,value)
                      end
                      -- don't continue to make an item!
                      ldoc_comment = false
@@ -255,6 +256,12 @@ local function parse_file(fname,lang, package)
             if tags.name then
                current_item = F:new_item(tags,line)
                current_item.inferred = item_follows ~= nil
+               if doc.project_level(tags.class) then
+                  if module_item then
+                     F:error("Module already declared!")
+                  end
+                  module_item = current_item
+               end
             end
             if not t then break end
          end

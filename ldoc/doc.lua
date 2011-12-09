@@ -259,7 +259,7 @@ function Item:set_tag (tag,value)
    elseif ttype == TAG_FLAG then
       self.tags[tag] = true
    else
-      self:warning ("unknown tag: '"..tag.."' "..tostring(ttype))
+      Item.warning(self,"unknown tag: '"..tag.."' "..tostring(ttype))
    end
 end
 
@@ -373,19 +373,27 @@ function Item:finish()
             comments:append(comment)
          end
       end
-      -- not all arguments may be commented --
+      -- not all arguments may be commented: we use the formal arguments
+      -- if available as the authoritative list, and warn if there's an inconsistency.
+      -- The _exception_ is if the formal args are just ... !
       if self.formal_args then
-         -- however, ldoc allows comments in the arg list to be used
          local fargs = self.formal_args
-         for i,name in ipairs(fargs) do
-            if params then -- explicit set of param tags
-               if names[i] ~= name then
-                  self:warning("param and formal argument name mismatch: '"..name.."' '"..tostring(names[i]).."'")
+         if #fargs ~= 1 or fargs[1] ~= '...' then
+            local pnames, pcomments = names, comments
+            names, comments = List(),List()
+            for i,name in ipairs(fargs) do
+               if params then -- explicit set of param tags
+                  if pnames[i] ~= name then
+                     if pnames[i] then
+                        self:warning("param and formal argument name mismatch: '"..name.."' '"..pnames[i].."'")
+                     else
+                        self:warning("undocumented formal argument: '"..name.."'")
+                     end
+                  end
                end
-            else
                names:append(name)
-               local comment = fargs.comments[name]
-               comments:append (comment or '')
+               -- ldoc allows comments in the formal arg list to be used
+               comments:append (fargs.comments[name] or pcomments[i] or '')
             end
          end
       end
@@ -440,10 +448,10 @@ end
 
 
 function Item:warning(msg)
-   local name = self.file and self.file.filename
-   if type(name) == 'table' then pretty.dump(name); name = '?' end
-   name = name or '?'
-   io.stderr:write(name,':',self.lineno or '1',': ',msg,'\n')
+   local file = self.file and self.file.filename
+   if type(file) == 'table' then pretty.dump(file); file = '?' end
+   file = file or '?'
+   io.stderr:write(file,':',self.lineno or '1',': ',self.name or '?',': ',msg,'\n')
    return nil
 end
 
@@ -562,7 +570,7 @@ end
 function Item:dump_tags (taglist)
    for tag, value in pairs(self.tags) do
       if not taglist or taglist[tag] then
-         Item.warning(self,self.name..' '..tag..' '..tostring(value))
+         Item.warning(self,tag..' '..tostring(value))
       end
    end
 end
