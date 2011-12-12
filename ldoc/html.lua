@@ -154,7 +154,7 @@ function html.generate_output(ldoc, args, project)
          end
       end
    end
-   if not args.quiet then print('output written to '..args.dir) end
+   if not args.quiet then print('output written to '..tools.abspath(args.dir)) end
 end
 
 return html

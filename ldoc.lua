@@ -223,6 +223,7 @@ if args.file == '.' then
    if err then quit("no "..quote(args.config).." found") end
    local config_path = path.dirname(args.config)
    if config_path ~= '' then
+      print('changing to directory',config_path)
       lfs.chdir(config_path)
    end
    config_is_read = true
