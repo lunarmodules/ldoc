@@ -150,7 +150,15 @@ function markup.create (ldoc, format)
       end
    else
       local ok,formatter = pcall(require,format)
-      if not ok then quit("cannot load formatter: "..format) end
+      if not ok then
+         if format == 'discount' then
+            print('format: discount not found, using markdown')
+            ok,formatter = pcall(require,'markdown')
+         end
+         if not ok
+            quit("cannot load formatter: "..format)
+         end
+      end
       markup.plain = false
       processor = function (txt,item)
          if txt == nil then return '' end
