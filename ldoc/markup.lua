@@ -155,7 +155,7 @@ function markup.create (ldoc, format)
             print('format: discount not found, using markdown')
             ok,formatter = pcall(require,'markdown')
          end
-         if not ok
+         if not ok then
             quit("cannot load formatter: "..format)
          end
       end
