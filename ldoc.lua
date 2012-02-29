@@ -51,7 +51,7 @@ ldoc, a documentation generator for Lua, vs 1.1.0
   `ldoc -c path/to/myconfig.ld .` reads options from `path/to/myconfig.ld`
 ]]
 local args = lapp(usage)
-
+local lfs = require 'lfs'
 local doc = require 'ldoc.doc'
 local lang = require 'ldoc.lang'
 local tools = require 'ldoc.tools'
@@ -270,7 +270,7 @@ local function setup_package_base()
       args.package = source_dir
    elseif args.package == '..' then
       args.package = path.splitpath(source_dir)
-   elseif not args.package:find '[\//]' then
+   elseif not args.package:find '[\\/]' then
       local subdir,dir = path.splitpath(source_dir)
       if dir == args.package then
          args.package = subdir
