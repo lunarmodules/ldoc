@@ -485,7 +485,7 @@ end
 
 function Module:process_see_reference (s,modules)
    local mod_ref,fun_ref,name,packmod
-   if not s:match '^[%w_%.%:]+$' or not s:match '[%w_]$' then
+   if not s:match '^[%w_%.%:%-]+$' or not s:match '[%w_]$' then
       return nil, "malformed see reference: '"..s..'"'
    end
    -- is this a fully qualified module name?
