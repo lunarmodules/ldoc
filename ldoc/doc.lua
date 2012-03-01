@@ -375,25 +375,33 @@ function Item:finish()
       end
       -- not all arguments may be commented: we use the formal arguments
       -- if available as the authoritative list, and warn if there's an inconsistency.
-      -- The _exception_ is if the formal args are just ... !
+      -- A formal argument of ... may match any number of params, however.
       if self.formal_args then
          local fargs = self.formal_args
-         if #fargs ~= 1 or fargs[1] ~= '...' then
+         if #fargs ~= 1 then
             local pnames, pcomments = names, comments
             names, comments = List(),List()
             for i,name in ipairs(fargs) do
                if params then -- explicit set of param tags
-                  if pnames[i] ~= name then
+                  local varargs = name == '...'
+                  if pnames[i] ~= name and not varargs then
                      if pnames[i] then
                         self:warning("param and formal argument name mismatch: '"..name.."' '"..pnames[i].."'")
                      else
                         self:warning("undocumented formal argument: '"..name.."'")
                      end
+                  elseif varargs then
+                     name = pnames[i]
                   end
                end
                names:append(name)
                -- ldoc allows comments in the formal arg list to be used
                comments:append (fargs.comments[name] or pcomments[i] or '')
+            end
+            if #pnames > #fargs and fargs[#fargs] ~= '...' then
+               for i = #fargs+1,#pnames do
+                  self:warning("extra param with no formal argument: "..pnames[i])
+               end
             end
          end
       end
