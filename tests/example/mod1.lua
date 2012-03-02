@@ -57,4 +57,25 @@ function mod1.zero_function(p)
 end
 
 
+-------
+-- Multiple params may match a varargs function.
+-- Generally, ldoc tries to be strict about matching params and formal arguments,
+-- but this is relaxed for varargs: `function other(p,...)`
+-- @param p
+-- @param q
+-- @param r
+function mod1.other(p,...)
+-- something cunning with select(2,...)
+end
 
+-------
+-- A function with typed arguments.
+-- The tparam tag is followed by the 'type'. There is no standard way
+-- to represent Lua types, but you can adopt a convention. Type names
+-- will be resolved. treturn must include a description after the type.
+-- @tparam string name
+-- @tparam number age
+-- @treturn string modified age
+function mod1.typed(name,age)
+
+end

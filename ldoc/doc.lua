@@ -338,6 +338,7 @@ end
 
 function Item:finish()
    local tags = self.tags
+   local quote = tools.quote
    self.name = read_del(tags,'name')
    self.type = read_del(tags,'class')
    self.modifiers = extract_tag_modifiers(tags)
@@ -375,20 +376,19 @@ function Item:finish()
       end
       -- not all arguments may be commented: we use the formal arguments
       -- if available as the authoritative list, and warn if there's an inconsistency.
-      -- A formal argument of ... may match any number of params, however.
       if self.formal_args then
          local fargs = self.formal_args
          if #fargs ~= 1 then
             local pnames, pcomments = names, comments
             names, comments = List(),List()
+            local varargs = fargs[#fargs] == '...'
             for i,name in ipairs(fargs) do
                if params then -- explicit set of param tags
-                  local varargs = name == '...'
                   if pnames[i] ~= name and not varargs then
                      if pnames[i] then
-                        self:warning("param and formal argument name mismatch: '"..name.."' '"..pnames[i].."'")
+                        self:warning("param and formal argument name mismatch: "..quote(name).." "..quote(pnames[i]))
                      else
-                        self:warning("undocumented formal argument: '"..name.."'")
+                        self:warning("undocumented formal argument: "..quote(name))
                      end
                   elseif varargs then
                      name = pnames[i]
@@ -398,9 +398,15 @@ function Item:finish()
                -- ldoc allows comments in the formal arg list to be used
                comments:append (fargs.comments[name] or pcomments[i] or '')
             end
-            if #pnames > #fargs and fargs[#fargs] ~= '...' then
+            -- A formal argument of ... may match any number of params, however.
+            if #pnames > #fargs then
                for i = #fargs+1,#pnames do
-                  self:warning("extra param with no formal argument: "..pnames[i])
+                  if not varargs then
+                     self:warning("extra param with no formal argument: "..quote(pnames[i]))
+                  else
+                     names:append(pnames[i])
+                     comments:append(pcomments[i] or '')
+                  end
                end
             end
          end
