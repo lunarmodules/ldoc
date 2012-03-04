@@ -394,15 +394,21 @@ if type(ldoc.examples) == 'table' then
    end)
 end
 
+ldoc.readme = ldoc.readme or ldoc.topics
 if type(ldoc.readme) == 'string' then
-   local item, F = add_special_project_entity(ldoc.readme,{
-      class = 'topic'
-   }, markup.add_sections)
-   -- add_sections above has created sections corresponding to the 2nd level
-   -- headers in the readme, which are attached to the File. So
-   -- we pass the File to the postprocesser can insert the section markers
-   -- and resolve inline @ references.
-   item.postprocess = function(txt) return ldoc.markup(txt,F) end
+   ldoc.readme = {ldoc.readme}
+end
+if type(ldoc.readme) == 'table' then
+   process_file_list(ldoc.readme, '*.md', function(f)
+      local item, F = add_special_project_entity(f,{
+         class = 'topic'
+      }, markup.add_sections)
+      -- add_sections above has created sections corresponding to the 2nd level
+      -- headers in the readme, which are attached to the File. So
+      -- we pass the File to the postprocesser, which will insert the section markers
+      -- and resolve inline @ references.
+      item.postprocess = function(txt) return ldoc.markup(txt,F) end
+   end)
 end
 
 -- extract modules from the file objects, resolve references and sort appropriately ---
