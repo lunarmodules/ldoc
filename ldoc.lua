@@ -123,6 +123,11 @@ ldoc.alias('tparam',{'param',modifiers={type="$1"}})
 ldoc.alias('treturn',{'return',modifiers={type="$1"}})
 ldoc.alias('tfield',{'field',modifiers={type="$1"}})
 
+function ldoc.tparam_alias (name,type)
+   type = type or name
+   ldoc.alias(name,{'param',modifiers={type=type}})
+end
+
 function ldoc.add_language_extension(ext,lang)
    lang = (lang=='c' and cc) or (lang=='lua' and lua) or quit('unknown language')
    if ext:sub(1,1) ~= '.' then ext = '.'..ext end
@@ -148,7 +153,7 @@ function ldoc.manual_url (url)
 end
 
 local ldoc_contents = {
-   'alias','add_language_extension','new_type','add_section',
+   'alias','add_language_extension','new_type','add_section', 'tparam_alias',
    'file','project','title','package','format','output','dir','ext',
    'one','style','template','description','examples','readme','all','manual_url',
    'no_return_or_parms','no_summary','full_description'
