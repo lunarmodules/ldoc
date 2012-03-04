@@ -10,6 +10,8 @@ local prettify = require 'ldoc.prettify'
 local quit, concat, lstrip = utils.quit, table.concat, stringx.lstrip
 local markup = {}
 
+local backtick_references
+
 -- inline <references> use same lookup as @see
 local function resolve_inline_references (ldoc, txt, item, plain)
    local res = (txt:gsub('@{([^}]-)}',function (name)
@@ -37,6 +39,16 @@ local function resolve_inline_references (ldoc, txt, item, plain)
       local res = ('<a href="%s">%s</a>'):format(html,label)
       return res
    end))
+   if backtick_references then
+      res  = res:gsub('`([^`]+)`',function(name)
+         local ref,err = markup.process_reference(name)
+         if ref then
+            return ('<code><a href="%s">%s</a></code> '):format(ldoc.href(ref),name)
+         else
+            return '`'..name..'`'
+         end
+      end)
+   end
    return res
 end
 
@@ -135,6 +147,7 @@ end
 function markup.create (ldoc, format)
    local processor
    markup.plain = true
+   backtick_references = ldoc.backtick_references
    markup.process_reference = function(name)
       local mod = ldoc.single or ldoc.module
       return mod:process_see_reference(name, ldoc.modules)
@@ -158,6 +171,9 @@ function markup.create (ldoc, format)
          if not ok then
             quit("cannot load formatter: "..format)
          end
+      end
+      if backtick_references == nil then
+         backtick_references = true
       end
       markup.plain = false
       processor = function (txt,item)
