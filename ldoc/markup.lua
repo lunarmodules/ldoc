@@ -43,7 +43,7 @@ local function resolve_inline_references (ldoc, txt, item, plain)
       res  = res:gsub('`([^`]+)`',function(name)
          local ref,err = markup.process_reference(name)
          if ref then
-            return ('<code><a href="%s">%s</a></code> '):format(ldoc.href(ref),name)
+            return ('<a href="%s">%s</a> '):format(ldoc.href(ref),name)
          else
             return '`'..name..'`'
          end
@@ -140,7 +140,8 @@ local function process_multiline_markdown(ldoc, txt, F)
          line = getline()
       end
    end
-   return concat(res,'\n')
+   res = concat(res,'\n')
+   return res
 end
 
 
