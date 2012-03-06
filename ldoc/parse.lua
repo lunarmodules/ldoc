@@ -171,8 +171,6 @@ local function parse_file(fname,lang, package)
             end
          end
 
---         if not t then break end -- no more file!
-
          if t == 'space' then t,v = tnext(tok) end
 
          local item_follows, tags, is_local, case
