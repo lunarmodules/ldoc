@@ -104,6 +104,7 @@ function File:_init(filename)
    self.filename = filename
    self.items = List()
    self.modules = List()
+   self.sections = List()
 end
 
 function File:new_item(tags,line)
@@ -159,6 +160,8 @@ function File:finish()
             item.display_name = display_name
             this_mod.section = item
             this_mod.kinds:add_kind(display_name,display_name)
+            this_mod.sections:append(item)
+            this_mod.sections.by_name[display_name:gsub('%A','_')] = item
          end
       else
          -- add the item to the module's item list
@@ -354,7 +357,9 @@ function Item:finish()
    if  doc.project_level(self.type) then
       -- we are a module, so become one!
       self.items = List()
+      self.sections = List()
       self.items.by_name = {}
+      self.sections.by_name = {}
       setmetatable(self,Module)
    elseif not doc.section_tag(self.type) then
       -- params are either a function's arguments, or a table's fields, etc.
@@ -531,7 +536,12 @@ function Module:process_see_reference (s,modules)
       if fun_ref then
          return reference(s,mod_ref,fun_ref)
       else
-         return nil,"function not found: "..s.." in "..mod_ref.name
+         fun_ref = mod_ref.sections.by_name[name]
+         if not fun_ref then
+            return nil,"function or section not found: "..s.." in "..mod_ref.name
+         else
+            return reference(fun_ref.name:gsub('_',' '),mod_ref,fun_ref)
+         end
       end
    else -- plain jane name; module in this package, function in this module
       mod_ref = modules.by_name[self.package..'.'..s]

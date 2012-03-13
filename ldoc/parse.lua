@@ -104,6 +104,7 @@ local function parse_file(fname,lang, package)
    local current_item, module_item
 
    local tok,f = lang.lexer(fname)
+   if not tok then return nil end
 
     function lineno ()
       return tok:lineno()
@@ -274,7 +275,7 @@ end
 
 function parse.file(name,lang, args)
    local F,err = parse_file(name,lang, args.package)
-   if err then return F,err end
+   if err or not F then return F,err end
    local ok,err = xpcall(function() F:finish() end,debug.traceback)
    if not ok then return F,err end
    return F
