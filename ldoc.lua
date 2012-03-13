@@ -1,3 +1,4 @@
+#!/usr/bin/env lua
 ---------------
 -- ## ldoc, a Lua documentation generator.
 --
@@ -26,7 +27,7 @@ app.require_here()
 
 --- @usage
 local usage = [[
-ldoc, a documentation generator for Lua, vs 1.1.0
+ldoc, a documentation generator for Lua, vs 1.2.0
   -d,--dir (default docs) output directory
   -o,--output  (default 'index') output name
   -v,--verbose          verbose
