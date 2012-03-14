@@ -55,7 +55,7 @@ function prettify.lua (fname, code, initial_lineno)
       end
       t,val = tok()
    end
-   res:append(footer)
+   table.remove(res)
    return res:join ()
 end
 

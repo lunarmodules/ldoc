@@ -63,6 +63,16 @@ function KindMap:__call ()
    end
 end
 
+function KindMap:put_kind_first (kind)
+   -- find this kind in our kind list
+   local kinds = self.klass.kinds,kind
+   local idx = tablex.find(kinds,kind)
+   -- and swop with the start!
+   if idx then
+      kinds[1],kinds[idx] = kinds[idx],kinds[1]
+   end
+end
+
 function KindMap:type_of (item)
    local klass = self.klass
    local kind = klass.types_by_tag[item.type]
@@ -70,7 +80,7 @@ function KindMap:type_of (item)
 end
 
 function KindMap:get_section_description (kind)
-    return self.klass.descriptions[kind]
+   return self.klass.descriptions[kind]
 end
 
 -- called for each new item. It does not actually create separate lists,
@@ -81,7 +91,6 @@ function KindMap:add (item,items,description)
    local kname = self.klass.types_by_tag[group] -- the kind name
    if not self[kname] then
       self[kname] = M.type_iterator (items,self.fieldname,group)
-      --print(kname,description)
       self.klass.descriptions[kname] = description
    end
    item.kind = kname:lower()

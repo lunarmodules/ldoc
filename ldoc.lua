@@ -554,6 +554,7 @@ ldoc.kinds = project
 ldoc.modules = module_list
 ldoc.title = ldoc.title or args.title
 ldoc.project = ldoc.project or args.project
+ldoc.package = args.package:match '%a+' and args.package or nil
 
 local html = require 'ldoc.html'
 
