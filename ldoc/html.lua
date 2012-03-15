@@ -128,29 +128,38 @@ function html.generate_output(ldoc, args, project)
    -- write out the module index
    writefile(args.dir..args.output..args.ext,out)
 
-   -- write out the per-module documentation
    -- in single mode, we exclude any modules since the module has been done;
    -- this step is then only for putting out any examples or topics
-   ldoc.css = '../'..css
+   local mods = List()
    for kind, modules in project() do
-      kind = kind:lower()
-      if not ldoc.single or ldoc.single and kind ~= 'modules' then
-         check_directory(args.dir..kind)
-         for m in modules() do
-            ldoc.module = m
-            ldoc.body = m.body
-            if ldoc.body and m.postprocess then
-               ldoc.body = m.postprocess(ldoc.body)
-            end
-            out,err = template.substitute(module_template,{
-               module=m,
-               ldoc = ldoc
-            })
-            if not out then
-               quit('template failed for '..m.name..': '..err)
-            else
-               writefile(args.dir..kind..'/'..m.name..args.ext,out)
-            end
+      local lkind = kind:lower()
+      if not ldoc.single or ldoc.single and lkind ~= 'modules' then
+         mods:append {kind, lkind, modules}
+      end
+   end
+
+   -- write out the per-module documentation
+   -- note that we reset the internal ordering of the 'kinds' so that
+   -- e.g. when reading a topic the other Topics will be listed first.
+   ldoc.css = '../'..css
+   for m in mods:iter() do
+      local kind, lkind, modules = unpack(m)
+      check_directory(args.dir..lkind)
+      project:put_kind_first(kind)
+      for m in modules() do
+         ldoc.module = m
+         ldoc.body = m.body
+         if ldoc.body and m.postprocess then
+            ldoc.body = m.postprocess(ldoc.body)
+         end
+         out,err = template.substitute(module_template,{
+            module=m,
+            ldoc = ldoc
+         })
+         if not out then
+            quit('template failed for '..m.name..': '..err)
+         else
+            writefile(args.dir..lkind..'/'..m.name..args.ext,out)
          end
       end
    end
@@ -158,3 +167,4 @@ function html.generate_output(ldoc, args, project)
 end
 
 return html
+

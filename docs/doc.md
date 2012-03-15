@@ -2,7 +2,7 @@
 
 LDoc is a second-generation documentation tool that can be used as a replacement for [LuaDoc](http://keplerproject.github.com/luadoc/). It arose out of my need to document my own projects and only depends on the [Penlight](https://github.com/stevedonovan/Penlight) libraries.
 
-It is mostly compatible with LuaDoc, except that certain workarounds are no longer needed. For instance, it is not so married to the idea that Lua modules should be defined using the `module()` function; this is not only a matter of taste since `module` is deprecated in Lua 5.2.
+It is mostly compatible with LuaDoc, except that certain workarounds are no longer needed. For instance, it is not so married to the idea that Lua modules should be defined using the `module` function; this is not only a matter of taste since this has been deprecated in Lua 5.2.
 
 Otherwise, the output is very similar, which is no accident since the HTML templates are based directly on LuaDoc. You can ship your own customized templates and style sheets with your project, however. You have an option to use Markdown to process the documentation, which means no ugly HTML is needed in doc comments.  C/C++ extension modules may be documented in a similar way, although naturally less can be inferred from the code itself.
 
