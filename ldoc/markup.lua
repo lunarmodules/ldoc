@@ -120,7 +120,6 @@ local function process_multiline_markdown(ldoc, txt, F)
          local_context = name .. '.'
          line = getline()
       end
-      line = resolve_inline_references(ldoc, line, err_item)
       indent, line = indent_line(line)
       if indent >= 4 then -- indented code block
          code = {}
@@ -147,6 +146,7 @@ local function process_multiline_markdown(ldoc, txt, F)
          code = concat(code,'\n')
          if code ~= '' then
             code, err = prettify.lua(filename,code..'\n',L)
+            code = resolve_inline_references(ldoc, code, err_item)
             append(res, code)
             append(res,'</pre>')
          else
@@ -157,6 +157,7 @@ local function process_multiline_markdown(ldoc, txt, F)
          if section then
             append(res,('<a name="%s"></a>'):format(section))
          end
+         line = resolve_inline_references(ldoc, line, err_item)
          append(res,line)
          line = getline()
       end
