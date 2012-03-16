@@ -115,7 +115,7 @@ local function process_multiline_markdown(ldoc, txt, F)
    local indent,code,start_indent
    local_context = nil
    while line do
-      local name = line:match '@lookup%s+(%S+)'
+      local name = line:match '^@lookup%s+(%S+)'
       if name then
          local_context = name .. '.'
          line = getline()

@@ -134,6 +134,13 @@ local function parse_file(fname,lang, package)
 
    local mod
    local t,v = tnext(tok)
+   if t == '#' then
+      while t and t ~= 'comment' do t,v = tnext(tok) end
+      if t == nil then
+         F:warning('empty file')
+         return nil
+      end
+   end
    if lang.parse_module_call and t ~= 'comment'then
       while t and not (t == 'iden' and v == 'module') do
          t,v = tnext(tok)
