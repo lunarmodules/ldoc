@@ -10,10 +10,17 @@
 -- A reference to `mydata`.
 -- @string name
 -- @int age
--- @treturn mydata result
+-- @treturn mydata
 function _M.first (name,age)
 
 end
+
+--- simple function returning something
+-- @return bonzo dog!
+function _M.simple()
+
+end
+
 
 --- a table of this module.
 -- @table mydata

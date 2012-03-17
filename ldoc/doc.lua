@@ -286,7 +286,7 @@ function Item.check_tag(tags,tag, value, modifiers)
             for m,v in pairs(amod) do
                local idx = v:match('^%$(%d+)')
                if idx then
-                  v, value = value:match('(%S+)%s+(.+)')
+                  v, value = value:match('(%S+)(.*)')
                end
                modifiers[m] = v
             end
@@ -613,6 +613,7 @@ end
 --------- dumping out modules and items -------------
 
 function Module:dump(verbose)
+   if self.type ~= 'module' then return end
    print '----'
    print(self.type..':',self.name,self.summary)
    if self.description then print(self.description) end
@@ -640,12 +641,27 @@ function Item:dump(verbose)
       print()
       print(self.type,name)
       print(self.summary)
-      if self.description then print(self.description) end
-      for _,p in ipairs(self.params) do
-         print(p,self.params[p])
+      if self.description and self.description:match '%S' then
+         print 'description:'
+         print(self.description)
       end
-      for tag, value in pairs(self.tags) do
-         print(tag,value)
+      if #self.params > 0 then
+         print 'parameters:'
+         for _,p in ipairs(self.params) do
+            print('',p,self.params[p])
+         end
+      end
+      if self.ret and #self.ret > 0 then
+         print 'returns:'
+         for _,r in ipairs(self.ret) do
+            print('',r)
+         end
+      end
+      if next(self.tags) then
+         print 'tags:'
+         for tag, value in pairs(self.tags) do
+            print(tag,value)
+         end
       end
    else
       print('* '..name..' - '..self.summary)

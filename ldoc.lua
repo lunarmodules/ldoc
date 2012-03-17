@@ -430,7 +430,9 @@ for F in file_list:iter() do
 end
 
 for mod in module_list:iter() do
-   mod:resolve_references(module_list)
+   if not args.module then -- no point if we're just showing docs on the console
+      mod:resolve_references(module_list)
+   end
    project:add(mod,module_list)
 end
 
