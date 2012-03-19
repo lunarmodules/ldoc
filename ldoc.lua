@@ -7,7 +7,7 @@
 --
 -- C/C++ support for Lua extensions is provided.
 --
--- Available from LuaRocks as 'ldoc' and as a [Zip file](http://stevedonovan.github.com/files/ldoc-1.1.0.zip)
+-- Available from LuaRocks as 'ldoc' and as a [Zip file](http://stevedonovan.github.com/files/ldoc-1.2.0.zip)
 --
 -- [Github Page](https://github.com/stevedonovan/ldoc)
 --
@@ -206,7 +206,7 @@ local config_dir
 
 
 local ldoc_dir = arg[0]:gsub('[^/\\]+$','')
-local doc_path = ldoc_dir..'/ldoc/builtin/?.luadoc'
+local doc_path = ldoc_dir..'/ldoc/builtin/?.lua'
 
 
 -- ldoc -m is expecting a Lua package; this converts this to a file path
