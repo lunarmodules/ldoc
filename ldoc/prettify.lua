@@ -55,7 +55,10 @@ function prettify.lua (fname, code, initial_lineno)
       end
       t,val = tok()
    end
-   table.remove(res)
+   local last = res[#res]
+   if last:match '\n$' then
+      res[#res] = last:gsub('\n+','')
+   end
    return res:join ()
 end
 

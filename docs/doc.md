@@ -217,7 +217,7 @@ References may be made inline using the @\{ref} syntax. This may appear anywhere
     -- @field viscosity
     -- @table stdvars
 
-@\{ref} is very useful for referencing your API from code samples and readme text.
+@\{ref} is very useful for referencing your API from code samples and readme text. (I've had to throw in a spurious backspace to stop expansion in this example.)
 
 The link text can be changed from the default by the extended syntax @\{ref|text}.
 
@@ -261,6 +261,7 @@ A specialized kind of section is `type`: it is used for documenting classes. The
     -- @return standard time since epoch
     function File:mtime()
     ...
+    end
 
 (In an ideal world, we would use the word 'class' instead of 'type', but this would conflict with the LuaDoc usage.)
 
