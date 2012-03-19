@@ -217,7 +217,7 @@ function M.this_module_name (basename,fname)
    return M.name_of(lpath):gsub('%.init$','')
 end
 
-function M.find_existing_module (name, searchfn)
+function M.find_existing_module (name, dname, searchfn)
    local fullpath,lua = searchfn(name)
    local mod = true
    if not fullpath then -- maybe it's a function reference?
@@ -229,7 +229,7 @@ function M.find_existing_module (name, searchfn)
          fullpath = nil
       end
       if not fullpath then
-         return nil, "module or function '"..name.."' not found on module path"
+         return nil, "module or function '"..dname.."' not found on module path"
       else
          mod = fname
       end
@@ -240,13 +240,14 @@ end
 
 function M.lookup_existing_module_or_function (name, docpath)
    -- first look up on the Lua module path
-   local fullpath, mod = M.find_existing_module(name,path.package_path)
+   local fullpath, mod = M.find_existing_module(name,name,path.package_path)
    -- no go; but see if we can find it on the doc path
    if not fullpath then
-      fullpath, mod = M.find_existing_module(name, function(name)
-         local fpath = package.searchpath(name,docpath)
-         return fpath,true  -- result must always be 'lua'!
-      end)
+      fullpath, mod = M.find_existing_module("ldoc.builtin." .. name,name,path.package_path)
+--~       fullpath, mod = M.find_existing_module(name, function(name)
+--~          local fpath = package.searchpath(name,docpath)
+--~          return fpath,true  -- result must always be 'lua'!
+--~       end)
    end
    return fullpath, mod -- `mod` can be the error message
 end

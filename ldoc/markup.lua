@@ -174,7 +174,7 @@ function markup.create (ldoc, format)
    global_context = ldoc.package and ldoc.package .. '.'
 
    markup.process_reference = function(name)
-      local mod = ldoc.single or ldoc.module
+      local mod = ldoc.single or ldoc.module or ldoc.modules[1]
       local ref,err = mod:process_see_reference(name, ldoc.modules)
       if ref then return ref end
       if global_context then
