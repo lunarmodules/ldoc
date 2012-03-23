@@ -106,11 +106,11 @@ local function parse_file(fname,lang, package)
    local tok,f = lang.lexer(fname)
    if not tok then return nil end
 
-    function lineno ()
+    local function lineno ()
       return tok:lineno()
     end
 
-   function filename () return fname end
+   local function filename () return fname end
 
    function F:warning (msg,kind,line)
       kind = kind or 'warning'

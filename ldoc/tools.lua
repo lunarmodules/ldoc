@@ -305,7 +305,7 @@ end
 -- parse a Lua identifier - contains names separated by . and :.
 function M.get_fun_name (tok,first)
    local res = {}
-   local t,name
+   local t,name,sep
    if not first then
       t,name = tnext(tok)
    else

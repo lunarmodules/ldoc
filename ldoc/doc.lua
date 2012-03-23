@@ -317,7 +317,7 @@ local function extract_value_modifier (p)
 end
 
 local function extract_tag_modifiers (tags)
-   local modifiers = {}
+   local modifiers, mods = {}
    for tag, value in pairs(tags) do
       if type(value)=='table' and value.append then
          local tmods = {}

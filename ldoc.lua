@@ -176,7 +176,7 @@ local function read_ldoc_config (fname)
    if txt then
        -- Penlight defines loadin for Lua 5.1 as well
       local chunk
-      if not loadin then -- Penlight 0.9.5
+      if not rawget(_G,'loadin') then -- Penlight 0.9.5
          if utils.load then load = utils.load end -- Penlight 0.9.7; no more global load() override
          chunk,err = load(txt,nil,nil,ldoc)
       else

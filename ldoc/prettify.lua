@@ -28,9 +28,8 @@ local spans = {keyword=true,number=true,string=true,comment=true,global=true}
 
 function prettify.lua (fname, code, initial_lineno)
    local res = List()
-   res:append(header)
    res:append '<pre>\n'
-   intial_lineno = initial_lineno or 0
+   initial_lineno = initial_lineno or 0
 
    local tok = lexer.lua(code,{},{})
    local error_reporter = {

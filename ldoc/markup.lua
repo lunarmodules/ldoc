@@ -145,6 +145,7 @@ local function process_multiline_markdown(ldoc, txt, F)
          if #code > 1 then table.remove(code) end
          code = concat(code,'\n')
          if code ~= '' then
+            local err
             code, err = prettify.lua(filename,code..'\n',L)
             code = resolve_inline_references(ldoc, code, err_item)
             append(res, code)
