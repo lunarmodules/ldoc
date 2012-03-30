@@ -157,7 +157,7 @@ local ldoc_contents = {
    'alias','add_language_extension','new_type','add_section', 'tparam_alias',
    'file','project','title','package','format','output','dir','ext', 'topics',
    'one','style','template','description','examples','readme','all','manual_url',
-   'no_return_or_parms','no_summary','full_description'
+   'no_return_or_parms','no_summary','full_description','backtick_references'
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
