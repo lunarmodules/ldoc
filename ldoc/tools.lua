@@ -8,6 +8,7 @@ local M = tools
 local append = table.insert
 local lexer = require 'ldoc.lexer'
 local quit = utils.quit
+local lfs = require 'lfs'
 
 -- this constructs an iterator over a list of objects which returns only
 -- those objects where a field has a certain value. It's used to iterate

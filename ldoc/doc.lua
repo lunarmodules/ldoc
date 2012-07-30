@@ -32,6 +32,8 @@ known_tags._project_level = {
    topic = true
 }
 
+local see_reference_handlers = {}
+
 local TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE,TAG_FLAG = 'M','id','S','T','N'
 doc.TAG_MULTI,doc.TAG_ID,doc.TAG_SINGLE,doc.TAG_TYPE,doc.TAG_FLAG =
     TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE,TAG_FLAG
@@ -42,6 +44,11 @@ function doc.add_tag(tag,type,project_level)
       known_tags[tag] = type
       known_tags._project_level[tag] = project_level
    end
+end
+
+function doc.add_custom_see_handler(pat,action)
+    print('adding',pat,action)
+    see_reference_handlers[pat] = action
 end
 
 -- add an alias to an existing tag (exposed through ldoc API)
@@ -497,6 +504,19 @@ function Module:hunt_for_reference (packmod, modules)
    return mod_ref
 end
 
+local err = io.stderr
+
+local function custom_see_references (s)
+    --err:write('next',next(see_reference_handlers),'\n')
+    for pat, action in pairs(see_reference_handlers) do
+        --err:write('pair ',pair,'\n')
+        if s:match(pat) then
+            local label, href = action(s:match(pat))
+            return {href = href, label = label}
+        end
+    end
+end
+
 local function reference (s, mod_ref, item_ref)
    local name = item_ref and item_ref.name or ''
    -- this is deeply hacky; classes have 'Class ' prepended.
@@ -508,6 +528,8 @@ end
 
 function Module:process_see_reference (s,modules)
    local mod_ref,fun_ref,name,packmod
+   local ref = custom_see_references(s)
+   if ref then return ref end
    if not s:match '^[%w_%.%:%-]+$' or not s:match '[%w_]$' then
       return nil, "malformed see reference: '"..s..'"'
    end

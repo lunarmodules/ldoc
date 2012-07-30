@@ -129,18 +129,18 @@ function ldoc.tparam_alias (name,type)
    ldoc.alias(name,{'param',modifiers={type=type}})
 end
 
-function ldoc.add_language_extension(ext,lang)
+function ldoc.add_language_extension(ext, lang)
    lang = (lang=='c' and cc) or (lang=='lua' and lua) or quit('unknown language')
    if ext:sub(1,1) ~= '.' then ext = '.'..ext end
    file_types[ext] = lang
 end
 
-function ldoc.add_section (name,title,subname)
+function ldoc.add_section (name, title, subname)
    ModuleMap:add_kind(name,title,subname)
 end
 
 -- new tags can be added, which can be on a project level.
-function ldoc.new_type (tag,header,project_level)
+function ldoc.new_type (tag, header, project_level)
    doc.add_tag(tag,doc.TAG_TYPE,project_level)
    if project_level then
       ProjectMap:add_kind(tag,header)
@@ -153,11 +153,15 @@ function ldoc.manual_url (url)
     global.set_manual_url(url)
 end
 
+function ldoc.custom_see_handler(pat, handler)
+    doc.add_custom_see_handler(pat, handler)
+end
+
 local ldoc_contents = {
    'alias','add_language_extension','new_type','add_section', 'tparam_alias',
    'file','project','title','package','format','output','dir','ext', 'topics',
    'one','style','template','description','examples','readme','all','manual_url',
-   'no_return_or_parms','no_summary','full_description','backtick_references'
+   'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
