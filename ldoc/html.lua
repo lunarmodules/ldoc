@@ -21,6 +21,15 @@ local html = {}
 
 local quit = utils.quit
 
+local function cleanup_whitespaces(text)
+    local lines = stringx.splitlines(text)
+    for i = 1, #lines do
+        lines[i] = stringx.rstrip(lines[i])
+    end
+    lines[#lines + 1] = "" -- Little trick: file should end with newline
+    return table.concat(lines, "\n")
+end
+
 function html.generate_output(ldoc, args, project)
    local check_directory, check_file, writefile = tools.check_directory, tools.check_file, tools.writefile
 
@@ -126,6 +135,7 @@ function html.generate_output(ldoc, args, project)
    check_file(args.dir..css, path.join(args.style,css)) -- has CSS been copied?
 
    -- write out the module index
+   out = cleanup_whitespaces(out)
    writefile(args.dir..args.output..args.ext,out)
 
    -- in single mode, we exclude any modules since the module has been done;
@@ -159,6 +169,7 @@ function html.generate_output(ldoc, args, project)
          if not out then
             quit('template failed for '..m.name..': '..err)
          else
+            out = cleanup_whitespaces(out)
             writefile(args.dir..lkind..'/'..m.name..args.ext,out)
          end
       end
