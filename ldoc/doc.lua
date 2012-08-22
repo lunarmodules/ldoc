@@ -21,8 +21,8 @@ local known_tags = {
    fixme = 'S', todo = 'S', warning = 'S', raise = 'S';
    module = 'T', script = 'T', example = 'T', topic = 'T', -- project-level
    ['function'] = 'T', lfunction = 'T', table = 'T', section = 'T', type = 'T',
-   annotation = 'T'; -- module-level
-   ['local'] = 'N', export = 'N';
+   annotation = 'T', factory = 'T'; -- module-level
+   ['local'] = 'N', export = 'N', private = 'N', constructor = 'N';
 }
 known_tags._alias = {}
 known_tags._project_level = {
@@ -66,9 +66,14 @@ function doc.project_level(tag)
    return known_tags._project_level[tag]
 end
 
--- is it a section tag, like 'type' (class) or 'section'?
+-- is it a section tag?
 function doc.section_tag (tag)
-   return tag == 'section' or tag == 'type'
+   return tag == 'section' or doc.class_tag(tag)
+end
+
+-- is it a class tag, like 'type' or 'factory'?
+function doc.class_tag (tag)
+   return tag == 'type' or tag == 'factory'
 end
 
 
@@ -131,10 +136,29 @@ function File:export_item (name)
    end
 end
 
+
+local function has_prefix (name,prefix)
+   local i1,i2 = name:find(prefix)
+   return i1 == 1 and i2 == #prefix
+end
+
+local function mod_section_type (this_mod)
+   return this_mod and this_mod.section and this_mod.section.type
+end
+
 function File:finish()
    local this_mod
    local items = self.items
    for item in items:iter() do
+      if mod_section_type(this_mod) == 'factory' and item.tags then
+         local klass = '@{'..this_mod.section.name..'}'
+         -- Factory constructors return the object type, and methods all have implicit self argument
+         if item.tags.constructor and not item.tags['return'] then
+            item.tags['return'] = List{klass}
+         elseif item.tags.param then
+            item.tags.param:put('self '..klass)
+         end
+      end
       item:finish()
       if doc.project_level(item.type) then
          this_mod = item
@@ -157,7 +181,7 @@ function File:finish()
             this_mod.section = nil
          else
             local summary = item.summary:gsub('%.$','')
-            if item.type == 'type' then
+            if doc.class_tag(item.type) then
                display_name = 'Class '..item.name
                item.module = this_mod
                this_mod.items.by_name[item.name] = item
@@ -171,6 +195,7 @@ function File:finish()
             this_mod.sections.by_name[display_name:gsub('%A','_')] = item
          end
       else
+         local to_be_removed
          -- add the item to the module's item list
          if this_mod then
             -- new-style modules will have qualified names like 'mod.foo'
@@ -195,11 +220,21 @@ function File:finish()
             if this_mod.section then
                item.section = this_mod.section.display_name
                -- if it was a class, then the name should be 'Class:foo'
-               if this_mod.section.type == 'type' then
+               local stype = this_mod.section.type
+               if doc.class_tag(stype) then
                   local prefix = this_mod.section.name .. ':'
                   local i1,i2 = item.name:find(prefix)
-                  if not (i1 == 1 and i2 == #prefix) then
+                  if not has_prefix(item.name,prefix) and not item.tags.constructor then
                      item.name =  prefix .. item.name
+                  end
+                  if stype == 'factory'  then
+                     if item.tags.private then to_be_removed = true
+                     elseif item.type == 'lfunction' then
+                        item.type = 'function'
+                     end
+                     if item.tags.constructor then
+                        item.section = item.type
+                     end
                   end
                end
                section_description = this_mod.section.description
@@ -208,11 +243,12 @@ function File:finish()
             end
 
             item.module = this_mod
-            local these_items = this_mod.items
-            these_items.by_name[item.name] = item
-            these_items:append(item)
-
-            this_mod.kinds:add(item,these_items,section_description)
+            if not to_be_removed then
+               local these_items = this_mod.items
+               these_items.by_name[item.name] = item
+               these_items:append(item)
+               this_mod.kinds:add(item,these_items,section_description)
+            end
 
          else
             -- must be a free-standing function (sometimes a problem...)
@@ -520,7 +556,7 @@ end
 local function reference (s, mod_ref, item_ref)
    local name = item_ref and item_ref.name or ''
    -- this is deeply hacky; classes have 'Class ' prepended.
-   if item_ref and item_ref.type == 'type' then
+   if item_ref and doc.class_tag(item_ref.type) then
       name = 'Class_'..name
    end
    return {mod = mod_ref, name = name, label=s}

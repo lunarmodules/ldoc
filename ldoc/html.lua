@@ -81,7 +81,7 @@ function html.generate_output(ldoc, args, project)
 
    function ldoc.display_name(item)
       local name = item.display_name or item.name
-      if item.type == 'function' then return name..'&nbsp;'..item.args
+      if item.type == 'function' or item.type == 'lfunction' then return name..'&nbsp;'..item.args
       else return name end
    end
 
