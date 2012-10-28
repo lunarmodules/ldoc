@@ -3,8 +3,8 @@
 -- This encapsulates the different strategies needed for parsing C and Lua
 -- source code.
 
-require 'pl'
-
+local class = require 'pl.class'
+local utils = require 'pl.utils'
 local tools = require 'ldoc.tools'
 local lexer = require 'ldoc.lexer'
 

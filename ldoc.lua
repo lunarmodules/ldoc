@@ -16,7 +16,14 @@
 -- @license MIT/X11
 -- @script ldoc
 
-require 'pl'
+local class = require 'pl.class'
+local app = require 'pl.app'
+local path = require 'pl.path'
+local utils = require 'pl.utils'
+local List = require 'pl.List'
+local stringx = require 'pl.stringx'
+local tablex = require 'pl.tablex'
+
 
 local append = table.insert
 

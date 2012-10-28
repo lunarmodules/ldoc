@@ -2,7 +2,10 @@
 -- General utility functions for ldoc
 -- @module tools
 
-require 'pl'
+local class = require 'pl.class'
+local List = require 'pl.List'
+local path = require 'pl.path'
+local utils = require 'pl.utils'
 local tools = {}
 local M = tools
 local append = table.insert
@@ -297,6 +300,17 @@ function M.get_parameters (tok,endtoken,delim)
             set_comment(i,last_tok)
          end
       end
+      end
+   end
+
+   if next(args.comments) then -- we had argument comments
+      -- but the last one may be outside the parens! (Geoff style)
+      local n = #args
+      if not args.comments[n] then
+         local t = {tok()}
+         if type_of(t) == 'comment' then
+            set_comment(n,t)
+         end
       end
    end
 

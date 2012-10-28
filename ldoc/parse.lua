@@ -1,6 +1,8 @@
 -- parsing code for doc comments
 
-require 'pl'
+local List = require 'pl.List'
+local Map = require 'pl.Map'
+local stringio = require 'pl.stringio'
 local lexer = require 'ldoc.lexer'
 local tools = require 'ldoc.tools'
 local doc = require 'ldoc.doc'

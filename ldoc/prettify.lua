@@ -3,7 +3,7 @@
 -- for known modules and functions.
 -- A module reference to an example `test-fun.lua` would look like
 -- `@{example:test-fun}`.
-require 'pl'
+local List = require 'pl.List'
 local lexer = require 'ldoc.lexer'
 local globals = require 'ldoc.builtin.globals'
 local tnext = lexer.skipws

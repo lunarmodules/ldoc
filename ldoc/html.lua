@@ -13,6 +13,10 @@
 -- generalizes the idea of these project-level categories and in fact custom categories
 -- can be created (refered to as 'kinds' in the code)
 
+local List = require 'pl.List'
+local utils = require 'pl.utils'
+local path = require 'pl.path'
+local stringx = require 'pl.stringx'
 local template = require 'pl.template'
 local tools = require 'ldoc.tools'
 local markup = require 'ldoc.markup'

@@ -3,9 +3,9 @@
 -- Currently just does Markdown, but this is intended to
 -- be the general module for managing other formats as well.
 
-require 'pl'
 local doc = require 'ldoc.doc'
 local utils = require 'pl.utils'
+local stringx = require 'pl.stringx'
 local prettify = require 'ldoc.prettify'
 local quit, concat, lstrip = utils.quit, table.concat, stringx.lstrip
 local markup = {}

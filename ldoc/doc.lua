@@ -2,7 +2,9 @@
 -- Defining the ldoc document model.
 
 
-require 'pl'
+local class = require 'pl.class'
+local utils = require 'pl.utils'
+local List = require 'pl.List'
 
 local doc = {}
 local global = require 'ldoc.builtin.globals'
@@ -222,9 +224,8 @@ function File:finish()
                -- if it was a class, then the name should be 'Class:foo'
                local stype = this_mod.section.type
                if doc.class_tag(stype) then
-                  local prefix = this_mod.section.name .. ':'
-                  local i1,i2 = item.name:find(prefix)
-                  if not has_prefix(item.name,prefix) and not item.tags.constructor then
+                  local prefix = this_mod.section.name .. (not item.tags.constructor and ':' or '.')
+                  if not has_prefix(item.name,prefix) then
                      item.name =  prefix .. item.name
                   end
                   if stype == 'factory'  then
@@ -416,8 +417,9 @@ function Item:finish()
       else
          self.parameter = 'field'
       end
-      local params = read_del(tags,self.parameter)
-      local names, comments, modifiers = List(), List(), List()
+      local field = self.parameter
+      local params = read_del(tags,field)
+      local names, comments = List(), List()
       if params then
          for line in params:iter() do
             local name, comment = line :match('%s*([%w_%.:]+)(.*)')
@@ -447,8 +449,23 @@ function Item:finish()
                   end
                end
                names:append(name)
-               -- ldoc allows comments in the formal arg list to be used
-               comments:append (fargs.comments[name] or pcomments[i] or '')
+               local comment = pcomments[i]
+               if not comment then
+                  -- ldoc allows comments in the formal arg list to be used, if they aren't specified with @param
+                  -- Further, these comments may start with a type followed by a colon, and are then equivalent
+                  -- to a @tparam
+                  comment = fargs.comments[name]
+                  if comment then
+                     comment = comment:gsub('^%-+%s*','')
+                     local type,rest = comment:match '([^:]+):(.*)'
+                     if type then
+                        if not self.modifiers[field] then self.modifiers[field] = List() end
+                        self.modifiers[field]:append {type = type}
+                        comment = rest
+                     end
+                  end
+               end
+               comments:append (comment or '')
             end
             -- A formal argument of ... may match any number of params, however.
             if #pnames > #fargs then
@@ -468,7 +485,7 @@ function Item:finish()
       -- adding name-value pairs to the params list (this is
       -- also done for any associated modifiers)
       self.params = names
-      local pmods = self.modifiers[self.parameter]
+      local pmods = self.modifiers[field]
       for i,name in ipairs(self.params) do
          self.params[name] = comments[i]
          if pmods then
@@ -543,9 +560,7 @@ end
 local err = io.stderr
 
 local function custom_see_references (s)
-    --err:write('next',next(see_reference_handlers),'\n')
     for pat, action in pairs(see_reference_handlers) do
-        --err:write('pair ',pair,'\n')
         if s:match(pat) then
             local label, href = action(s:match(pat))
             return {href = href, label = label}
