@@ -109,9 +109,9 @@ function html.generate_output(ldoc, args, project)
       for name in tp:gmatch("[^|]+") do
          local ref,err = markup.process_reference(name)
          if ref then
-            types[#types+1] = ('<a href="%s">%s</a> '):format(ldoc.href(ref),name)
+            types[#types+1] = ('<a class="type" href="%s">%s</a>'):format(ldoc.href(ref),name)
          else
-            types[#types+1] = '<strong>'..name..'</strong> '
+            types[#types+1] = '<span class="type">'..name..'</span>'
          end
       end
       local names = table.concat(types, ", ", 1, math.max(#types-1, 1))
