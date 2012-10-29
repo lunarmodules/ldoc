@@ -98,15 +98,32 @@ function html.generate_output(ldoc, args, project)
    end
 
    function ldoc.typename (tp)
-      if not tp then return '' end
-      return (tp:gsub('%a[%w_%.]*',function(name)
+      if not tp or tp == '' then return '' end
+      local optional
+      local tp2 = tp:match("%?|?(.*)")
+      if tp2 then
+         optional = true
+         tp = tp2
+      end
+      local types = {}
+      for name in tp:gmatch("[^|]+") do
          local ref,err = markup.process_reference(name)
          if ref then
-            return ('<a href="%s">%s</a> '):format(ldoc.href(ref),name)
+            types[#types+1] = ('<a href="%s">%s</a> '):format(ldoc.href(ref),name)
          else
-            return '<strong>'..name..'</strong> '
+            types[#types+1] = '<strong>'..name..'</strong> '
          end
-      end))
+      end
+      local names = table.concat(types, ", ", 1, math.max(#types-1, 1))
+      if #types > 1 then names = names.." or "..types[#types] end
+      if optional then
+        if names ~= '' then
+          names = "optional "..names
+        else
+          names = "optional"
+        end
+      end
+      return names
    end
 
    local module_template,err = utils.readfile (path.join(args.template,ldoc.templ))
