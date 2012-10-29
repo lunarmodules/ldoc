@@ -432,7 +432,7 @@ function Item:finish()
       -- if available as the authoritative list, and warn if there's an inconsistency.
       if self.formal_args then
          local fargs = self.formal_args
-         if #fargs ~= 1 then
+         if #fargs ~= 0 then
             local pnames, pcomments = names, comments
             names, comments = List(),List()
             local varargs = fargs[#fargs] == '...'
