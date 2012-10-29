@@ -6,6 +6,7 @@ local class = require 'pl.class'
 local List = require 'pl.List'
 local path = require 'pl.path'
 local utils = require 'pl.utils'
+local tablex = require 'pl.tablex'
 local tools = {}
 local M = tools
 local append = table.insert
