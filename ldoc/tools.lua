@@ -280,37 +280,49 @@ function M.get_parameters (tok,endtoken,delim)
 
    local function set_comment (idx,tok)
       local text = value_of(tok):gsub('%s*$','')
-      args.comments[args[idx]] = text
+      local current_comment = args.comments[args[idx]]
+      if current_comment then
+        text = text:match("%s*%-%-+%s*(.*)")
+        args.comments[args[idx]] = current_comment .. " " .. text
+      else
+        args.comments[args[idx]] = text
+      end
    end
 
    for i = 1,#ltl do
       --print('check',i,ltl[i],#ltl[i])
       local tl = ltl[i]
       if #tl > 0 then
-      if type_of(tl[1]) == 'comment' then
-         if i > 1 then set_comment(i-1,tl[1]) end
-         if #tl > 1 then
-            args:append(value_of(tl[2]))
+         for j = 1, #tl - 1 do
+            if type_of(tl[j]) ~= "comment" then
+               return nil, "Couldn't parse function arguments"
+            end
+            set_comment(i-1,tl[j])
          end
-      else
-         args:append(value_of(tl[1]))
-      end
-      if i == #ltl then
-         local last_tok = tl[#tl]
-         if #tl > 1 and type_of(last_tok) == 'comment' then
-            set_comment(i,last_tok)
+         if type_of(tl[#tl]) ~= "iden" and type_of(tl[#tl]) ~= "..." then
+            return nil, "Couldn't parse function arguments"
          end
-      end
+         args:append(value_of(tl[#tl]))
+         if i == #ltl then
+            local last_tok = tl[#tl]
+            if #tl > 1 and type_of(last_tok) == 'comment' then
+               set_comment(i,last_tok)
+            end
+         end
       end
    end
 
-   if next(args.comments) then -- we had argument comments
+   if #args == 1 or next(args.comments) then -- we had argument comments
       -- but the last one may be outside the parens! (Geoff style)
       local n = #args
       if not args.comments[n] then
-         local t = {tok()}
-         if type_of(t) == 'comment' then
-            set_comment(n,t)
+         while true do
+            local t = {tok()}
+            if type_of(t) == 'comment' then
+               set_comment(n,t)
+            else
+               break
+            end
          end
       end
    end
