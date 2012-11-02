@@ -399,7 +399,14 @@ Without the `-b` setting the base of the package to  the _parent_ of the directo
 
 For new-style modules, that don't use `module()`, it is recommended that the module comment has an explicit `@module PACKAGE.NAME`. If it does not, then `ldoc` will still attempt to deduce the module name, but may need help with `--package/-b` as above.
 
-`format = 'markdown'` can be used in your `config.ld` and will be used to process summaries and descriptions. This requires [markdown.lua](http://www.frykholm.se/files/markdown.lua) by Niklas Frykholm to be installed (this can be most easily done with `luarocks install markdown`.)  A much faster alternative is [lua-discount](http://asbradbury.org/projects/lua-discount/) which you can use by setting `format` to 'discount' after installing using `luarocks install lua-discount`)  The [discount](http://www.pell.portland.or.us/~orc/Code/discount/) Markdown processor additionally has more features than the pure Lua version, such as PHP-Extra style tables.  As a special case, LDoc will fall back to using `markdown.lua` if it cannot find `discount`.
+`format = 'markdown'` can be used in your `config.ld` and will be used to process summaries and descriptions. This requires a markdown processor.
+LDoc knows how to use:
+
+  - [markdown.lua](http://www.frykholm.se/files/markdown.lua) a pure Lua processor by Niklas Frykholm (this can be installed easily with `luarocks install markdown`.)
+  - [lua-discount](http://asbradbury.org/projects/lua-discount/), a faster alternative (installed with `luarocks install lua-discount`).  lua-discount uses the C [discount](http://www.pell.portland.or.us/~orc/Code/discount/) Markdown processor which has more features than the pure Lua version, such as PHP-Extra style tables.
+  - [lunamark](http://jgm.github.com/lunamark/), another pure Lua processor,  faster than markdown, and with extra features (`luarocks install lunamark`).
+
+You can request the processor you like with `format = 'markdown|discount|lunamark'`, and LDoc will attempt to use it.  If it can't find it, it will look for one of the other markdown processors.  If it can't find any markdown processer, it will fall back to text processing.
 
 A special case is if you simply say 'ldoc .'. Then there _must_ be a `config.ld` file available in the directory, and it can specify the file:
 
