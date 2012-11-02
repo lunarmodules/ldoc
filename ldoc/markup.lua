@@ -168,34 +168,81 @@ local function process_multiline_markdown(ldoc, txt, F)
 end
 
 
+-- Handle markdown formatters
+-- Try to get the one the user has asked for, but if it's not available,
+-- try all the others we know about.  If they don't work, fall back to text.
+
+local function generic_formatter(format)
+   local ok, f = pcall(require, format)
+   return ok and f
+end
+
+
 local formatters =
 {
-   markdown = function()
-         local ok, f = pcall(require, "markdown")
-         return ok and f
-      end,
-   lunamark = function()
-         local ok, lunamark = pcall(require, "lunamark")
+   markdown = generic_formatter,
+   discount = generic_formatter,
+   lunamark = function(format)
+         local ok, lunamark = pcall(require, format)
          if ok then
             local writer = lunamark.writer.html.new()
             local parse = lunamark.reader.markdown.new(writer,
                                                        { smart = true })
             return function(text) return parse(text) end
          end
-         print('format: lunamark not found, using markdown')
-         ok, f = pcall(require,'markdown')
-         return ok and f
       end
 }
 
-local generic_formatter = function(format)
-      local ok, f = pcall(require, format)
-      if not ok then
-         print('format: discount not found, using markdown')
-         ok, f = pcall(require,'markdown')
+
+local function get_formatter(format)
+   local formatter = (formatters[format] or generic_formatter)(format)
+   if formatter then return formatter end
+
+   for name, f in pairs(formatters) do
+      formatter = f(name)
+      if formatter then
+         print('format: '..format..' not found, using '..name)
+         return formatter
       end
-      return ok and f
    end
+end
+
+
+local function text_processor(ldoc)
+   return function(txt,item)
+      if txt == nil then return '' end
+      return resolve_inline_references(ldoc, txt, item, true)
+   end
+end
+
+
+local function markdown_processor(ldoc, formatter)
+   return function (txt,item)
+      if txt == nil then return '' end
+      if utils.is_type(item,doc.File) then
+         txt = process_multiline_markdown(ldoc, txt, item)
+      else
+         txt = resolve_inline_references(ldoc, txt, item)
+      end
+      txt = formatter(txt)
+      -- We will add our own paragraph tags, if needed.
+      return (txt:gsub('^%s*<p>(.+)</p>%s*$','%1'))
+   end
+end
+
+
+local function get_processor(ldoc, format)
+   if format == 'plain' then return text_processor(ldoc) end
+
+   local formatter = get_formatter(format)
+   if formatter then
+      markup.plain = false
+      return markdown_processor(ldoc, formatter)
+   end
+
+   print('format: '..format..' not found, falling back to text')
+   return text_processor(ldoc)
+end
 
 
 function markup.create (ldoc, format)
@@ -226,32 +273,11 @@ function markup.create (ldoc, format)
       return ldoc.href(ref)
    end
 
-   if format == 'plain' then
-      processor = function(txt, item)
-         if txt == nil then return '' end
-         return resolve_inline_references(ldoc, txt, item, true)
-      end
-   else
-      local formatter = (formatters[format] or generic_formatter)()
-      if not formatter then
-         quit("can't load formatter: "..format)
-      end
-      if backtick_references == nil then
-         backtick_references = true
-      end
-      markup.plain = false
-      processor = function (txt,item)
-         if txt == nil then return '' end
-         if utils.is_type(item,doc.File) then
-            txt = process_multiline_markdown(ldoc, txt, item)
-         else
-            txt = resolve_inline_references(ldoc, txt, item)
-         end
-         txt = formatter(txt)
-         -- We will add our own paragraph tags, if needed.
-         return (txt:gsub('^%s*<p>(.+)</p>%s*$','%1'))
-      end
+   processor = get_processor(ldoc, format)
+   if not markup.plain and backtick_references == nil then
+      backtick_references = true
    end
+
    markup.resolve_inline_references = function(txt, errfn)
       return resolve_inline_references(ldoc, txt, errfn, markup.plain)
    end
