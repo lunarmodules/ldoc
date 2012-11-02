@@ -73,6 +73,11 @@ body {
 }
 
 code, tt { font-family: monospace; }
+span.parameter { font-family:monospace; }
+span.parameter:after { content:":"; }
+span.types:before { content:"("; }
+span.types:after { content:")"; }
+.type { font-weight: bold; font-style:italic }
 
 body, p, td, th { font-size: .95em; line-height: 1.2em;}
 
