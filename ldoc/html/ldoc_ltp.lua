@@ -140,8 +140,12 @@ return [==[
     <h3>$(module.kinds:type_of(item).subnames):</h3>
     <ul>
 #   for p in iter(item.params) do
+      <li><span class="parameter">$(p)</span>
 #     local tp = ldoc.typename(item:type_of_param(p))
-       <li><code><em>$(p)</em></code>: $(tp)$(M(item.params[p],item))</li>
+#     if tp ~= '' then
+        <span class="types">$(tp)</span>
+#     end
+      $(M(item.params[p],item))</li>
 #   end -- for
     </ul>
 #   end -- if params
@@ -161,8 +165,12 @@ return [==[
     <h3>Returns:</h3>
     <ol>
 #     for i,r in ldoc.ipairs(item.ret) do
+        $(li)
 #       local tp = ldoc.typename(item:type_of_ret(i))
-        $(li)$(tp)$(M(r,item))$(il)
+#       if tp ~= '' then
+          <span class="types">$(tp)</span>
+#       end
+        $(M(r,item))$(il)
 #     end -- for
     </ol>
 #   end -- if returns

@@ -19,6 +19,7 @@
 local class = require 'pl.class'
 local app = require 'pl.app'
 local path = require 'pl.path'
+local dir = require 'pl.dir'
 local utils = require 'pl.utils'
 local List = require 'pl.List'
 local stringx = require 'pl.stringx'
