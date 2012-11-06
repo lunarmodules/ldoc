@@ -198,15 +198,7 @@ local function parse_file(fname,lang, package)
                   module_found = tags.name
                end
                doc.expand_annotation_item(tags,current_item)
-               -- if the item has an explicit name or defined meaning
-               -- then don't continue to do any code analysis!
-               if tags.name then
-                  if not tags.class then
-                     F:warning("no type specified, assuming function: '"..tags.name.."'")
-                     tags.class = 'function'
-                  end
-                  item_follows, is_local = false, false
-                elseif lang:is_module_modifier (tags) then
+               if lang:is_module_modifier (tags) then
                   if not item_follows then
                      F:warning("@usage or @export followed by unknown code")
                      break
