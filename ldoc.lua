@@ -137,6 +137,14 @@ function ldoc.tparam_alias (name,type)
    ldoc.alias(name,{'param',modifiers={type=type}})
 end
 
+ldoc.tparam_alias 'string'
+ldoc.tparam_alias 'number'
+ldoc.tparam_alias 'int'
+ldoc.tparam_alias 'boolean'
+ldoc.tparam_alias 'function'
+ldoc.tparam_alias 'table'
+ldoc.tparam_alias 'thread'
+
 function ldoc.add_language_extension(ext, lang)
    lang = (lang=='c' and cc) or (lang=='lua' and lua) or quit('unknown language')
    if ext:sub(1,1) ~= '.' then ext = '.'..ext end
