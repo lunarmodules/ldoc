@@ -339,6 +339,7 @@ function M.get_fun_name (tok,first)
    else
       t,name = 'iden',first
    end
+   if t ~= 'iden' then return nil end
    t,sep = tnext(tok)
    while sep == '.' or sep == ':' do
       append(res,name)

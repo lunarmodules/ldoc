@@ -114,6 +114,7 @@ end
 
 local function parse_lua_function_header (tags,tok)
    tags.name = tools.get_fun_name(tok)
+   if not tags.name then return 'function has no name' end
    parse_lua_parameters(tags,tok)
 end
 
