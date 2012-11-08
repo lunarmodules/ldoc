@@ -140,9 +140,9 @@ end
 ldoc.tparam_alias 'string'
 ldoc.tparam_alias 'number'
 ldoc.tparam_alias 'int'
-ldoc.tparam_alias 'boolean'
-ldoc.tparam_alias 'function'
-ldoc.tparam_alias 'table'
+ldoc.tparam_alias 'bool'
+ldoc.tparam_alias 'func'
+ldoc.tparam_alias 'tab'
 ldoc.tparam_alias 'thread'
 
 function ldoc.add_language_extension(ext, lang)
