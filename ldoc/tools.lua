@@ -7,6 +7,7 @@ local List = require 'pl.List'
 local path = require 'pl.path'
 local utils = require 'pl.utils'
 local tablex = require 'pl.tablex'
+local stringx = require 'pl.stringx'
 local tools = {}
 local M = tools
 local append = table.insert
@@ -262,7 +263,7 @@ end
 
 local tnext = lexer.skipws
 
-local function type_of (tok) return tok[1] end
+local function type_of (tok) return tok and tok[1] or 'end' end
 local function value_of (tok) return tok[2] end
 
 -- This parses Lua formal argument lists. It will return a list of argument
@@ -279,7 +280,7 @@ function M.get_parameters (tok,endtoken,delim)
    if not ltl or #ltl[1] == 0 then return args end -- no arguments
 
    local function set_comment (idx,tok)
-      local text = value_of(tok):gsub('%s*$','')
+      local text = stringx.rstrip(value_of(tok)) --
       local current_comment = args.comments[args[idx]]
       if current_comment then
         text = text:match("%s*%-%-+%s*(.*)")
@@ -289,33 +290,51 @@ function M.get_parameters (tok,endtoken,delim)
       end
    end
 
+   local function fetch_comment (tl)
+      return
+   end
+
    for i = 1,#ltl do
-      --print('check',i,ltl[i],#ltl[i])
-      local tl = ltl[i]
+      local tl = ltl[i] -- token list for argument
       if #tl > 0 then
-         for j = 1, #tl - 1 do
-            if type_of(tl[j]) ~= "comment" then
-               return nil, "Couldn't parse function arguments"
+         local j = 1
+         if type_of(tl[1]) == 'comment' then
+            -- the comments for the i-1 th arg are in the i th arg...
+            if i > 1 then
+               while type_of(tl[j]) == 'comment' do
+                  set_comment(i-1,tl[j])
+                  j = j + 1
+               end
             end
-            set_comment(i-1,tl[j])
+            if #tl > 1 then
+               args:append(value_of(tl[j]))
+            end
+         else
+            args:append(value_of(tl[1]))
          end
-         if type_of(tl[#tl]) ~= "iden" and type_of(tl[#tl]) ~= "..." then
-            return nil, "Couldn't parse function arguments"
-         end
-         args:append(value_of(tl[#tl]))
-         if i == #ltl then
-            local last_tok = tl[#tl]
-            if #tl > 1 and type_of(last_tok) == 'comment' then
-               set_comment(i,last_tok)
+         if i == #ltl and #tl > 1 then
+            while j <= #tl and type_of(tl[j]) ~= 'comment' do
+               j = j + 1
+            end
+            if j > #tl then break end -- was no comments!
+            while type_of(tl[j]) == 'comment' do
+               set_comment(i,tl[j])
+               j = j + 1
             end
          end
+      else
+         return nil,"empty argument"
       end
    end
 
-   if #args == 1 or next(args.comments) then -- we had argument comments
-      -- but the last one may be outside the parens! (Geoff style)
+   ----[[
+   -- we had argument comments
+   -- but the last one may be outside the parens! (Geoff style)
+   -- (only try this stunt if it's a function parameter list!)
+   if (not endtoken or endtoken == ')') and (#args > 0 or next(args.comments)) then
       local n = #args
-      if not args.comments[n] then
+      local last_arg = args[n]
+      if not args.comments[last_arg] then
          while true do
             local t = {tok()}
             if type_of(t) == 'comment' then
@@ -326,7 +345,7 @@ function M.get_parameters (tok,endtoken,delim)
          end
       end
    end
-
+   --]]
    return args
 end
 

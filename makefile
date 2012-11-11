@@ -23,10 +23,10 @@ uninstall:
 	-rm -r $(LUA_SHAREDIR)/ldoc
 	-rm $(LUA_BINDIR)/ldoc
 
+test: test-basic test-example test-md test-tables
 
-test: test-basic test-example test-md
-
-RUN=&& ldoc . && diff -r docs cdocs && echo ok
+# cp -r docs cdocs in these directories first...
+RUN=&&  ldoc . && diff -r docs cdocs && echo ok
 
 test-basic:
 	cd tests $(RUN)
@@ -36,3 +36,6 @@ test-example:
 
 test-md:
 	cd tests && cd md-test $(RUN)
+
+test-tables:
+	cd tests && cd simple $(RUN)
