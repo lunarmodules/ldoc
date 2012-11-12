@@ -23,7 +23,7 @@ local luadoc_tag_value = luadoc_tag..'(.*)'
 local luadoc_tag_mod_and_value = luadoc_tag..'%[(.*)%](.*)'
 
 -- assumes that the doc comment consists of distinct tag lines
-function parse_tags(text)
+function parse_at_tags(text)
    local lines = stringio.lines(text)
    local preamble, line = tools.grab_while_not(lines,luadoc_tag)
    local tag_items = {}
@@ -48,14 +48,34 @@ function parse_tags(text)
    return preamble,tag_items
 end
 
+local colon_tag = '%s*(%a+):%s'
+local colon_tag_value = colon_tag..'(.*)'
+
+function parse_colon_tags (text)
+   local lines = stringio.lines(text)
+   local preamble, line = tools.grab_while_not(lines,colon_tag)
+   local tag_items, follows = {}
+   while line do
+      local tag, rest = line:match(colon_tag_value)
+      follows, line = tools.grab_while_not(lines,colon_tag)
+      append(tag_items,{tag, rest .. '\n' .. follows})
+   end
+   return preamble,tag_items
+end
+
 -- This takes the collected comment block, and uses the docstyle to
 -- extract tags and values.  Assume that the summary ends in a period or a question
 -- mark, and everything else in the preamble is the description.
 -- If a tag appears more than once, then its value becomes a list of strings.
 -- Alias substitution and @TYPE NAME shortcutting is handled by Item.check_tag
 local function extract_tags (s)
+   local preamble,tag_items
    if s:match '^%s*$' then return {} end
-   local preamble,tag_items = parse_tags(s)
+   if s:match ':%s' and not s:match '@%a' then
+      preamble,tag_items = parse_colon_tags(s)
+   else
+      preamble,tag_items = parse_at_tags(s)
+   end
    local strip = tools.strip
    local summary, description = preamble:match('^(.-[%.?])(%s.+)')
    if not summary then
@@ -241,7 +261,8 @@ local function parse_file(fname,lang, package)
             local line = t ~= nil and lineno()
             if t ~= nil then
                if item_follows then -- parse the item definition
-                  item_follows(tags,tok)
+                  local err = item_follows(tags,tok)
+                  if err then F:error(err) end
                else
                   lang:parse_extra(tags,tok,case)
                end
