@@ -281,12 +281,12 @@ NOTE: The filename must contain the a file extension that matches the file type.
 
 LDoc supports the ability to define UML diagrams using a textual format and create graphical UML files that can be cached or embedded in the generated document itself.  The current LDoc mainly supports the [plantUML](http://plantuml.sourceforge.net/) textual format.  The syntax is however flexible enough to support other UML textual formats/generation.  The syntax is:
 
-  ------------
-  -- a simple example.
-  -- @startuml
-  -- a->b : sample request
-  -- a<-b : sample response
-  -- @enduml
+    ------------
+    -- a simple example.
+    -- @startuml
+    -- a->b : sample request
+    -- a<-b : sample response
+    -- @enduml
 
 The @startuml also supports various parameters that allow you to customize where and how the UML is generated.  The parameters follow the '@startuml' in a JSON format.  The supported options are:
 
@@ -307,11 +307,12 @@ This allows you to define a location where you want to cache a local copy of the
 "forceEmbed":true
 If true this overrides the cacheFile options default for not embedding the image.  This means that when using "cacheFile" and "forceEmbed" a file is cached AND embedded.
 
---- Cache the file AND embed the file in the generated document.
---- @startuml{"cacheFile":"/path/to/cachedFile.png","forceEmbed":true}
---- a1->b1:test request
---- a1<-b1:test response
---- @enduml
+    ------------
+    -- Cache the file AND embed the file in the generated document.
+    -- @startuml{"cacheFile":"/path/to/cachedFile.png","forceEmbed":true}
+    -- a1->b1:test request
+    -- a1<-b1:test response
+    -- @enduml
 
 
 ## Differences from LuaDoc

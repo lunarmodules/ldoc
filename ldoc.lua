@@ -23,6 +23,7 @@ local utils = require 'pl.utils'
 local List = require 'pl.List'
 local stringx = require 'pl.stringx'
 local tablex = require 'pl.tablex'
+local dir = require 'pl.dir'
 
 
 local append = table.insert
