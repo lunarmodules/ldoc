@@ -8,6 +8,7 @@ local path = require 'pl.path'
 local utils = require 'pl.utils'
 local tablex = require 'pl.tablex'
 local stringx = require 'pl.stringx'
+local dir = require 'pl.dir'
 local tools = {}
 local M = tools
 local append = table.insert
