@@ -11,32 +11,39 @@ local global = require 'ldoc.builtin.globals'
 local tools = require 'ldoc.tools'
 local split_dotted_name = tools.split_dotted_name
 
+local TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE,TAG_FLAG = 'M','id','S','T','N'
+
 -- these are the basic tags known to ldoc. They come in several varieties:
---  - tags with multiple values like 'param' (TAG_MULTI)
---  - tags which are identifiers, like 'name' (TAG_ID)
---  - tags with a single value, like 'release' (TAG_SINGLE)
---  - tags which represent a type, like 'function' (TAG_TYPE)
+--  - 'M' tags with multiple values like 'param' (TAG_MULTI)
+--  - 'id' tags which are identifiers, like 'name' (TAG_ID)
+--  - 'S' tags with a single value, like 'release' (TAG_SINGLE)
+--  - 'N' tags which have no associated value, like 'local` (TAG_FLAG)
+--  - 'T' tags which represent a type, like 'function' (TAG_TYPE)
 local known_tags = {
    param = 'M', see = 'M', usage = 'M', ['return'] = 'M', field = 'M', author='M';
-   class = 'id', name = 'id', pragma = 'id', alias = 'id';
+   class = 'id', name = 'id', pragma = 'id', alias = 'id', within = 'id',
    copyright = 'S', summary = 'S', description = 'S', release = 'S', license = 'S',
-   fixme = 'S', todo = 'S', warning = 'S', raise = 'S';
-   module = 'T', script = 'T', example = 'T', topic = 'T', -- project-level
-   ['function'] = 'T', lfunction = 'T', table = 'T', section = 'T', type = 'T',
-   annotation = 'T', factory = 'T'; -- module-level
+   fixme = 'S', todo = 'S', warning = 'S', raise = 'S',
    ['local'] = 'N', export = 'N', private = 'N', constructor = 'N';
+   -- project-level
+   module = 'T', script = 'T', example = 'T', topic = 'T', submodule='T',
+   -- module-level
+   ['function'] = 'T', lfunction = 'T', table = 'T', section = 'T', type = 'T',
+   annotation = 'T', factory = 'T';
+
 }
 known_tags._alias = {}
 known_tags._project_level = {
    module = true,
    script = true,
    example = true,
-   topic = true
+   topic = true,
+   submodule = true;
 }
 
 local see_reference_handlers = {}
 
-local TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE,TAG_FLAG = 'M','id','S','T','N'
+
 doc.TAG_MULTI,doc.TAG_ID,doc.TAG_SINGLE,doc.TAG_TYPE,doc.TAG_FLAG =
     TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE,TAG_FLAG
 
@@ -148,9 +155,27 @@ local function mod_section_type (this_mod)
    return this_mod and this_mod.section and this_mod.section.type
 end
 
+local function find_module_in_files (name)
+   for f in File.list:iter() do
+      for m in f.modules:iter() do
+         if m.name == name then
+            return m,f.filename
+         end
+      end
+   end
+end
+
 function File:finish()
    local this_mod
    local items = self.items
+   local tagged_inside
+   local function add_section (item, display_name)
+      display_name = display_name or item.display_name
+      this_mod.section = item
+      this_mod.kinds:add_kind(display_name,display_name)
+      this_mod.sections:append(item)
+      this_mod.sections.by_name[display_name:gsub('%A','_')] = item
+   end
    for item in items:iter() do
       if mod_section_type(this_mod) == 'factory' and item.tags then
          local klass = '@{'..this_mod.section.name..'}'
@@ -164,19 +189,30 @@ function File:finish()
       item:finish()
       if doc.project_level(item.type) then
          this_mod = item
-         local package,mname
+         local package,mname,submodule
          if item.type == 'module' then
             -- if name is 'package.mod', then mod_name is 'mod'
             package,mname = split_dotted_name(this_mod.name)
+         elseif item.type == 'submodule' then
+            local mf
+            submodule = true
+            this_mod,mf = find_module_in_files(item.name)
+            if this_mod == nil then
+               self:error("'"..item.name.."' not found for submodule")
+            end
+            tagged_inside = tools.this_module_name(self.base,self.filename)..' Functions'
+            this_mod.kinds:add_kind(tagged_inside, tagged_inside)
          end
          if not package then
             mname = this_mod.name
             package = ''
          end
-         self.modules:append(this_mod)
-         this_mod.package = package
-         this_mod.mod_name = mname
-         this_mod.kinds = ModuleMap() -- the iterator over the module contents
+         if not submodule then
+            this_mod.package = package
+            this_mod.mod_name = mname
+            this_mod.kinds = ModuleMap() -- the iterator over the module contents
+            self.modules:append(this_mod)
+         end
       elseif doc.section_tag(item.type) then
          local display_name = item.name
          if display_name == 'end' then
@@ -191,10 +227,7 @@ function File:finish()
                display_name = summary
             end
             item.display_name = display_name
-            this_mod.section = item
-            this_mod.kinds:add_kind(display_name,display_name)
-            this_mod.sections:append(item)
-            this_mod.sections.by_name[display_name:gsub('%A','_')] = item
+            add_section(item)
          end
       else
          local to_be_removed
@@ -217,14 +250,22 @@ function File:finish()
                item.name = fname
             end
 
+            if tagged_inside then
+               item.tags.inside = tagged_inside
+            end
+            if item.tags.inside then
+               this_mod.section = nil
+            end
+
             -- right, this item was within a section or a 'class'
             local section_description
             if this_mod.section then
-               item.section = this_mod.section.display_name
+               local this_section = this_mod.section
+               item.section = this_section.display_name
                -- if it was a class, then the name should be 'Class:foo'
-               local stype = this_mod.section.type
+               local stype = this_section.type
                if doc.class_tag(stype) then
-                  local prefix = this_mod.section.name .. (not item.tags.constructor and ':' or '.')
+                  local prefix = section.name .. (not item.tags.constructor and ':' or '.')
                   if not has_prefix(item.name,prefix) then
                      item.name =  prefix .. item.name
                   end
@@ -238,7 +279,10 @@ function File:finish()
                      end
                   end
                end
-               section_description = this_mod.section.description
+               section_description = this_section.description
+            elseif item.tags.inside then
+               section_description = item.tags.inside
+               item.section = item.tags.inside
             else -- otherwise, just goes into the default sections (Functions,Tables,etc)
                item.section = item.type
             end
@@ -423,7 +467,7 @@ function Item:finish()
       if params then
          for line in params:iter() do
             local name, comment = line :match('%s*([%w_%.:]+)(.*)')
-            assert(name, "bad param name format")
+            assert(name, "bad param name format '"..line.."'")
             names:append(name)
             comments:append(comment)
          end

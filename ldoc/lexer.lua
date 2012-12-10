@@ -407,7 +407,7 @@ function lexer.get_separated_list(tok,endtoken,delim)
         token,value=tok()
         if not token then return nil,'EOS' end -- end of stream is an error!
         if is_end(token,value) and level == 1 then
-            if next(t1) then
+            if next(tl) then
                 append(parm_values,tl)
             end
             break

@@ -51,6 +51,7 @@ ldoc, a documentation generator for Lua, vs 1.2.0
   -b,--package  (default .) top-level package basename (needed for module(...))
   -x,--ext (default html) output file extension
   -c,--config (default config.ld) configuration name
+  -i,--ignore ignore any 'no doc comment or no module' warnings
   --dump                debug output dump
   --filter (default none) filter output as Lua data (e.g pl.pretty.dump)
   --tags (default none) show all references to given tags, comma-separated
@@ -176,7 +177,7 @@ end
 local ldoc_contents = {
    'alias','add_language_extension','new_type','add_section', 'tparam_alias',
    'file','project','title','package','format','output','dir','ext', 'topics',
-   'one','style','template','description','examples','readme','all','manual_url',
+   'one','style','template','description','examples','readme','all','manual_url', 'ignore',
    'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
@@ -220,14 +221,13 @@ local quote = tools.quote
 --- processing command line and preparing for output ---
 
 local F
-local file_list,module_list = List(),List()
-module_list.by_name = {}
+local file_list = List()
+File.list = file_list
 local config_dir
 
 
 local ldoc_dir = arg[0]:gsub('[^/\\]+$','')
 local doc_path = ldoc_dir..'/ldoc/builtin/?.lua'
-
 
 -- ldoc -m is expecting a Lua package; this converts this to a file path
 if args.module then
@@ -314,6 +314,8 @@ end
 -- where it is a list of files or directories. If specified on the command-line, we have
 -- to find an optional associated config.ld, if not already loaded.
 
+if ldoc.ignore then args.ignore = true end
+
 local function process_file (f, flist)
    local ext = path.extension(f)
    local ftype = file_types[ext]
@@ -379,9 +381,6 @@ end
 override 'format'
 ldoc.markup = markup.create(ldoc, args.format)
 
-local multiple_files = #file_list > 1
-local first_module
-
 ------ 'Special' Project-level entities ---------------------------------------
 -- Examples and Topics do not contain code to be processed for doc comments.
 -- Instead, they are intended to be rendered nicely as-is, whether as pretty-lua
@@ -439,7 +438,10 @@ end
 
 -- extract modules from the file objects, resolve references and sort appropriately ---
 
+local first_module
 local project = ProjectMap()
+local module_list = List()
+module_list.by_name = {}
 
 for F in file_list:iter() do
    for mod in F.modules:iter() do
@@ -569,8 +571,7 @@ if args.style == '!' or args.template == '!' then
    end
 end
 
-
-ldoc.single = not multiple_files and first_module or nil
+ldoc.single = #module_list == 1 and first_module or nil
 ldoc.log = print
 ldoc.kinds = project
 ldoc.modules = module_list

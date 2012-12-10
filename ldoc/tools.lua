@@ -221,7 +221,7 @@ function M.this_module_name (basename,fname)
    --print('deduce',lpath,cnt,basename)
    if cnt ~= 1 then quit("module(...) name deduction failed: base "..basename.." "..fname) end
    lpath = lpath:gsub(path.sep,'.')
-   return M.name_of(lpath):gsub('%.init$','')
+   return (M.name_of(lpath):gsub('%.init$',''))
 end
 
 function M.find_existing_module (name, dname, searchfn)

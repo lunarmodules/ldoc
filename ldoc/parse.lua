@@ -119,11 +119,13 @@ end
 -- encountered, then ldoc looks for a call to module() to find the name of the
 -- module if there isn't an explicit module name specified.
 
-local function parse_file(fname,lang, package)
+local function parse_file(fname, lang, package, args)
    local line,f = 1
    local F = File(fname)
    local module_found, first_comment = false,true
    local current_item, module_item
+
+   F.base = package
 
    local tok,f = lang.lexer(fname)
    if not tok then return nil end
@@ -168,7 +170,10 @@ local function parse_file(fname,lang, package)
          t,v = tnext(tok)
       end
       if not t then
-         F:warning("no module() call found; no initial doc comment")
+         if not args.ignore then
+            F:warning("no module() call found; no initial doc comment")
+         end
+         --return nil
       else
          mod,t,v = lang:parse_module_call(tok,t,v)
          if mod ~= '...' then
@@ -208,8 +213,10 @@ local function parse_file(fname,lang, package)
             comment = table.concat(comment)
 
             if not ldoc_comment and first_comment then
-               F:warning("first comment must be a doc comment!")
-               break
+               if not args.ignore then
+                  F:warning("first comment must be a doc comment!")
+                  break
+               end
             end
             if first_comment then
                first_comment = false
@@ -304,7 +311,7 @@ local function parse_file(fname,lang, package)
 end
 
 function parse.file(name,lang, args)
-   local F,err = parse_file(name,lang, args.package)
+   local F,err = parse_file(name,lang,args.package,args)
    if err or not F then return F,err end
    local ok,err = xpcall(function() F:finish() end,debug.traceback)
    if not ok then return F,err end
