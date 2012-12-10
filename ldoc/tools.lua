@@ -278,7 +278,7 @@ function M.get_parameters (tok,endtoken,delim)
    args.comments = {}
    local ltl = lexer.get_separated_list(tok,endtoken,delim)
 
-   if not ltl or #ltl[1] == 0 then return args end -- no arguments
+   if not ltl or not ltl[1] or #ltl[1] == 0 then return args end -- no arguments
 
    local function set_comment (idx,tok)
       local text = stringx.rstrip(value_of(tok)) --

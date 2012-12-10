@@ -377,9 +377,6 @@ end
 function lexer.get_separated_list(tok,endtoken,delim)
     endtoken = endtoken or ')'
     delim = delim or ','
-    local parm_values = {}
-    local level = 1 -- used to count ( and )
-    local tl = {}
     local function tappend (tl,t,val)
         val = val or t
         append(tl,{t,val})
@@ -402,12 +399,17 @@ function lexer.get_separated_list(tok,endtoken,delim)
             return t == delim
         end
     end
+    local parm_values = {}
+    local level = 1 -- used to count ( and )
+    local tl = {}
     local token,value
     while true do
         token,value=tok()
         if not token then return nil,'EOS' end -- end of stream is an error!
         if is_end(token,value) and level == 1 then
-            append(parm_values,tl)
+            if next(t1) then
+                append(parm_values,tl)
+            end
             break
         elseif token == '(' then
             level = level + 1
