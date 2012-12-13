@@ -34,9 +34,14 @@ local function cleanup_whitespaces(text)
     return table.concat(lines, "\n")
 end
 
+local escape_table = { ["'"] = "&apos;", ["\""] = "&quot;", ["<"] = "&lt;", [">"] = "&gt;", ["&"] = "&amp;" }
+
 function html.generate_output(ldoc, args, project)
    local check_directory, check_file, writefile = tools.check_directory, tools.check_file, tools.writefile
 
+   function ldoc.escape(str)
+      return (str:gsub("['&<>\"]", escape_table))
+   end
 
    -- this generates the internal module/function references
    function ldoc.href(see)
