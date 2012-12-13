@@ -442,6 +442,7 @@ function Item:finish()
    if tags.see then
       tags.see = tools.expand_comma_list(read_del(tags,'see'))
    end
+   local fallback
    if  doc.project_level(self.type) then
       -- we are a module, so become one!
       self.items = List()
@@ -460,9 +461,14 @@ function Item:finish()
          end
       else
          self.parameter = 'field'
+         fallback = 'param'
       end
       local field = self.parameter
       local params = read_del(tags,field)
+      if fallback then
+         local xparams = read_del(tags,fallback)
+         params:extend(xparams)
+      end
       local names, comments = List(), List()
       if params then
          for line in params:iter() do
@@ -607,6 +613,7 @@ local function custom_see_references (s)
     for pat, action in pairs(see_reference_handlers) do
         if s:match(pat) then
             local label, href = action(s:match(pat))
+            if not label then print('custom rule failed',s,pat,href) end
             return {href = href, label = label}
         end
     end
