@@ -442,7 +442,6 @@ function Item:finish()
    if tags.see then
       tags.see = tools.expand_comma_list(read_del(tags,'see'))
    end
-   local fallback
    if  doc.project_level(self.type) then
       -- we are a module, so become one!
       self.items = List()
@@ -461,13 +460,14 @@ function Item:finish()
          end
       else
          self.parameter = 'field'
-         fallback = 'param'
       end
       local field = self.parameter
       local params = read_del(tags,field)
-      if fallback then
-         local xparams = read_del(tags,fallback)
-         params:extend(xparams)
+      -- use of macros like @string (which is short for '@tparam string')
+      -- can lead to param tags associated with a table.
+      if self.parameter == 'field' then
+         params:extend(read_del(tags,'param'))
+         List(self.modifiers.field):extend(self.modifiers.param)
       end
       local names, comments = List(), List()
       if params then
