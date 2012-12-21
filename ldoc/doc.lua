@@ -139,7 +139,7 @@ function File:export_item (name)
       local tags = item.tags
       if tags.name == name then
          if tags['local'] then
-            tags['local'] = false
+            tags['local'] = nil
          end
       end
    end
@@ -395,19 +395,17 @@ end
 -- in the tag value table and need to be extracted.
 
 local function extract_value_modifier (p)
-   if type(p)=='string' then
+   if type(p)~='table' then
       return p, { }
-   elseif type(p) == 'table' then
-      return p[1], p.modifiers or { }
    else
-      return 'que?',{}
+      return p[1], p.modifiers or { }
    end
 end
 
 local function extract_tag_modifiers (tags)
    local modifiers, mods = {}
    for tag, value in pairs(tags) do
-      if type(value)=='table' and value.append then
+      if type(value)=='table' and value.append then -- i.e. it is a List!
          local tmods = {}
          for i, v in ipairs(value) do
             v, mods = extract_value_modifier(v)
