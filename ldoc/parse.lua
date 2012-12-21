@@ -209,15 +209,9 @@ local function parse_file(fname, lang, package, args)
          if t == 'space' then t,v = tnext(tok) end
 
          local item_follows, tags, is_local, case
-         if ldoc_comment or first_comment then
+         if ldoc_comment then
             comment = table.concat(comment)
 
-            if not ldoc_comment and first_comment then
-               if not args.ignore then
-                  F:warning("first comment must be a doc comment!")
-                  break
-               end
-            end
             if first_comment then
                first_comment = false
             else
