@@ -463,9 +463,15 @@ function Item:finish()
       local params = read_del(tags,field)
       -- use of macros like @string (which is short for '@tparam string')
       -- can lead to param tags associated with a table.
-      if self.parameter == 'field' then
-         params:extend(read_del(tags,'param'))
-         List(self.modifiers.field):extend(self.modifiers.param)
+      if self.parameter == 'field' and tags.param then
+         local tparams = read_del(tags,'param')
+         if params then
+            params:extend(tparams)
+            List(self.modifiers.field):extend(self.modifiers.param)
+         else
+            params = tparams
+            self.modifiers.field = self.modifiers.param
+         end
       end
       local names, comments = List(), List()
       if params then
