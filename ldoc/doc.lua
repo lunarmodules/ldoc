@@ -141,8 +141,12 @@ function File:export_item (name)
          if tags['local'] then
             tags['local'] = nil
          end
+         return
       end
    end
+   -- warn if any of these guys are not found, indicating no
+   -- documentation was given.
+   self:warning('no docs '..tools.quote(name))
 end
 
 
@@ -265,7 +269,7 @@ function File:finish()
                -- if it was a class, then the name should be 'Class:foo'
                local stype = this_section.type
                if doc.class_tag(stype) then
-                  local prefix = section.name .. (not item.tags.constructor and ':' or '.')
+                  local prefix = this_section.name .. (not item.tags.constructor and ':' or '.')
                   if not has_prefix(item.name,prefix) then
                      item.name =  prefix .. item.name
                   end

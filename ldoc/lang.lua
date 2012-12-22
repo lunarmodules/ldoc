@@ -200,18 +200,24 @@ function Lua:is_module_modifier (tags)
    return tags.summary == '' and (tags.usage or tags.export)
 end
 
+--  Allow for private name convention.
+function Lua:is_private_var (name)
+   return name:match '^_' or name:match '_$'
+end
+
 function Lua:parse_module_modifier (tags, tok, F)
    if tags.usage then
       if tags.class ~= 'field' then return nil,"cannot deduce @usage" end
       local t1= tnext(tok)
-      --local t2 = tok()
       if t1 ~= '[' then return nil, t1..' '..': not a long string' end
       t, v = tools.grab_block_comment('',tok,'%]%]')
       return true, v, 'usage'
    elseif tags.export then
       if tags.class ~= 'table' then return nil, "cannot deduce @export" end
       for f in tags.formal_args:iter() do
-         F:export_item(f)
+         if not self:is_private_var(f) then
+            F:export_item(f)
+         end
       end
       return true
    end
