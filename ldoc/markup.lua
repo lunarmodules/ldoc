@@ -168,6 +168,36 @@ local function process_multiline_markdown(ldoc, txt, F)
 end
 
 
+local formatters =
+{
+   markdown = function()
+         local ok, f = pcall(require, "markdown")
+         return ok and f
+      end,
+   lunamark = function()
+         local ok, lunamark = pcall(require, "lunamark")
+         if ok then
+            local writer = lunamark.writer.html.new()
+            local parse = lunamark.reader.markdown.new(writer,
+                                                       { smart = true })
+            return function(text) return parse(text) end
+         end
+         print('format: lunamark not found, using markdown')
+         ok, f = pcall(require,'markdown')
+         return ok and f
+      end
+}
+
+local generic_formatter = function(format)
+      local ok, f = pcall(require, format)
+      if not ok then
+         print('format: discount not found, using markdown')
+         ok, f = pcall(require,'markdown')
+      end
+      return ok and f
+   end
+
+
 function markup.create (ldoc, format)
    local processor
    markup.plain = true
@@ -202,15 +232,9 @@ function markup.create (ldoc, format)
          return resolve_inline_references(ldoc, txt, item, true)
       end
    else
-      local ok,formatter = pcall(require,format)
-      if not ok then
-         if format == 'discount' then
-            print('format: discount not found, using markdown')
-            ok,formatter = pcall(require,'markdown')
-         end
-         if not ok then
-            quit("cannot load formatter: "..format)
-         end
+      local formatter = (formatters[format] or generic_formatter)()
+      if not formatter then
+         quit("can't load formatter: "..format)
       end
       if backtick_references == nil then
          backtick_references = true
