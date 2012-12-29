@@ -109,11 +109,13 @@ end
 
 local function parse_lua_parameters (tags,tok)
    tags.formal_args = tools.get_parameters(tok)
-   tags.class = 'function'
+   tags:add('class','function')
 end
 
 local function parse_lua_function_header (tags,tok)
-   tags.name = tools.get_fun_name(tok)
+   if not tags.name then
+      tags:add('name',tools.get_fun_name(tok))
+   end
    if not tags.name then return 'function has no name' end
    parse_lua_parameters(tags,tok)
 end
@@ -148,31 +150,39 @@ function Lua:item_follows(t,v,tok)
          tnext(tok) -- skip '('
          case = 2
          parser = function(tags,tok)
-            tags.name = name
+            tags:add('name',name)
             parse_lua_parameters(tags,tok)
          end
       elseif t == '{' then -- case [3]
          case = 3
          parser = function(tags,tok)
-            tags.class = 'table'
-            tags.name = name
+            tags:add('class','table')
+            tags:add('name',name)
             parse_lua_table (tags,tok)
          end
       else -- case [4]
          case = 4
          parser = function(tags)
-            tags.class = 'field'
-            tags.name = name
+            tags:add('class','field')
+            tags:add('name',name)
          end
       end
-   elseif t == 'keyword' and v == 'return' then -- case [5]
-      case = 5
-      if tnext(tok) ~= '{' then
+   elseif t == 'keyword' and v == 'return' then
+      t, v = tnext(tok)
+      if t == 'keyword' and v == 'function' then
+         -- return function(a, b, c)
+         tnext(tok) -- skip '('
+         case = 2
+         parser = parse_lua_parameters
+      elseif t ==  '{' then
+         -- return {...}
+         case = 5
+         parser = function(tags,tok)
+            tags:add('class','table')
+            parse_lua_table(tags,tok)
+         end
+      else
          return nil
-      end
-      parser = function(tags,tok)
-         tags.class = 'table'
-         parse_lua_table(tags,tok)
       end
    end
    return parser, is_local, case

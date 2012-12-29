@@ -63,6 +63,24 @@ function parse_colon_tags (text)
    return preamble,tag_items
 end
 
+local Tags = {}
+Tags.__index = Tags
+
+function Tags.new (t)
+   t._order = List()
+   return setmetatable(t,Tags)
+end
+
+function Tags:add (tag,value)
+   self[tag] = value
+   --print('adding',tag,value)
+   self._order:append(tag)
+end
+
+function Tags:iter ()
+   return self._order:iter()
+end
+
 -- This takes the collected comment block, and uses the docstyle to
 -- extract tags and values.  Assume that the summary ends in a period or a question
 -- mark, and everything else in the preamble is the description.
@@ -86,7 +104,7 @@ local function extract_tags (s)
          summary = preamble
       end
    end  --  and strip(description) ?
-   local tags = {summary=summary and strip(summary) or '',description=description or ''}
+   local tags = Tags.new{summary=summary and strip(summary) or '',description=description or ''}
    for _,item in ipairs(tag_items) do
       local tag, value, modifiers = Item.check_tag(tags,unpack(item))
       value = strip(value)
@@ -95,14 +113,14 @@ local function extract_tags (s)
       local old_value = tags[tag]
 
       if not old_value then -- first element
-         tags[tag] = value
+         tags:add(tag,value)
       elseif type(old_value)=='table' and old_value.append then -- append to existing list
          old_value :append (value)
       else -- upgrade string->list
-         tags[tag] = List{old_value, value}
+         tags:add(tag,List{old_value, value})
       end
    end
-   return Map(tags)
+   return tags --Map(tags)
 end
 
 local _xpcall = xpcall
@@ -149,8 +167,8 @@ local function parse_file(fname, lang, package, args)
    end
 
    local function add_module(tags,module_found,old_style)
-      tags.name = module_found
-      tags.class = 'module'
+      tags:add('name',module_found)
+      tags:add('class','module')
       local item = F:new_item(tags,lineno())
       item.old_style = old_style
       module_item = item
@@ -228,7 +246,7 @@ local function parse_file(fname, lang, package, args)
                if tags.name then
                   if not tags.class then
                      F:warning("no type specified, assuming function: '"..tags.name.."'")
-                     tags.class = 'function'
+                     tags:add('class','function')
                   end
                   item_follows, is_local = false, false
                 elseif lang:is_module_modifier (tags) then
