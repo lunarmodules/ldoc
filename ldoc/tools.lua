@@ -114,9 +114,11 @@ end
 
 
 function KindMap.add_kind (klass,tag,kind,subnames)
-   klass.types_by_tag[tag] = kind
-   klass.types_by_kind[kind] = {type=tag,subnames=subnames}
-   append(klass.kinds,kind)
+   if not klass.types_by_kind[kind] then
+      klass.types_by_tag[tag] = kind
+      klass.types_by_kind[kind] = {type=tag,subnames=subnames}
+      append(klass.kinds,kind)
+   end
 end
 
 
@@ -173,7 +175,7 @@ end
 
 
 function M.extract_identifier (value)
-   return value:match('([%.:%-_%w]+)')
+   return value:match('([%.:%-_%w]+)(.*)$')
 end
 
 function M.strip (s)

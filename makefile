@@ -25,7 +25,6 @@ uninstall:
 
 test: test-basic test-example test-md test-tables
 
-# cp -r docs cdocs in these directories first...
 RUN=&&  ldoc . && diff -r docs cdocs && echo ok
 
 test-basic:
@@ -39,3 +38,19 @@ test-md:
 
 test-tables:
 	cd tests && cd simple $(RUN)
+
+test-clean: clean-basic clean-example clean-md clean-tables
+
+CLEAN=&& ldoc . && rd /S /Q cdocs && cp -rf docs cdocs
+
+clean-basic:
+	cd tests $(CLEAN)
+
+clean-example:
+	cd tests && cd example $(CLEAN)
+
+clean-md:
+	cd tests && cd md-test $(CLEAN)
+
+clean-tables:
+	cd tests && cd simple $(CLEAN)
