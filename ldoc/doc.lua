@@ -5,6 +5,7 @@
 local class = require 'pl.class'
 local utils = require 'pl.utils'
 local List = require 'pl.List'
+local Map = require 'pl.Map'
 
 local doc = {}
 local global = require 'ldoc.builtin.globals'
@@ -41,6 +42,11 @@ known_tags._project_level = {
    submodule = true;
 }
 
+known_tags._code_types = {
+   module = true,
+   script = true
+}
+
 local see_reference_handlers = {}
 
 
@@ -56,8 +62,7 @@ function doc.add_tag(tag,type,project_level)
 end
 
 function doc.add_custom_see_handler(pat,action)
-    print('adding',pat,action)
-    see_reference_handlers[pat] = action
+   see_reference_handlers[pat] = action
 end
 
 -- add an alias to an existing tag (exposed through ldoc API)
@@ -73,6 +78,10 @@ end
 -- is it a'project level' tag, such as 'module' or 'script'?
 function doc.project_level(tag)
    return known_tags._project_level[tag]
+end
+
+function doc.code_tag (tag)
+   return known_tags._code_types[tag]
 end
 
 -- is it a section tag?
@@ -254,10 +263,14 @@ function File:finish()
                item.name = fname
             end
 
+            local enclosing_section
             if tagged_inside then
-               item.tags.inside = tagged_inside
+               item.tags.within = tagged_inside
             end
-            if item.tags.inside then
+            if item.tags.within then
+               local name = item.tags.within
+               this_mod.kinds:add_kind(name, name)
+               enclosing_section = this_mod.section
                this_mod.section = nil
             end
 
@@ -284,9 +297,9 @@ function File:finish()
                   end
                end
                section_description = this_section.description
-            elseif item.tags.inside then
-               section_description = item.tags.inside
-               item.section = item.tags.inside
+            elseif item.tags.within then
+               section_description = item.tags.within
+               item.section = section_description
             else -- otherwise, just goes into the default sections (Functions,Tables,etc)
                item.section = item.type
             end
@@ -298,6 +311,9 @@ function File:finish()
                these_items:append(item)
                this_mod.kinds:add(item,these_items,section_description)
             end
+
+            -- restore current section after a 'within'
+            if enclosing_section then this_mod.section = enclosing_section end
 
          else
             -- must be a free-standing function (sometimes a problem...)
@@ -334,24 +350,43 @@ function Item:_init(tags,file,line)
    self.tags = {}
    self.formal_args = tags.formal_args
    tags.formal_args = nil
-   for tag,value in pairs(tags) do
-      self:set_tag(tag,value)
+   local iter = tags.iter
+   if not iter then
+      iter = Map.iter
    end
+   for tag in iter(tags) do
+      self:set_tag(tag,tags[tag])
+   end
+   --for tag,value in pairs(tags) do print('tag',tag,value) end
+end
+
+function Item:add_to_description (rest)
+   self.description = (self.description or '') .. rest
 end
 
 function Item:set_tag (tag,value)
    local ttype = known_tags[tag]
-   if ttype == TAG_MULTI then
+
+   if ttype == TAG_MULTI then -- value is always a List!
       if getmetatable(value) ~= List then
          value = List{value}
       end
+      local last = value[#value]
+      if type(last) == 'string' and last:match '\n' then
+         local line,rest = last:match('([^\n]+)(.*)')
+         value[#value] = line
+         self:add_to_description(rest)
+      end
       self.tags[tag] = value
    elseif ttype == TAG_ID then
+      --print('id',tag,value)
       if type(value) ~= 'string' then
          -- such tags are _not_ multiple, e.g. name
          self:error("'"..tag.."' cannot have multiple values")
       else
-         self.tags[tag] = tools.extract_identifier(value)
+         local id, rest = tools.extract_identifier(value)
+         self.tags[tag] = id
+         self:add_to_description(rest)
       end
    elseif ttype == TAG_SINGLE then
       self.tags[tag] = value
@@ -387,7 +422,7 @@ function Item.check_tag(tags,tag, value, modifiers)
    end
    local ttype = known_tags[tag]
    if ttype == TAG_TYPE then
-      tags.class = tag
+      tags:add('class',tag)
       tag = 'name'
    end
    return tag, value, modifiers
@@ -481,7 +516,9 @@ function Item:finish()
       if params then
          for line in params:iter() do
             local name, comment = line :match('%s*([%w_%.:]+)(.*)')
-            assert(name, "bad param name format '"..line.."'")
+            if not name then
+               self:error("bad param name format '"..line.."'. Are you missing a parameter name?")
+            end
             names:append(name)
             comments:append(comment)
          end
@@ -744,11 +781,21 @@ end
 
 --------- dumping out modules and items -------------
 
+local function dump_tags (tags)
+   if next(tags) then
+      print 'tags:'
+      for tag, value in pairs(tags) do
+         print('\t',tag,value)
+      end
+   end
+end
+
 function Module:dump(verbose)
    if self.type ~= 'module' then return end
    print '----'
    print(self.type..':',self.name,self.summary)
    if self.description then print(self.description) end
+   dump_tags (self.tags)
    for item in self.items:iter() do
       item:dump(verbose)
    end
@@ -789,12 +836,7 @@ function Item:dump(verbose)
             print('',r)
          end
       end
-      if next(self.tags) then
-         print 'tags:'
-         for tag, value in pairs(self.tags) do
-            print(tag,value)
-         end
-      end
+      dump_tags(self.tags)
    else
       print('* '..name..' - '..self.summary)
    end
