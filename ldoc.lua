@@ -35,7 +35,7 @@ app.require_here()
 
 --- @usage
 local usage = [[
-ldoc, a documentation generator for Lua, vs 1.2.0
+ldoc, a documentation generator for Lua, vs 1.3.0
   -d,--dir (default docs) output directory
   -o,--output  (default 'index') output name
   -v,--verbose          verbose
@@ -52,6 +52,7 @@ ldoc, a documentation generator for Lua, vs 1.2.0
   -x,--ext (default html) output file extension
   -c,--config (default config.ld) configuration name
   -i,--ignore ignore any 'no doc comment or no module' warnings
+  -D,--define (default none) set a flag to be used in config.ld
   --dump                debug output dump
   --filter (default none) filter output as Lua data (e.g pl.pretty.dump)
   --tags (default none) show all references to given tags, comma-separated
@@ -182,6 +183,20 @@ local ldoc_contents = {
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
+local function loadstr (ldoc,txt)
+   local chunk, err
+   local load
+   -- Penlight's Lua 5.2 compatibility has wobbled over the years...
+   if not rawget(_G,'loadin') then -- Penlight 0.9.5
+       -- Penlight 0.9.7; no more global load() override
+      load = load or utils.load
+      chunk,err = load(txt,'config',nil,ldoc)
+   else
+      chunk,err = loadin(ldoc,txt)
+   end
+   return chunk, err
+end
+
 -- any file called 'config.ld' found in the source tree will be
 -- handled specially. It will be loaded using 'ldoc' as the environment.
 local function read_ldoc_config (fname)
@@ -189,22 +204,15 @@ local function read_ldoc_config (fname)
    if directory == '' then
       directory = '.'
    end
-   local err
+   local chunk, err, ok
    if args.filter == 'none' then
       print('reading configuration from '..fname)
    end
    local txt,not_found = utils.readfile(fname)
    if txt then
-       -- Penlight defines loadin for Lua 5.1 as well
-      local chunk
-      if not rawget(_G,'loadin') then -- Penlight 0.9.5
-         if utils.load then load = utils.load end -- Penlight 0.9.7; no more global load() override
-         chunk,err = load(txt,nil,nil,ldoc)
-      else
-         chunk,err = loadin(ldoc,txt)
-      end
+      chunk, err = loadstr(ldoc,txt)
       if chunk then
-         local ok
+         if args.define ~= 'none' then ldoc[args.define] = true end
          ok,err = pcall(chunk)
       end
     end
@@ -443,9 +451,12 @@ local project = ProjectMap()
 local module_list = List()
 module_list.by_name = {}
 
+local modcount = 0
+
 for F in file_list:iter() do
    for mod in F.modules:iter() do
       if not first_module then first_module = mod end
+      if doc.code_tag(mod.type) then modcount = modcount + 1 end
       module_list:append(mod)
       module_list.by_name[mod.name] = mod
    end
@@ -468,6 +479,9 @@ end
 table.sort(module_list,function(m1,m2)
    return m1.name < m2.name
 end)
+
+ldoc.single = modcount == 1 and first_module or nil
+
 
 -------- three ways to dump the object graph after processing -----
 
@@ -571,7 +585,6 @@ if args.style == '!' or args.template == '!' then
    end
 end
 
-ldoc.single = #module_list == 1 and first_module or nil
 ldoc.log = print
 ldoc.kinds = project
 ldoc.modules = module_list
