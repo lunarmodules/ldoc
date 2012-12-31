@@ -252,6 +252,9 @@ function markup.create (ldoc, format)
    global_context = ldoc.package and ldoc.package .. '.'
 
    markup.process_reference = function(name)
+      if local_context == 'none.' and not name:match '%.' then
+         return nil,'not found'
+      end
       local mod = ldoc.single or ldoc.module or ldoc.modules[1]
       local ref,err = mod:process_see_reference(name, ldoc.modules)
       if ref then return ref end

@@ -12,7 +12,7 @@ local global = require 'ldoc.builtin.globals'
 local tools = require 'ldoc.tools'
 local split_dotted_name = tools.split_dotted_name
 
-local TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE,TAG_FLAG = 'M','id','S','T','N'
+local TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE,TAG_FLAG,TAG_MULTI_LINE = 'M','id','S','T','N','ML'
 
 -- these are the basic tags known to ldoc. They come in several varieties:
 --  - 'M' tags with multiple values like 'param' (TAG_MULTI)
@@ -21,7 +21,7 @@ local TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE,TAG_FLAG = 'M','id','S','T','N'
 --  - 'N' tags which have no associated value, like 'local` (TAG_FLAG)
 --  - 'T' tags which represent a type, like 'function' (TAG_TYPE)
 local known_tags = {
-   param = 'M', see = 'M', usage = 'M', ['return'] = 'M', field = 'M', author='M';
+   param = 'M', see = 'M', usage = 'ML', ['return'] = 'M', field = 'M', author='M';
    class = 'id', name = 'id', pragma = 'id', alias = 'id', within = 'id',
    copyright = 'S', summary = 'S', description = 'S', release = 'S', license = 'S',
    fixme = 'S', todo = 'S', warning = 'S', raise = 'S',
@@ -376,15 +376,17 @@ end
 function Item:set_tag (tag,value)
    local ttype = known_tags[tag]
 
-   if ttype == TAG_MULTI then -- value is always a List!
+   if ttype == TAG_MULTI or ttype == TAG_MULTI_LINE then -- value is always a List!
       if getmetatable(value) ~= List then
          value = List{value}
       end
-      local last = value[#value]
-      if type(last) == 'string' and last:match '\n' then
-         local line,rest = last:match('([^\n]+)(.*)')
-         value[#value] = line
-         self:add_to_description(rest)
+      if ttype ~= TAG_MULTI_LINE then
+         local last = value[#value]
+         if type(last) == 'string' and last:match '\n' then
+            local line,rest = last:match('([^\n]+)(.*)')
+            value[#value] = line
+            self:add_to_description(rest)
+         end
       end
       self.tags[tag] = value
    elseif ttype == TAG_ID then
@@ -401,6 +403,7 @@ function Item:set_tag (tag,value)
       self.tags[tag] = value
    elseif ttype == TAG_FLAG then
       self.tags[tag] = true
+      self:add_to_description(value)
    else
       Item.warning(self,"unknown tag: '"..tag.."' "..tostring(ttype))
    end

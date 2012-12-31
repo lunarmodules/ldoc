@@ -19,6 +19,9 @@ end
 
 function Lang:start_comment (v)
    local line = v:match (self.start_comment_)
+   if line and self.end_comment_ and v:match (self.end_comment_) then
+      return nil
+   end
    local block = v:match(self.block_comment)
    return line or block, block
 end
@@ -70,6 +73,7 @@ function Lua:_init()
    self.line_comment = '^%-%-+' -- used for stripping
    self.start_comment_ = '^%-%-%-+'     -- used for doc comment line start
    self.block_comment = '^%-%-%[=*%[%-+' -- used for block doc comments
+   self.end_comment_ = '[^%-]%-%-+\n$' ---- exclude --- this kind of comment ---
    self:finalize()
 end
 

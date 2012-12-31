@@ -1,5 +1,7 @@
 # LDoc, a Lua Documentation Tool
 
+@lookup doc.md
+
 ## Introduction
 
 LDoc is a second-generation documentation tool that can be used as a replacement for
@@ -407,7 +409,33 @@ can define an alias for it, such as 'p'. This can also be specified in the confi
 LDoc will also work with C/C++ files, since extension writers clearly have the same
 documentation needs as Lua module writers.
 
+LDoc allows you to attach a _type_ to a parameter or return value
+
+    --- better mangler.
+    -- @tparam string name
+    -- @int max length
+    -- @treturn string mangled name
+    function strmangler(name,max)
+    ...
+    end
+
+`int` here is short for `tparam int` (see @{Tag_Modifiers})
+
+It's common for types to be optional, or have different types, so the type can be like
+'?int|string' which renders as '(int or string)', or '?int', which renders as
+'(optional int)'.
+
 LDoc gives the documenter the option to use Markdown to parse the contents of comments.
+
+Since 1.3, LDoc allows the use of _colons_ instead of @.
+
+    --- a simple function.
+    -- string name person's name
+    -- int: age age of person
+    -- treturn: ?nil|string
+    -- function check(name,age)
+
+
 
 ## Adding new Tags
 
@@ -796,7 +824,7 @@ Like all good Github projects, Winapi has a `readme.md`:
 This goes under the 'Topics' global section; the 'Contents' of this document is generated
 from the second-level (##) headings of the readme.
 
-Readme files are always processed with Markdown, but may also contain @\{} references back
+Readme files are always processed with the current Markdown processor, but may also contain @\{} references back
 to the documentation and to example files. Any symbols within backticks will be expanded as
 references, if possible. As with doc comments, a link to a standard Lua function like
 @\{os.execute} will work as well. Any code sections will be pretty-printed as Lua, unless
@@ -822,6 +850,9 @@ remain vague, but it does double-duty here.)  A further level of simplification 
 the @lookup directive in documents, which must start at the first column on its own line.
 For instance, if I am talking about `pl.utils`, then I can say "@lookup utils" and
 thereafter references like @\{printf} will resolve correctly.
+
+If you look at the source for this document, you will see a `@lookup doc.md` which allows
+direct references to sections like @{Readme_files|this}.
 
 Remember that the default is for references in backticks to be resolved; unlike @
 references, it is not an error if the reference cannot be found.
@@ -907,7 +938,8 @@ These only appear in `config.ld`:
   - `backtick_references` whether references in backticks will be resolved
   -  `manual_url` point to an alternative or local location for the Lua manual, e.g.
 'file:///D:/dev/lua/projects/lua-5.1.4/doc/manual.html'
-
+  - `one` use a one-column output format
+  - `no_summary` suppress the Contents summary
 
 Available functions are:
 
@@ -918,8 +950,11 @@ an extension to be recognized as this language
   - `add_section`
   - `new_type(tag,header,project_level)` used to add new tags, which are put in their own
 section `header`. They may be 'project level'.
-  - `tparam_alias(name,type)` for instance, you may wish that `string` means `@\tparam
-string`.
+  - `tparam_alias(name,type)` for instance, you may wish that `Object` means `@\tparam
+Object`.
+  - `custom_see_handler(pattern,handler)`. If a reference matches `pattern`, then the
+extracted values will be passed to `handler`. It is expected to return link text
+and a suitable URI. (This match will happen before default processing.)
 
 ## Annotations and Searching for Tags
 
