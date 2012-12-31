@@ -48,7 +48,8 @@ function parse_at_tags(text)
    return preamble,tag_items
 end
 
-local colon_tag = '%s*(%a+):%s'
+--local colon_tag = '%s*(%a+):%s'
+local colon_tag = '%s*(%S-):%s'
 local colon_tag_value = colon_tag..'(.*)'
 
 function parse_colon_tags (text)
@@ -58,7 +59,13 @@ function parse_colon_tags (text)
    while line do
       local tag, rest = line:match(colon_tag_value)
       follows, line = tools.grab_while_not(lines,colon_tag)
-      append(tag_items,{tag, rest .. '\n' .. follows})
+      local value = rest .. '\n' .. follows
+      if tag:match '^[%?!]' then
+         tag = tag:gsub('^!','')
+         value = tag .. ' ' .. value
+         tag = 'tparam'
+      end
+      append(tag_items,{tag, value})
    end
    return preamble,tag_items
 end
@@ -235,7 +242,7 @@ local function parse_file(fname, lang, package, args)
             else
                item_follows, is_local, case = lang:item_follows(t,v,tok)
             end
-            if item_follows or comment:find '@'then
+            if item_follows or comment:find '@' or comment:find ': ' then
                tags = extract_tags(comment)
                if doc.project_level(tags.class) then
                   module_found = tags.name

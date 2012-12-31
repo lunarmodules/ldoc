@@ -47,6 +47,10 @@ known_tags._code_types = {
    script = true
 }
 
+known_tags._module_info = {
+   'copyright','release','license','author'
+}
+
 local see_reference_handlers = {}
 
 
@@ -80,6 +84,7 @@ function doc.project_level(tag)
    return known_tags._project_level[tag]
 end
 
+-- is it a project level tag containing code?
 function doc.code_tag (tag)
    return known_tags._code_types[tag]
 end
@@ -92,6 +97,10 @@ end
 -- is it a class tag, like 'type' or 'factory'?
 function doc.class_tag (tag)
    return tag == 'type' or tag == 'factory'
+end
+
+function doc.module_info_tags ()
+   return List.iter(known_tags._module_info)
 end
 
 
@@ -523,10 +532,21 @@ function Item:finish()
             comments:append(comment)
          end
       end
+      self.modifiers['return'] = self.modifiers['return'] or List()
+      self.modifiers[field] = self.modifiers[field] or List()
       -- not all arguments may be commented: we use the formal arguments
       -- if available as the authoritative list, and warn if there's an inconsistency.
       if self.formal_args then
          local fargs = self.formal_args
+         if not self.ret and fargs.return_comment then
+            local retc = fargs.return_comment
+            local type,rest = retc:match '([^:]+):(.*)'
+            if type then
+               self.modifiers['return']:append{type=type}
+               retc = rest
+            end
+            self.ret = List{retc}
+         end
          if #fargs ~= 0 then
             local pnames, pcomments = names, comments
             names, comments = List(),List()
@@ -554,7 +574,6 @@ function Item:finish()
                      comment = comment:gsub('^%-+%s*','')
                      local type,rest = comment:match '([^:]+):(.*)'
                      if type then
-                        if not self.modifiers[field] then self.modifiers[field] = List() end
                         self.modifiers[field]:append {type = type}
                         comment = rest
                      end
@@ -622,7 +641,6 @@ function Item:type_of_ret(idx)
    local rparam = self.modifiers['return'][idx]
    return rparam and rparam.type or ''
 end
-
 
 
 function Item:warning(msg)

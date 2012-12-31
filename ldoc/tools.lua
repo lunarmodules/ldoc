@@ -282,19 +282,19 @@ function M.get_parameters (tok,endtoken,delim)
 
    if not ltl or not ltl[1] or #ltl[1] == 0 then return args end -- no arguments
 
-   local function set_comment (idx,tok)
-      local text = stringx.rstrip(value_of(tok)) --
-      local current_comment = args.comments[args[idx]]
-      if current_comment then
-        text = text:match("%s*%-%-+%s*(.*)")
-        args.comments[args[idx]] = current_comment .. " " .. text
-      else
-        args.comments[args[idx]] = text
-      end
+   local function strip_comment (text)
+      return text:match("%s*%-%-+%s*(.*)")
    end
 
-   local function fetch_comment (tl)
-      return
+   local function set_comment (idx,tok)
+      local text = stringx.rstrip(value_of(tok))
+      text = strip_comment(text)
+      local arg = args[idx]
+      local current_comment = args.comments[arg]
+      if current_comment then
+        text = current_comment .. " " .. text
+      end
+      args.comments[arg] = text
    end
 
    for i = 1,#ltl do
@@ -308,6 +308,9 @@ function M.get_parameters (tok,endtoken,delim)
                   set_comment(i-1,tl[j])
                   j = j + 1
                end
+            else -- first comment however is for the function return comment!
+               args.return_comment = strip_comment(value_of(tl[i]))
+               j = j + 1
             end
             if #tl > 1 then
                args:append(value_of(tl[j]))

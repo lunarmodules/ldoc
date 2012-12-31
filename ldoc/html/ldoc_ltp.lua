@@ -100,6 +100,15 @@ return [==[
 #     end -- for
     </ul>
 #   end -- if usage
+#   if module.info then
+    <h3>Info:</h3>
+    <ul>
+#     for tag, value in ldoc.pairs(module.info) do
+        <li><strong>$(tag)</strong>: $(value)</li>
+#     end
+    </ul>
+#   end -- if module.info
+
 
 # if not ldoc.no_summary then
 # -- bang out the tables of item types for this module (e.g Functions, Tables, etc)
