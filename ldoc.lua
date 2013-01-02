@@ -35,7 +35,7 @@ app.require_here()
 
 --- @usage
 local usage = [[
-ldoc, a documentation generator for Lua, vs 1.3.0
+ldoc, a documentation generator for Lua, vs 1.3.1
   -d,--dir (default docs) output directory
   -o,--output  (default 'index') output name
   -v,--verbose          verbose
@@ -53,6 +53,8 @@ ldoc, a documentation generator for Lua, vs 1.3.0
   -c,--config (default config.ld) configuration name
   -i,--ignore ignore any 'no doc comment or no module' warnings
   -D,--define (default none) set a flag to be used in config.ld
+  -N,--nocolon don't treat colons specially
+  -B,--boilerplate ignore first comment in source files
   --dump                debug output dump
   --filter (default none) filter output as Lua data (e.g pl.pretty.dump)
   --tags (default none) show all references to given tags, comma-separated
@@ -120,7 +122,7 @@ local ldoc = {}
 local add_language_extension
 
 local function override (field)
-   if ldoc[field] then args[field] = ldoc[field] end
+   if ldoc[field] ~= nil then args[field] = ldoc[field] end
 end
 
 -- aliases to existing tags can be defined. E.g. just 'p' for 'param'
@@ -178,7 +180,8 @@ end
 local ldoc_contents = {
    'alias','add_language_extension','new_type','add_section', 'tparam_alias',
    'file','project','title','package','format','output','dir','ext', 'topics',
-   'one','style','template','description','examples','readme','all','manual_url', 'ignore',
+   'one','style','template','description','examples',
+   'readme','all','manual_url', 'ignore', 'nocolon','boilerplate',
    'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
@@ -243,10 +246,11 @@ if args.module then
    if args.file:match '^%a+$' and global.functions[args.file] then
       args.file = 'global.'..args.file
    end
-   local fullpath,mod = tools.lookup_existing_module_or_function (args.file, doc_path)
+   local fullpath,mod,on_docpath = tools.lookup_existing_module_or_function (args.file, doc_path)
    if not fullpath then
       quit(mod)
    else
+      args.nocolon = on_docpath
       args.file = fullpath
       args.module = mod
    end
@@ -557,6 +561,8 @@ override 'output'
 override 'dir'
 override 'ext'
 override 'one'
+override 'nocolon'
+override 'boilerplate'
 
 if not args.ext:find '^%.' then
    args.ext = '.'..args.ext

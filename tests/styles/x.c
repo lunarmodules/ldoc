@@ -1,4 +1,5 @@
-/* First comment is ignored,
+/***************
+ * First comment is ignored,
  * containing licenses, warnings,
  * old-fashioned commit info and so forth
  */

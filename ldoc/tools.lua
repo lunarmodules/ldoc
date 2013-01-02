@@ -249,16 +249,18 @@ end
 
 function M.lookup_existing_module_or_function (name, docpath)
    -- first look up on the Lua module path
+   local on_docpath
    local fullpath, mod = M.find_existing_module(name,name,path.package_path)
    -- no go; but see if we can find it on the doc path
    if not fullpath then
       fullpath, mod = M.find_existing_module("ldoc.builtin." .. name,name,path.package_path)
+      on_docpath = true
 --~       fullpath, mod = M.find_existing_module(name, function(name)
 --~          local fpath = package.searchpath(name,docpath)
 --~          return fpath,true  -- result must always be 'lua'!
 --~       end)
    end
-   return fullpath, mod -- `mod` can be the error message
+   return fullpath, mod, on_docpath -- `mod` can be the error message
 end
 
 

@@ -93,10 +93,10 @@ end
 -- mark, and everything else in the preamble is the description.
 -- If a tag appears more than once, then its value becomes a list of strings.
 -- Alias substitution and @TYPE NAME shortcutting is handled by Item.check_tag
-local function extract_tags (s)
+local function extract_tags (s,args)
    local preamble,tag_items
    if s:match '^%s*$' then return {} end
-   if s:match ':%s' and not s:match '@%a' then
+   if not args.nocolon and s:match ':%s' and not s:match '@%a' then
       preamble,tag_items = parse_colon_tags(s)
    else
       preamble,tag_items = parse_at_tags(s)
@@ -183,7 +183,11 @@ local function parse_file(fname, lang, package, args)
 
    local mod
    local t,v = tnext(tok)
-   if t == '#' then
+   -- with some coding styles first comment is standard boilerplate; option to ignore this.
+   if args.boilerplate and t == 'comment' then
+      t,v = tnext(tok)
+   end
+   if t == '#' then -- skip Lua shebang line, if present
       while t and t ~= 'comment' do t,v = tnext(tok) end
       if t == nil then
          F:warning('empty file')
@@ -243,7 +247,7 @@ local function parse_file(fname, lang, package, args)
                item_follows, is_local, case = lang:item_follows(t,v,tok)
             end
             if item_follows or comment:find '@' or comment:find ': ' then
-               tags = extract_tags(comment)
+               tags = extract_tags(comment,args)
                if doc.project_level(tags.class) then
                   module_found = tags.name
                end
@@ -284,7 +288,7 @@ local function parse_file(fname, lang, package, args)
                -- we have to guess the module name
                module_found = tools.this_module_name(package,fname)
             end
-            if not tags then tags = extract_tags(comment) end
+            if not tags then tags = extract_tags(comment,args) end
             add_module(tags,module_found,old_style)
             tags = nil
             if not t then

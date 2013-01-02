@@ -168,7 +168,9 @@ function html.generate_output(ldoc, args, project)
       ldoc.kinds_allowed = {module = true, topic = true}
    end
    ldoc.root = true
-   ldoc.module.info = get_module_info(ldoc.module)
+   if ldoc.module then
+      ldoc.module.info = get_module_info(ldoc.module)
+   end
    local out,err = template.substitute(module_template,{
       ldoc = ldoc,
       module = ldoc.module,
