@@ -126,8 +126,9 @@ local function preprocess_tag_strings( s )
 
       -- Now open the new image file and embed it
       -- into the text as an HTML image
-      local fp = io.open( filename, "r" )
+      local fp = io.open( filename, "rb" )
       if fp then
+
          -- This could be more efficient instead of
          -- reading all since the definitions are
          -- typically small this will work for now
@@ -157,14 +158,15 @@ local function preprocess_tag_strings( s )
 
    while spos and epos do
 
-      local filename = os.tmpname()
-      local sUml     = string.sub(s,spos,epos) -- UML definition text
+      local uml_filename = os.tmpname()
+      local img_filename = uml_filename
+      local sUml         = string.sub(s,spos,epos) -- UML definition text
 
       -- Grab the text before and after the UML definition
       local preStr        = string.sub(s, 1, spos-1)
       local postStr       = string.sub(s, epos+1)
       local fileType      = "png"
-      local fp            = io.open( filename, "w" )
+      local fp            = io.open( uml_filename, "w" )
       local html          = ""
       local cacheFileName = nil
       local sEmbedImage   = "true"
@@ -222,13 +224,17 @@ local function preprocess_tag_strings( s )
          fp:close()
 
          -- create the diagram, overwrites the existing file
-         os.execute( string.format(execPath, filename ) )
+         -- This will generate a PNG filename
+         os.execute( string.format(execPath, uml_filename ) )
+
+         -- filename will now be the output name from the previous plantuml excecution
+         img_filename = string.format("%s.%s", uml_filename, (fileType or "png"))
 
          if cacheFileName then
 
             -- Save the image to a specific location which we
             -- do not remove, nor embed in the HTML
-            os.rename( filename, cacheFileName)
+            os.rename( img_filename, cacheFileName)
 
             if sEmbedImage == "true" then
                -- create the embedded text for the image
@@ -237,10 +243,15 @@ local function preprocess_tag_strings( s )
 
          elseif sEmbedImage == "true" then
             -- create the embedded text for the image
-            html = create_embedded_image( filename, fileType )
+            html = create_embedded_image( img_filename, fileType )
 
-            os.remove( filename ) -- this is the PNG from plantUml
+            os.remove( img_filename ) -- this is the PNG from plantUml
+
+         else
+            os.remove( img_filename ) -- this is the PNG from plantUml
          end
+
+         os.remove( uml_filename ) -- this is the UML
 
       else
          local errStr = "LDoc error creating UML temp file"
