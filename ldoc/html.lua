@@ -20,23 +20,44 @@ local stringx = require 'pl.stringx'
 local template = require 'pl.template'
 local tools = require 'ldoc.tools'
 local markup = require 'ldoc.markup'
+local doc = require 'ldoc.doc'
 local html = {}
 
 
 local quit = utils.quit
 
 local function cleanup_whitespaces(text)
-    local lines = stringx.splitlines(text)
-    for i = 1, #lines do
-        lines[i] = stringx.rstrip(lines[i])
-    end
-    lines[#lines + 1] = "" -- Little trick: file should end with newline
-    return table.concat(lines, "\n")
+   local lines = stringx.splitlines(text)
+   for i = 1, #lines do
+      lines[i] = stringx.rstrip(lines[i])
+   end
+   lines[#lines + 1] = "" -- Little trick: file should end with newline
+   return table.concat(lines, "\n")
 end
+
+local function get_module_info(m)
+   local info = {}
+   for tag in doc.module_info_tags() do
+      local val = m.tags[tag]
+      if type(val)=='table' then
+         val = table.concat(val,',')
+      end
+      tag = stringx.title(tag)
+      info[tag] = val
+   end
+   if next(info) then
+      return info
+   end
+end
+
+local escape_table = { ["'"] = "&apos;", ["\""] = "&quot;", ["<"] = "&lt;", [">"] = "&gt;", ["&"] = "&amp;" }
 
 function html.generate_output(ldoc, args, project)
    local check_directory, check_file, writefile = tools.check_directory, tools.check_file, tools.writefile
 
+   function ldoc.escape(str)
+      return (str:gsub("['&<>\"]", escape_table))
+   end
 
    -- this generates the internal module/function references
    function ldoc.href(see)
@@ -98,15 +119,36 @@ function html.generate_output(ldoc, args, project)
    end
 
    function ldoc.typename (tp)
-      if not tp then return '' end
-      return (tp:gsub('%a[%w_%.]*',function(name)
+      if not tp or tp == '' then return '' end
+      local optional
+      -- ?<type> is short for ?nil|<type>
+      if tp:match("^%?") and not tp:match '|' then
+         tp = '?|'..tp:sub(2)
+      end
+      local tp2 = tp:match("%?|?(.*)")
+      if tp2 then
+         optional = true
+         tp = tp2
+      end
+      local types = {}
+      for name in tp:gmatch("[^|]+") do
          local ref,err = markup.process_reference(name)
          if ref then
-            return ('<a href="%s">%s</a> '):format(ldoc.href(ref),name)
+            types[#types+1] = ('<a class="type" href="%s">%s</a>'):format(ldoc.href(ref),ref.label or name)
          else
-            return '<strong>'..name..'</strong> '
+            types[#types+1] = '<span class="type">'..name..'</span>'
          end
-      end))
+      end
+      local names = table.concat(types, ", ", 1, math.max(#types-1, 1))
+      if #types > 1 then names = names.." or "..types[#types] end
+      if optional then
+         if names ~= '' then
+            if #types == 1 then names = "optional "..names end
+         else
+            names = "optional"
+        end
+      end
+      return names
    end
 
    local module_template,err = utils.readfile (path.join(args.template,ldoc.templ))
@@ -117,6 +159,7 @@ function html.generate_output(ldoc, args, project)
    local css = ldoc.css
    ldoc.output = args.output
    ldoc.ipairs = ipairs
+   ldoc.pairs = pairs
 
    -- in single mode there is one module and the 'index' is the
    -- documentation for that module.
@@ -125,9 +168,12 @@ function html.generate_output(ldoc, args, project)
       ldoc.kinds_allowed = {module = true, topic = true}
    end
    ldoc.root = true
+   if ldoc.module then
+      ldoc.module.info = get_module_info(ldoc.module)
+   end
    local out,err = template.substitute(module_template,{
       ldoc = ldoc,
-      module = ldoc.module
+      module = ldoc.module,
     })
    ldoc.root = false
    if not out then quit("template failed: "..err) end
@@ -163,6 +209,7 @@ function html.generate_output(ldoc, args, project)
       for m in modules() do
          ldoc.module = m
          ldoc.body = m.body
+         m.info = get_module_info(m)
          if ldoc.body and m.postprocess then
             ldoc.body = m.postprocess(ldoc.body)
          end

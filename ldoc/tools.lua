@@ -7,6 +7,8 @@ local List = require 'pl.List'
 local path = require 'pl.path'
 local utils = require 'pl.utils'
 local tablex = require 'pl.tablex'
+local stringx = require 'pl.stringx'
+local dir = require 'pl.dir'
 local tools = {}
 local M = tools
 local append = table.insert
@@ -112,9 +114,11 @@ end
 
 
 function KindMap.add_kind (klass,tag,kind,subnames)
-   klass.types_by_tag[tag] = kind
-   klass.types_by_kind[kind] = {type=tag,subnames=subnames}
-   append(klass.kinds,kind)
+   if not klass.types_by_kind[kind] then
+      klass.types_by_tag[tag] = kind
+      klass.types_by_kind[kind] = {type=tag,subnames=subnames}
+      append(klass.kinds,kind)
+   end
 end
 
 
@@ -171,7 +175,7 @@ end
 
 
 function M.extract_identifier (value)
-   return value:match('([%.:%-_%w]+)')
+   return value:match('([%.:%-_%w]+)(.*)$')
 end
 
 function M.strip (s)
@@ -219,7 +223,7 @@ function M.this_module_name (basename,fname)
    --print('deduce',lpath,cnt,basename)
    if cnt ~= 1 then quit("module(...) name deduction failed: base "..basename.." "..fname) end
    lpath = lpath:gsub(path.sep,'.')
-   return M.name_of(lpath):gsub('%.init$','')
+   return (M.name_of(lpath):gsub('%.init$',''))
 end
 
 function M.find_existing_module (name, dname, searchfn)
@@ -245,16 +249,18 @@ end
 
 function M.lookup_existing_module_or_function (name, docpath)
    -- first look up on the Lua module path
+   local on_docpath
    local fullpath, mod = M.find_existing_module(name,name,path.package_path)
    -- no go; but see if we can find it on the doc path
    if not fullpath then
       fullpath, mod = M.find_existing_module("ldoc.builtin." .. name,name,path.package_path)
+      on_docpath = true
 --~       fullpath, mod = M.find_existing_module(name, function(name)
 --~          local fpath = package.searchpath(name,docpath)
 --~          return fpath,true  -- result must always be 'lua'!
 --~       end)
    end
-   return fullpath, mod -- `mod` can be the error message
+   return fullpath, mod, on_docpath -- `mod` can be the error message
 end
 
 
@@ -262,7 +268,7 @@ end
 
 local tnext = lexer.skipws
 
-local function type_of (tok) return tok[1] end
+local function type_of (tok) return tok and tok[1] or 'end' end
 local function value_of (tok) return tok[2] end
 
 -- This parses Lua formal argument lists. It will return a list of argument
@@ -276,45 +282,78 @@ function M.get_parameters (tok,endtoken,delim)
    args.comments = {}
    local ltl = lexer.get_separated_list(tok,endtoken,delim)
 
-   if not ltl or #ltl[1] == 0 then return args end -- no arguments
+   if not ltl or not ltl[1] or #ltl[1] == 0 then return args end -- no arguments
+
+   local function strip_comment (text)
+      return text:match("%s*%-%-+%s*(.*)")
+   end
 
    local function set_comment (idx,tok)
-      local text = value_of(tok):gsub('%s*$','')
-      args.comments[args[idx]] = text
+      local text = stringx.rstrip(value_of(tok))
+      text = strip_comment(text)
+      local arg = args[idx]
+      local current_comment = args.comments[arg]
+      if current_comment then
+        text = current_comment .. " " .. text
+      end
+      args.comments[arg] = text
    end
 
    for i = 1,#ltl do
-      --print('check',i,ltl[i],#ltl[i])
-      local tl = ltl[i]
+      local tl = ltl[i] -- token list for argument
       if #tl > 0 then
-      if type_of(tl[1]) == 'comment' then
-         if i > 1 then set_comment(i-1,tl[1]) end
-         if #tl > 1 then
-            args:append(value_of(tl[2]))
+         local j = 1
+         if type_of(tl[1]) == 'comment' then
+            -- the comments for the i-1 th arg are in the i th arg...
+            if i > 1 then
+               while type_of(tl[j]) == 'comment' do
+                  set_comment(i-1,tl[j])
+                  j = j + 1
+               end
+            else -- first comment however is for the function return comment!
+               args.return_comment = strip_comment(value_of(tl[i]))
+               j = j + 1
+            end
+            if #tl > 1 then
+               args:append(value_of(tl[j]))
+            end
+         else
+            args:append(value_of(tl[1]))
+         end
+         if i == #ltl and #tl > 1 then
+            while j <= #tl and type_of(tl[j]) ~= 'comment' do
+               j = j + 1
+            end
+            if j > #tl then break end -- was no comments!
+            while type_of(tl[j]) == 'comment' do
+               set_comment(i,tl[j])
+               j = j + 1
+            end
          end
       else
-         args:append(value_of(tl[1]))
-      end
-      if i == #ltl then
-         local last_tok = tl[#tl]
-         if #tl > 1 and type_of(last_tok) == 'comment' then
-            set_comment(i,last_tok)
-         end
-      end
+         return nil,"empty argument"
       end
    end
 
-   if next(args.comments) then -- we had argument comments
-      -- but the last one may be outside the parens! (Geoff style)
+   ----[[
+   -- we had argument comments
+   -- but the last one may be outside the parens! (Geoff style)
+   -- (only try this stunt if it's a function parameter list!)
+   if (not endtoken or endtoken == ')') and (#args > 0 or next(args.comments)) then
       local n = #args
-      if not args.comments[n] then
-         local t = {tok()}
-         if type_of(t) == 'comment' then
-            set_comment(n,t)
+      local last_arg = args[n]
+      if not args.comments[last_arg] then
+         while true do
+            local t = {tok()}
+            if type_of(t) == 'comment' then
+               set_comment(n,t)
+            else
+               break
+            end
          end
       end
    end
-
+   --]]
    return args
 end
 
@@ -327,6 +366,7 @@ function M.get_fun_name (tok,first)
    else
       t,name = 'iden',first
    end
+   if t ~= 'iden' then return nil end
    t,sep = tnext(tok)
    while sep == '.' or sep == ':' do
       append(res,name)

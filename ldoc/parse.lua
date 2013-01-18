@@ -38,7 +38,7 @@ local luadoc_tag_value = luadoc_tag..'(.*)'
 local luadoc_tag_mod_and_value = luadoc_tag..'%[(.*)%](.*)'
 
 -- assumes that the doc comment consists of distinct tag lines
-function parse_tags(text)
+function parse_at_tags(text)
    local lines = stringio.lines(text)
    local preamble, line = tools.grab_while_not(lines,luadoc_tag)
    local tag_items = {}
@@ -61,6 +61,46 @@ function parse_tags(text)
       append(tag_items,{tag, rest .. '\n' .. follows, modifiers})
    end
    return preamble,tag_items
+end
+
+--local colon_tag = '%s*(%a+):%s'
+local colon_tag = '%s*(%S-):%s'
+local colon_tag_value = colon_tag..'(.*)'
+
+function parse_colon_tags (text)
+   local lines = stringio.lines(text)
+   local preamble, line = tools.grab_while_not(lines,colon_tag)
+   local tag_items, follows = {}
+   while line do
+      local tag, rest = line:match(colon_tag_value)
+      follows, line = tools.grab_while_not(lines,colon_tag)
+      local value = rest .. '\n' .. follows
+      if tag:match '^[%?!]' then
+         tag = tag:gsub('^!','')
+         value = tag .. ' ' .. value
+         tag = 'tparam'
+      end
+      append(tag_items,{tag, value})
+   end
+   return preamble,tag_items
+end
+
+local Tags = {}
+Tags.__index = Tags
+
+function Tags.new (t)
+   t._order = List()
+   return setmetatable(t,Tags)
+end
+
+function Tags:add (tag,value)
+   self[tag] = value
+   --print('adding',tag,value)
+   self._order:append(tag)
+end
+
+function Tags:iter ()
+   return self._order:iter()
 end
 
 -- Used to preprocess the tag text prior to extracting
@@ -112,17 +152,17 @@ local function preprocess_tag_strings( s )
    local execPath = "plantuml %s"
    local spos     = string.find(s, "@startuml")
    if spos then
-      _, epos = string.find(s, "@enduml")
+      _, epos = string.find(s, "@enduml", spos+1)
    end
 
-   if spos and epos then
+   while spos and epos do
 
       local filename = os.tmpname()
       local sUml     = string.sub(s,spos,epos) -- UML definition text
 
       -- Grab the text before and after the UML definition
-      local preStr        = string.match(s, "(.*)@startuml")
-      local postStr       = string.match(s, "@enduml(.*)")
+      local preStr        = string.sub(s, 1, spos-1)
+      local postStr       = string.sub(s, epos+1)
       local fileType      = "png"
       local fp            = io.open( filename, "w" )
       local html          = ""
@@ -210,20 +250,28 @@ local function preprocess_tag_strings( s )
       end
       s = preStr..html..postStr
 
+      spos = string.find(s, "@startuml", #preStr+#html+1)
+      if spos then
+         _, epos = string.find(s, "@enduml",spos+1)
+      end
+
    end -- embed UML
 
    ----------------------------------------------------------
    -- Embedded Image
    ------------------
-   local filename = string.match(s, '@embed{"(.*)"}')
-   if filename then
+   local filename = string.match(s, '@embed{"(.-)"}')
+   while filename do
 
       local fileType = string.match(filename, "%.(.*)$")
 
       -- create the embedded text for the image
       html = create_embedded_image( filename, fileType )
 
-      s = string.gsub(s, "@embed{.*}", html)
+      -- Replace the first occurance
+      s = string.gsub(s, "@embed{.-}", html, 1)
+
+      filename = string.match(s, '@embed{"(.-)"}')
 
    end -- embedded image
 
@@ -236,12 +284,15 @@ end -- preprocess_tag_strings
 -- mark, and everything else in the preamble is the description.
 -- If a tag appears more than once, then its value becomes a list of strings.
 -- Alias substitution and @TYPE NAME shortcutting is handled by Item.check_tag
-local function extract_tags (s)
+local function extract_tags (s,args)
+   local preamble,tag_items
    if s:match '^%s*$' then return {} end
-
-   s = preprocess_tag_strings( s )
-
-   local preamble,tag_items = parse_tags(s)
+   if not args.nocolon and s:match ':%s' and not s:match '@%a' then
+      preamble,tag_items = parse_colon_tags(s)
+   else
+      s = preprocess_tag_strings( s )
+      preamble,tag_items = parse_at_tags(s)
+   end
    local strip = tools.strip
    local summary, description = preamble:match('^(.-[%.?])(%s.+)')
    if not summary then
@@ -252,7 +303,7 @@ local function extract_tags (s)
          summary = preamble
       end
    end  --  and strip(description) ?
-   local tags = {summary=summary and strip(summary) or '',description=description or ''}
+   local tags = Tags.new{summary=summary and strip(summary) or '',description=description or ''}
    for _,item in ipairs(tag_items) do
       local tag, value, modifiers = Item.check_tag(tags,unpack(item))
       value = strip(value)
@@ -261,14 +312,14 @@ local function extract_tags (s)
       local old_value = tags[tag]
 
       if not old_value then -- first element
-         tags[tag] = value
+         tags:add(tag,value)
       elseif type(old_value)=='table' and old_value.append then -- append to existing list
          old_value :append (value)
       else -- upgrade string->list
-         tags[tag] = List{old_value, value}
+         tags:add(tag,List{old_value, value})
       end
    end
-   return Map(tags)
+   return tags --Map(tags)
 end
 
 local _xpcall = xpcall
@@ -285,11 +336,13 @@ end
 -- encountered, then ldoc looks for a call to module() to find the name of the
 -- module if there isn't an explicit module name specified.
 
-local function parse_file(fname,lang, package)
+local function parse_file(fname, lang, package, args)
    local line,f = 1
    local F = File(fname)
    local module_found, first_comment = false,true
    local current_item, module_item
+
+   F.base = package
 
    local tok,f = lang.lexer(fname)
    if not tok then return nil end
@@ -313,8 +366,8 @@ local function parse_file(fname,lang, package)
    end
 
    local function add_module(tags,module_found,old_style)
-      tags.name = module_found
-      tags.class = 'module'
+      tags:add('name',module_found)
+      tags:add('class','module')
       local item = F:new_item(tags,lineno())
       item.old_style = old_style
       module_item = item
@@ -322,7 +375,11 @@ local function parse_file(fname,lang, package)
 
    local mod
    local t,v = tnext(tok)
-   if t == '#' then
+   -- with some coding styles first comment is standard boilerplate; option to ignore this.
+   if args.boilerplate and t == 'comment' then
+      t,v = tnext(tok)
+   end
+   if t == '#' then -- skip Lua shebang line, if present
       while t and t ~= 'comment' do t,v = tnext(tok) end
       if t == nil then
          F:warning('empty file')
@@ -334,7 +391,10 @@ local function parse_file(fname,lang, package)
          t,v = tnext(tok)
       end
       if not t then
-         F:warning("no module() call found; no initial doc comment")
+         if not args.ignore then
+            F:warning("no module() call found; no initial doc comment")
+         end
+         --return nil
       else
          mod,t,v = lang:parse_module_call(tok,t,v)
          if mod ~= '...' then
@@ -370,20 +430,16 @@ local function parse_file(fname,lang, package)
          if t == 'space' then t,v = tnext(tok) end
 
          local item_follows, tags, is_local, case
-         if ldoc_comment or first_comment then
+         if ldoc_comment then
             comment = table.concat(comment)
 
-            if not ldoc_comment and first_comment then
-               F:warning("first comment must be a doc comment!")
-               break
-            end
             if first_comment then
                first_comment = false
             else
                item_follows, is_local, case = lang:item_follows(t,v,tok)
             end
-            if item_follows or comment:find '@'then
-               tags = extract_tags(comment)
+            if item_follows or comment:find '@' or comment:find ': ' then
+               tags = extract_tags(comment,args)
                if doc.project_level(tags.class) then
                   module_found = tags.name
                end
@@ -393,7 +449,7 @@ local function parse_file(fname,lang, package)
                if tags.name then
                   if not tags.class then
                      F:warning("no type specified, assuming function: '"..tags.name.."'")
-                     tags.class = 'function'
+                     tags:add('class','function')
                   end
                   item_follows, is_local = false, false
                 elseif lang:is_module_modifier (tags) then
@@ -424,7 +480,7 @@ local function parse_file(fname,lang, package)
                -- we have to guess the module name
                module_found = tools.this_module_name(package,fname)
             end
-            if not tags then tags = extract_tags(comment) end
+            if not tags then tags = extract_tags(comment,args) end
             add_module(tags,module_found,old_style)
             tags = nil
             if not t then
@@ -439,7 +495,8 @@ local function parse_file(fname,lang, package)
             local line = t ~= nil and lineno()
             if t ~= nil then
                if item_follows then -- parse the item definition
-                  item_follows(tags,tok)
+                  local err = item_follows(tags,tok)
+                  if err then F:error(err) end
                else
                   lang:parse_extra(tags,tok,case)
                end
@@ -469,7 +526,7 @@ local function parse_file(fname,lang, package)
 end
 
 function parse.file(name,lang, args)
-   local F,err = parse_file(name,lang, args.package)
+   local F,err = parse_file(name,lang,args.package,args)
    if err or not F then return F,err end
    local ok,err = xpcall(function() F:finish() end,debug.traceback)
    if not ok then return F,err end

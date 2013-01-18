@@ -1,0 +1,53 @@
+#!/usr/bin/env lua
+-------------------------------------------------------------------------------
+--- Lua UML Documentation Example                                          <br>
+--- Implements a binding to the Lua Blah Blah interface.                   <br>
+---
+--- @startuml{"fileType":"gif"}
+--- a->b:test request
+--- a<-b:test response
+--- @enduml
+---
+--- @startuml
+--- a2->b2:test 2 request
+--- a2<-b2:test 2 response
+--- @enduml
+---                                                                        <br>
+--- ----------------------------                                           <br>
+---  onEvent API:                                                          <br>
+--- ----------------------------                                           <br>
+---  { "event" : EVENT_NAME, [EVENT_SPECIFIC_DATA] }                       <br>
+---                                                                        <br>
+---  EVENT_NAME:                                                           <br>
+---                                                                        <br>
+---  <b>eos.........end of stream</b>                                      <br>
+---                 reason : info about the EOS                            <br><br>
+---
+--- @copyright   2012 Company LLC
+--- @license     Company LLC Proprietary
+---
+--- @module Lua_Binding
+--- @alias g_dbMethods
+-------------------------------------------------------------------------------
+
+----------------------------------------------------------------
+--- Test_SeqDiagramUseCase7
+---
+--- Test the sequence diagram use case
+--- Nothing, then Nav Starts/Stops.                         <br>
+---                                                         <br>
+---
+--- @startuml{"cacheFile":".cachedFile.png","forceEmbed":true,"fileType":"png"}
+--- a1->b1:test request
+--- a1<-b1:test response
+--- @enduml
+---
+---<br>
+---
+--- @embed{"./test.gif"}
+---
+---
+----------------------------------------------------------------
+local function Test_SeqDiagramUseCase1()
+end
+
