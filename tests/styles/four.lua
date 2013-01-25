@@ -15,17 +15,6 @@
 function one (name,age)
 end
 
---- second useless function.
--- If you hate @ tags, you can use colons.
--- Optional type specifiers are allowed in this format.
--- As an extension, '?' is short for '?|'.
--- Note how these types are rendered!
--- string: name
--- int: age
--- ?person2: options
--- treturn: ?table|string
-function two (name,age,options)
-end
 
 --- third useless function.
 -- Can always put comments inline, may
@@ -50,9 +39,3 @@ person = {
 -- @int age
 -- @table person2
 
---- explicit table in colon format.
--- Note how '!' lets you use a type name directly.
--- string: surname
--- string: birthdate
--- !person2: options
--- table: person3

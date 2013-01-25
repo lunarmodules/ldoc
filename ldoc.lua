@@ -53,7 +53,7 @@ ldoc, a documentation generator for Lua, vs 1.3.1
   -c,--config (default config.ld) configuration name
   -i,--ignore ignore any 'no doc comment or no module' warnings
   -D,--define (default none) set a flag to be used in config.ld
-  -N,--nocolon don't treat colons specially
+  -C,--colon use colon style
   -B,--boilerplate ignore first comment in source files
   --dump                debug output dump
   --filter (default none) filter output as Lua data (e.g pl.pretty.dump)
@@ -160,12 +160,12 @@ function ldoc.add_section (name, title, subname)
 end
 
 -- new tags can be added, which can be on a project level.
-function ldoc.new_type (tag, header, project_level)
+function ldoc.new_type (tag, header, project_level,subfield)
    doc.add_tag(tag,doc.TAG_TYPE,project_level)
    if project_level then
-      ProjectMap:add_kind(tag,header)
+      ProjectMap:add_kind(tag,header,subfield)
    else
-      ModuleMap:add_kind(tag,header)
+      ModuleMap:add_kind(tag,header,subfield)
    end
 end
 
@@ -181,7 +181,7 @@ local ldoc_contents = {
    'alias','add_language_extension','new_type','add_section', 'tparam_alias',
    'file','project','title','package','format','output','dir','ext', 'topics',
    'one','style','template','description','examples',
-   'readme','all','manual_url', 'ignore', 'nocolon','boilerplate',
+   'readme','all','manual_url', 'ignore', 'colon','boilerplate',
    'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
@@ -250,7 +250,6 @@ if args.module then
    if not fullpath then
       quit(mod)
    else
-      args.nocolon = on_docpath
       args.file = fullpath
       args.module = mod
    end
@@ -348,6 +347,7 @@ local process_file_list = tools.process_file_list
 
 setup_package_base()
 
+override 'colon'
 
 if type(args.file) == 'table' then
    -- this can only be set from config file so we can assume it's already read
@@ -561,7 +561,6 @@ override 'output'
 override 'dir'
 override 'ext'
 override 'one'
-override 'nocolon'
 override 'boilerplate'
 
 if not args.ext:find '^%.' then

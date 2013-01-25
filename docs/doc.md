@@ -470,6 +470,22 @@ And then used as any other type:
 
 This will also create a new module section called 'Macros'.
 
+If your new type has arguments or fields, then specify the name:
+
+    new_type("macro","Macros",false,"param")
+
+(The third argument means that this is not a _project level_ tag)
+
+Then you may say:
+
+    -----
+    -- A macro with arguments.
+    -- @macro second_macro
+    -- @param x the argument
+
+And the arguments will be displayed under the subsection 'param'
+
+
 ## Inferring more from Code
 
 The qualified name of a function will be inferred from any `function` keyword following the

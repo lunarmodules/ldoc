@@ -96,7 +96,7 @@ end
 local function extract_tags (s,args)
    local preamble,tag_items
    if s:match '^%s*$' then return {} end
-   if not args.nocolon and s:match ':%s' and not s:match '@%a' then
+   if args.colon then --and s:match ':%s' and not s:match '@%a' then
       preamble,tag_items = parse_colon_tags(s)
    else
       preamble,tag_items = parse_at_tags(s)
