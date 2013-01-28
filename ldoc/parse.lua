@@ -150,6 +150,8 @@ local function parse_file(fname, lang, package, args)
    local module_found, first_comment = false,true
    local current_item, module_item
 
+   F.args = args
+
    F.base = package
 
    local tok,f = lang.lexer(fname)

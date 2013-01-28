@@ -55,6 +55,7 @@ ldoc, a documentation generator for Lua, vs 1.3.1
   -D,--define (default none) set a flag to be used in config.ld
   -C,--colon use colon style
   -B,--boilerplate ignore first comment in source files
+  -M,--merge allow module merging
   --dump                debug output dump
   --filter (default none) filter output as Lua data (e.g pl.pretty.dump)
   --tags (default none) show all references to given tags, comma-separated
@@ -181,7 +182,7 @@ local ldoc_contents = {
    'alias','add_language_extension','new_type','add_section', 'tparam_alias',
    'file','project','title','package','format','output','dir','ext', 'topics',
    'one','style','template','description','examples',
-   'readme','all','manual_url', 'ignore', 'colon','boilerplate',
+   'readme','all','manual_url', 'ignore', 'colon','boilerplate','merge',
    'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
@@ -348,6 +349,7 @@ local process_file_list = tools.process_file_list
 setup_package_base()
 
 override 'colon'
+override 'merge'
 
 if type(args.file) == 'table' then
    -- this can only be set from config file so we can assume it's already read

@@ -215,6 +215,14 @@ function File:finish()
          if item.type == 'module' then
             -- if name is 'package.mod', then mod_name is 'mod'
             package,mname = split_dotted_name(this_mod.name)
+            if self.args.merge then
+               local mod,mf = find_module_in_files(item.name)
+               if mod then
+                  print('found master module',mf)
+                  this_mod = mod
+                  submodule = true
+               end
+            end
          elseif item.type == 'submodule' then
             local mf
             submodule = true
