@@ -707,7 +707,7 @@ LDoc knows about the basic Lua libraries, so that it can be used as a handy cons
     v
     message
 
-Thanks to mitchell's [TextAdept](http://code.google.com/p/textadept/) project, LDoc has a
+Thanks to Mitchell's [Textadept](http://foicica.com/textadept/) project, LDoc has a
 set of `.luadoc` files for all the standard tables, plus
 [LuaFileSystem](http://keplerproject.github.com/luafilesystem/) and
 [LPeg](http://www.inf.puc-rio.br/~roberto/lpeg/lpeg.html).
