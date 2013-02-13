@@ -78,6 +78,7 @@ local quit = utils.quit
 
 
 class.ModuleMap(KindMap)
+local ModuleMap = ModuleMap
 
 function ModuleMap:_init ()
    self.klass = ModuleMap
@@ -541,7 +542,7 @@ local function style_dir (sname)
       elseif type(style) == 'string' and path.isdir(style) then
          dir = style
       else
-         quit(quote(tostring(name)).." is not a directory")
+         quit(quote(tostring(style)).." is not a directory")
       end
       args[sname] = dir
    end

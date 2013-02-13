@@ -23,7 +23,7 @@ local luadoc_tag_value = luadoc_tag..'(.*)'
 local luadoc_tag_mod_and_value = luadoc_tag..'%[(.*)%](.*)'
 
 -- assumes that the doc comment consists of distinct tag lines
-function parse_at_tags(text)
+local function parse_at_tags(text)
    local lines = stringio.lines(text)
    local preamble, line = tools.grab_while_not(lines,luadoc_tag)
    local tag_items = {}
@@ -52,7 +52,7 @@ end
 local colon_tag = '%s*(%S-):%s'
 local colon_tag_value = colon_tag..'(.*)'
 
-function parse_colon_tags (text)
+local function parse_colon_tags (text)
    local lines = stringio.lines(text)
    local preamble, line = tools.grab_while_not(lines,colon_tag)
    local tag_items, follows = {}

@@ -7,11 +7,11 @@ local class = require 'pl.class'
 local utils = require 'pl.utils'
 local tools = require 'ldoc.tools'
 local lexer = require 'ldoc.lexer'
-
+local quit = utils.quit
 local tnext = lexer.skipws
 
 
-class.Lang()
+local Lang = class()
 
 function Lang:trim_comment (s)
    return s:gsub(self.line_comment,'')
@@ -67,7 +67,7 @@ function Lang:parse_module_modifier (tags, tok)
 end
 
 
-class.Lua(Lang)
+local Lua = class(Lang)
 
 function Lua:_init()
    self.line_comment = '^%-%-+' -- used for stripping
@@ -224,7 +224,7 @@ function Lua:parse_module_modifier (tags, tok, F)
       if tags.class ~= 'field' then return nil,"cannot deduce @usage" end
       local t1= tnext(tok)
       if t1 ~= '[' then return nil, t1..' '..': not a long string' end
-      t, v = tools.grab_block_comment('',tok,'%]%]')
+      local t, v = tools.grab_block_comment('',tok,'%]%]')
       return true, v, 'usage'
    elseif tags.export then
       if tags.class ~= 'table' then return nil, "cannot deduce @export" end
@@ -241,7 +241,7 @@ end
 -- note a difference here: we scan C/C++ code in full-text mode, not line by line.
 -- This is because we can't detect multiline comments in line mode
 
-class.CC(Lang)
+local CC = class(Lang)
 
 function CC:_init()
    self.line_comment = '^//+'
@@ -251,6 +251,7 @@ function CC:_init()
 end
 
 function CC.lexer(f)
+   local err
    f,err = utils.readfile(f)
    if not f then quit(err) end
    return lexer.cpp(f,{})

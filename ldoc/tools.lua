@@ -206,6 +206,7 @@ function M.writefile(name,text)
 end
 
 function M.name_of (lpath)
+   local ext
    lpath,ext = path.splitext(lpath)
    return lpath
 end

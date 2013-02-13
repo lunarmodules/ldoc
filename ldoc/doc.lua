@@ -631,7 +631,7 @@ function Item:finish()
                acc ((']'):rep(npending))
                npending=0
             end
-            if m.opt or m.optchain then acc('['); npending=npending+1 end
+            if m.opt or m.optchain then acc(' ['); npending=npending+1 end
          end
          if i>1 then acc (', ') end
          acc(names[i])
@@ -656,7 +656,7 @@ end
 
 function Item:warning(msg)
    local file = self.file and self.file.filename
-   if type(file) == 'table' then pretty.dump(file); file = '?' end
+   if type(file) == 'table' then require 'pl.pretty'.dump(file); file = '?' end
    file = file or '?'
    io.stderr:write(file,':',self.lineno or '1',': ',self.name or '?',': ',msg,'\n')
    return nil
