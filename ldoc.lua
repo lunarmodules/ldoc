@@ -114,7 +114,8 @@ local file_types = {
    ['.c'] = cc,
    ['.cpp'] = cc,
    ['.cxx'] = cc,
-   ['.C'] = cc
+   ['.C'] = cc,
+   ['.mm'] = cc
 }
 
 ------- ldoc external API ------------
