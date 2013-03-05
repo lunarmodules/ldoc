@@ -114,7 +114,10 @@ local function extract_tags (s,args)
    local tags = Tags.new{summary=summary and strip(summary) or '',description=description or ''}
    for _,item in ipairs(tag_items) do
       local tag, value, modifiers = Item.check_tag(tags,unpack(item))
-      value = strip(value)
+      -- treat multiline values more gently..
+      if not value:match '\n[^\n]+\n' then
+         value = strip(value)
+      end
 
       if modifiers then value = { value, modifiers=modifiers } end
       local old_value = tags[tag]
