@@ -26,9 +26,11 @@ end
 
 local spans = {keyword=true,number=true,string=true,comment=true,global=true}
 
-function prettify.lua (fname, code, initial_lineno)
+function prettify.lua (fname, code, initial_lineno, no_pre)
    local res = List()
-   res:append '<pre>\n'
+   if not no_pre then
+      res:append '<pre>\n'
+   end
    initial_lineno = initial_lineno or 0
 
    local tok = lexer.lua(code,{},{})

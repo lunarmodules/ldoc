@@ -97,7 +97,7 @@ return [==[
     <h3>Usage:</h3>
     <ul>
 #     for usage in iter(module.usage) do
-        $(li)<pre class="example">$(ldoc.sourcecode(usage))</pre>$(il)
+        $(li)<pre class="example">$(ldoc.escape(usage))</pre>$(il)
 #     end -- for
     </ul>
 #   end -- if usage
@@ -195,7 +195,7 @@ return [==[
     <h3>Usage:</h3>
     <ul>
 #     for usage in iter(item.usage) do
-        $(li)<pre class="example">$(ldoc.sourcecode(usage))</pre>$(il)
+        $(li)<pre class="example">$(ldoc.prettify(usage))</pre>$(il)
 #     end -- for
     </ul>
 #   end -- if usage

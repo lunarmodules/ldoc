@@ -20,6 +20,7 @@ local stringx = require 'pl.stringx'
 local template = require 'pl.template'
 local tools = require 'ldoc.tools'
 local markup = require 'ldoc.markup'
+local prettify = require 'ldoc.prettify'
 local doc = require 'ldoc.doc'
 local html = {}
 
@@ -54,22 +55,13 @@ local escape_table = { ["'"] = "&apos;", ["\""] = "&quot;", ["<"] = "&lt;", [">"
 
 function html.generate_output(ldoc, args, project)
    local check_directory, check_file, writefile = tools.check_directory, tools.check_file, tools.writefile
-   local lxsh_ok, lxsh = pcall(require, 'lxsh')
-   
-   function ldoc.sourcecode(str)
-      if lxsh_ok and lxsh then
-         str = lxsh.highlighters.lua(str, { 
-            formatter = lxsh.formatters.html, 
-            external = true 
-         })
-         return str:gsub("^<pre*.->(.*)</pre>$", '%1')
-      else
-         return ldoc.escape(str)
-      end
-   end
 
    function ldoc.escape(str)
       return (str:gsub("['&<>\"]", escape_table))
+   end
+
+   function ldoc.prettify(str)
+      return prettify.lua('tmp',str,0,true)
    end
 
    -- this generates the internal module/function references
