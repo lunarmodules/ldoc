@@ -296,12 +296,13 @@ function File:finish()
             if this_mod.section then
                local this_section = this_mod.section
                item.section = this_section.display_name
-               -- if it was a class, then the name should be 'Class:foo'
+               -- if it was a class, then if the name is unqualified then it becomes
+               -- 'Class:foo' (unless explicitly flagged as being a constructor)
                local stype = this_section.type
                if doc.class_tag(stype) then
-                  local prefix = this_section.name .. (not item.tags.constructor and ':' or '.')
-                  if not has_prefix(item.name,prefix) then
-                     item.name =  prefix .. item.name
+                  if not item.name:match '[:%.]' then -- not qualified
+                     local class = this_section.name
+                     item.name = class..(not item.tags.constructor and ':' or '.')..item.name
                   end
                   if stype == 'factory'  then
                      if item.tags.private then to_be_removed = true
