@@ -66,10 +66,9 @@ input,button,textarea,select {*font-size:100%;
 /* END RESET */
 
 body {
-    margin-left: 1em;
-    margin-right: 1em;
-    font-family: arial, helvetica, geneva, sans-serif;
-    background-color: #ffffff; margin: 0px;
+    font-family: Helvetica, Arial, Geneva, sans-serif;
+    background-color: #ffffff; 
+    margin: 0px;
 }
 
 code, tt { font-family: monospace; }
@@ -105,34 +104,18 @@ hr {
     background: #00007f;
     height: 1px;
 }
-
 blockquote { margin-left: 3em; }
-
 ul { list-style-type: disc; }
-
-p.name {
-    font-family: "Andale Mono", monospace;
-    padding-top: 1em;
-}
-
-pre.example {
-    background-color: rgb(245, 245, 245);
-    border: 1px solid silver;
-    padding: 10px;
-    margin: 10px 0 10px 0;
-    font-family: "Andale Mono", monospace;
-    font-size: .85em;
-}
-
+p.name, pre { font-family: "Andale Mono", Monaco, Consolas, monospace; }
+p.name { padding-top: 1em; }
 pre {
     background-color: rgb(245, 245, 245);
     border: 1px solid silver;
     padding: 10px;
     margin: 10px 0 10px 0;
     overflow: auto;
-    font-family: "Andale Mono", monospace;
+    font-size: .85em;
 }
-
 
 table.index { border: 1px #00007f; }
 table.index td { text-align: left; vertical-align: top; }
@@ -235,7 +218,6 @@ table.index td { text-align: left; vertical-align: top; }
         display: none;
     }
     pre.example {
-        font-family: "Andale Mono", monospace;
         font-size: 10pt;
         page-break-inside: avoid;
     }
@@ -283,12 +265,19 @@ ol ol { margin-top: 0px; }
 ul ol { margin-top: 0px; }
 
 /* styles for prettification of source */
-.keyword {font-weight: bold; color: #6666AA; }
-.number  { color: #AA6666; }
-.string  { color: #8888AA; }
-.comment { color: #666600; }
-.prepro { color: #006666; }
-.global { color: #800080; }
+pre .comment { color: #558817; }
+pre .constant { color: #a8660d; }
+pre .escape { color: #844631; }
+pre .keyword { color: #2239a8; font-weight: bold; }
+pre .library { color: #0e7c6b; }
+pre .marker { color: #512b1e; background: #fedc56; font-weight: bold; }
+pre .string { color: #a8660d; }
+pre .number { color: #a8660d; }
+pre .operator { color: #2239a8; font-weight: bold; }
+pre .preprocessor, pre .prepro { color: #a33243; }
+pre .prompt { color: #558817; }
+pre .url { color: #272fc2; text-decoration: underline; }
+
 ]==]
 
 
