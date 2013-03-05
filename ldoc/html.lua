@@ -20,6 +20,7 @@ local stringx = require 'pl.stringx'
 local template = require 'pl.template'
 local tools = require 'ldoc.tools'
 local markup = require 'ldoc.markup'
+local prettify = require 'ldoc.prettify'
 local doc = require 'ldoc.doc'
 local html = {}
 
@@ -57,6 +58,10 @@ function html.generate_output(ldoc, args, project)
 
    function ldoc.escape(str)
       return (str:gsub("['&<>\"]", escape_table))
+   end
+
+   function ldoc.prettify(str)
+      return prettify.lua('tmp',str,0,true)
    end
 
    -- this generates the internal module/function references
