@@ -61,7 +61,7 @@ function html.generate_output(ldoc, args, project)
    end
 
    function ldoc.prettify(str)
-      return prettify.lua('tmp',str,0,true)
+      return prettify.code('lua','usage',str,0,false)
    end
 
    -- this generates the internal module/function references

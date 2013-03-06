@@ -111,18 +111,46 @@ local function process_multiline_markdown(ldoc, txt, F)
       L = L + 1
       return get()
    end
-   local line = getline()
-   local indent,code,start_indent
+   local function pretty_code (code, lang)
+      code = concat(code,'\n')
+      if code ~= '' then
+         local err
+         code, err = prettify.code(lang,filename,code..'\n',L,false)
+         append(res,'<pre>')
+         append(res, code)
+         append(res,'</pre>')
+      else
+         append(res,code)
+      end
+   end
+   local indent,start_indent
    local_context = nil
+   local line = getline()
    while line do
       local name = line:match '^@lookup%s+(%S+)'
       if name then
          local_context = name .. '.'
          line = getline()
       end
+      local fence = line:match '^```(.*)'
+      if fence then
+         local plain = fence==''
+         line = getline()
+         local code = {}
+         while not line:match '^```' do
+            if not plain then
+               append(code, line)
+            else
+               append(res, '     '..line)
+            end
+            line = getline()
+         end
+         pretty_code (code,fence)
+         line = getline() -- skip fence
+      end
       indent, line = indent_line(line)
       if indent >= 4 then -- indented code block
-         code = {}
+         local code = {}
          local plain
          while indent >= 4 or not non_blank(line) do
             if not start_indent then
@@ -135,7 +163,7 @@ local function process_multiline_markdown(ldoc, txt, F)
             if not plain then
                append(code,line:sub(start_indent))
             else
-               append(res, line)
+               append(res,line)
             end
             line = getline()
             if line == nil then break end
@@ -143,16 +171,7 @@ local function process_multiline_markdown(ldoc, txt, F)
          end
          start_indent = nil
          if #code > 1 then table.remove(code) end
-         code = concat(code,'\n')
-         if code ~= '' then
-            local err
-            code, err = prettify.lua(filename,code..'\n',L)
-            code = resolve_inline_references(ldoc, code, err_item)
-            append(res, code)
-            append(res,'</pre>')
-         else
-            append(res ,code)
-         end
+         pretty_code (code,'lua')
       else
          local section = F.sections[L]
          if section then
@@ -245,11 +264,12 @@ local function get_processor(ldoc, format)
 end
 
 
-function markup.create (ldoc, format)
+function markup.create (ldoc, format, pretty)
    local processor
    markup.plain = true
    backtick_references = ldoc.backtick_references
    global_context = ldoc.package and ldoc.package .. '.'
+   prettify.set_prettifier(pretty)
 
    markup.process_reference = function(name)
       if local_context == 'none.' and not name:match '%.' then

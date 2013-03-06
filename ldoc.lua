@@ -183,7 +183,7 @@ end
 local ldoc_contents = {
    'alias','add_language_extension','new_type','add_section', 'tparam_alias',
    'file','project','title','package','format','output','dir','ext', 'topics',
-   'one','style','template','description','examples',
+   'one','style','template','description','examples', 'pretty',
    'readme','all','manual_url', 'ignore', 'colon','boilerplate','merge', 'wrap',
    'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
 }
@@ -394,8 +394,10 @@ else
 end
 
 -- create the function that renders text (descriptions and summaries)
+-- (this also will initialize the code prettifier used)
 override 'format'
-ldoc.markup = markup.create(ldoc, args.format)
+override 'pretty'
+ldoc.markup = markup.create(ldoc, args.format,args.pretty)
 
 ------ 'Special' Project-level entities ---------------------------------------
 -- Examples and Topics do not contain code to be processed for doc comments.
@@ -431,7 +433,7 @@ if type(ldoc.examples) == 'table' then
       })
       -- wrap prettify for this example so it knows which file to blame
       -- if there's a problem
-      item.postprocess = function(code) return prettify.lua(f,code) end
+      item.postprocess = function(code) return prettify.lua(f,code,0,true) end
    end)
 end
 
