@@ -379,7 +379,9 @@ function Item:_init(tags,file,line)
 end
 
 function Item:add_to_description (rest)
-   self.description = (self.description or '') .. rest
+   if type(rest) == 'string' then
+      self.description = (self.description or '') .. rest
+   end
 end
 
 function Item:set_tag (tag,value)

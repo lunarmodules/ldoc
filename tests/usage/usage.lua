@@ -6,6 +6,13 @@ A simple module with examples.
 
 local usage = {}
 
+local helper
+
+--- a local helper function.
+-- @local
+function helper ()
+end
+
 ----------
 -- A simple vector class.
 --
@@ -17,6 +24,7 @@ local usage = {}
 
 local Vector = {}
 usage.Vector = {}
+
 
 ----------
 -- Create a vector from an array `t`.
