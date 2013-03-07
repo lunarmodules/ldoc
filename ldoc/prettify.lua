@@ -61,7 +61,7 @@ function prettify.lua (fname, code, initial_lineno, pre)
       res[#res] = last:gsub('\n+','')
    end
    if pre then
-      res:append '<pre/>\n'
+      res:append '</pre>\n'
    end
    return res:join ()
 end

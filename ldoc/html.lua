@@ -64,6 +64,11 @@ function html.generate_output(ldoc, args, project)
       return prettify.code('lua','usage',str,0,false)
    end
 
+   -- Item descriptions come from combining the summary and description fields
+   function ldoc.descript(item)
+      return (item.summary or '?')..' '..(item.description or '')
+   end
+
    -- this generates the internal module/function references
    function ldoc.href(see)
       if see.href then -- explict reference, e.g. to Lua manual

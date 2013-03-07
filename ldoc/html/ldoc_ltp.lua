@@ -135,8 +135,16 @@ return [==[
 # local show_return = not ldoc.no_return_or_parms
 # local show_parms = show_return
 # for kind, items in module.kinds() do
+#   local kitem = module.kinds:get_item(kind)
     <h2><a name="$(no_spaces(kind))"></a>$(kind)</h2>
-    $(M(module.kinds:get_section_description(kind),nil))
+#--    $(M(module.kinds:get_section_description(kind),nil))
+#   if kitem then
+        $(M(ldoc.descript(kitem),kitem))
+#       if kitem.usage then
+            <h3>Usage:</h3>
+            <pre class="example">$(ldoc.prettify(kitem.usage[1]))</pre>
+#        end
+#   end
     <dl class="function">
 #  for item in items() do
     <dt>
@@ -144,7 +152,7 @@ return [==[
     <strong>$(display_name(item))</strong>
     </dt>
     <dd>
-    $(M((item.summary or '?')..' '..(item.description or ''),item))
+    $(M(ldoc.descript(item),item))
 
 #  if show_parms and item.params and #item.params > 0 then
     <h3>$(module.kinds:type_of(item).subnames):</h3>

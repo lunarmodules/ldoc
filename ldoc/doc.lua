@@ -194,7 +194,7 @@ function File:finish()
    local function add_section (item, display_name)
       display_name = display_name or item.display_name
       this_mod.section = item
-      this_mod.kinds:add_kind(display_name,display_name)
+      this_mod.kinds:add_kind(display_name,display_name,nil,item)
       this_mod.sections:append(item)
       this_mod.sections.by_name[display_name:gsub('%A','_')] = item
    end
@@ -314,7 +314,7 @@ function File:finish()
                      end
                   end
                end
-               section_description = this_section.description
+               section_description = this_section.summary..' '..this_section.description
             elseif item.tags.within then
                section_description = item.tags.within
                item.section = section_description

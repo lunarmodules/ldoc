@@ -7,7 +7,12 @@ A simple module with examples.
 local usage = {}
 
 ----------
--- A simple vector class
+-- A simple vector class.
+--
+-- Supports arithmetic operations.
+-- @usage
+-- v = Vector.new {10,20,30}
+-- assert (v == Vector{10,20,30})
 -- @type Vector
 
 local Vector = {}
@@ -15,6 +20,7 @@ usage.Vector = {}
 
 ----------
 -- Create a vector from an array `t`.
+-- `Vector` is also callable!
 function Vector.new (t)
 end
 
@@ -24,6 +30,11 @@ end
 --  v = Vector.parse '[1,2,3]'
 --  assert (v == Vector.new {1,2,3})
 function Vector.parse (s)
+end
+
+--------
+-- Compare two vectors for equality.
+function Vector:__eq (v)
 end
 
 ----------
