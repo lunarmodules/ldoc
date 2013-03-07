@@ -24,11 +24,20 @@ usage.Vector = {}
 function Vector.new (t)
 end
 
+-- note that @function may have modifiers. Currently
+-- we aren't doing anything with them, but LDoc no longer
+-- complains (issue #45). Note also that one needs
+-- explicit @param tags with explicit @function; 'static'
+-- methods must have a @constructor or a @static tag.
+
 ----------
 -- Create a vector from a string.
 -- @usage
 --  v = Vector.parse '[1,2,3]'
 --  assert (v == Vector.new {1,2,3})
+-- @function[kind=ctor] parse
+-- @static
+-- @param s
 function Vector.parse (s)
 end
 

@@ -25,7 +25,7 @@ local known_tags = {
    class = 'id', name = 'id', pragma = 'id', alias = 'id', within = 'id',
    copyright = 'S', summary = 'S', description = 'S', release = 'S', license = 'S',
    fixme = 'S', todo = 'S', warning = 'S', raise = 'S',
-   ['local'] = 'N', export = 'N', private = 'N', constructor = 'N';
+   ['local'] = 'N', export = 'N', private = 'N', constructor = 'N', static = 'N';
    -- project-level
    module = 'T', script = 'T', example = 'T', topic = 'T', submodule='T',
    -- module-level
@@ -302,7 +302,8 @@ function File:finish()
                if doc.class_tag(stype) then
                   if not item.name:match '[:%.]' then -- not qualified
                      local class = this_section.name
-                     item.name = class..(not item.tags.constructor and ':' or '.')..item.name
+                     local static = item.tags.constructor or item.tags.static
+                     item.name = class..(not static and ':' or '.')..item.name
                   end
                   if stype == 'factory'  then
                      if item.tags.private then to_be_removed = true
@@ -375,7 +376,6 @@ function Item:_init(tags,file,line)
    for tag in iter(tags) do
       self:set_tag(tag,tags[tag])
    end
-   --for tag,value in pairs(tags) do print('tag',tag,value) end
 end
 
 function Item:add_to_description (rest)
@@ -399,15 +399,16 @@ function Item:set_tag (tag,value)
       end
       self.tags[tag] = value
    elseif ttype == TAG_ID then
-      --print('id',tag,value)
-      if type(value) ~= 'string' then
-         -- such tags are _not_ multiple, e.g. name
-         self:error("'"..tag.."' cannot have multiple values")
-      else
-         local id, rest = tools.extract_identifier(value)
-         self.tags[tag] = id
-         self:add_to_description(rest)
+      if type(value) == 'table' then
+         if value.append then -- it was a List!
+            -- such tags are _not_ multiple, e.g. name
+            self:error("'"..tag.."' cannot have multiple values")
+         end
+         value = value[1]
       end
+      local id, rest = tools.extract_identifier(value)
+      self.tags[tag] = id
+      self:add_to_description(rest)
    elseif ttype == TAG_SINGLE then
       self.tags[tag] = value
    elseif ttype == TAG_FLAG then
