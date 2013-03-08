@@ -199,17 +199,24 @@ end
 
 local formatters =
 {
-   markdown = generic_formatter,
+   markdown = function(format)
+      local ok, markdown = pcall(require, 'markdown')
+      if not ok then
+         print('format: using built-in markdown')
+         ok, markdown = pcall(require, 'ldoc.markdown')
+      end
+      return ok and markdown
+   end,
    discount = generic_formatter,
    lunamark = function(format)
-         local ok, lunamark = pcall(require, format)
-         if ok then
-            local writer = lunamark.writer.html.new()
-            local parse = lunamark.reader.markdown.new(writer,
-                                                       { smart = true })
-            return function(text) return parse(text) end
-         end
+      local ok, lunamark = pcall(require, format)
+      if ok then
+         local writer = lunamark.writer.html.new()
+         local parse = lunamark.reader.markdown.new(writer,
+                                                    { smart = true })
+         return function(text) return parse(text) end
       end
+   end
 }
 
 
@@ -230,6 +237,8 @@ end
 local function text_processor(ldoc)
    return function(txt,item)
       if txt == nil then return '' end
+      -- hack to separate paragraphs with blank lines
+      txt = txt:gsub('\n\n','\n<p>')
       return resolve_inline_references(ldoc, txt, item, true)
    end
 end

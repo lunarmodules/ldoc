@@ -297,12 +297,12 @@ function File:finish()
                local this_section = this_mod.section
                item.section = this_section.display_name
                -- if it was a class, then if the name is unqualified then it becomes
-               -- 'Class:foo' (unless explicitly flagged as being a constructor)
+               -- 'Class:foo' (unless flagged as being a constructor, static or not a function)
                local stype = this_section.type
                if doc.class_tag(stype) then
                   if not item.name:match '[:%.]' then -- not qualified
                      local class = this_section.name
-                     local static = item.tags.constructor or item.tags.static
+                     local static = item.tags.constructor or item.tags.static or item.type ~= 'function'
                      item.name = class..(not static and ':' or '.')..item.name
                   end
                   if stype == 'factory'  then
@@ -401,12 +401,14 @@ function Item:set_tag (tag,value)
       end
       self.tags[tag] = value
    elseif ttype == TAG_ID then
+      local modifiers
       if type(value) == 'table' then
          if value.append then -- it was a List!
             -- such tags are _not_ multiple, e.g. name
             self:error("'"..tag.."' cannot have multiple values")
          end
          value = value[1]
+         modifiers = value.modifiers
       end
       local id, rest = tools.extract_identifier(value)
       self.tags[tag] = id

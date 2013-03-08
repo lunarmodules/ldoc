@@ -1,6 +1,8 @@
 --[[--------
 A simple module with examples.
 
+Even without markdown formatting, blank lines are respected.
+
 @module usage
 ]]
 
@@ -60,6 +62,26 @@ end
 -- @usage assert(Vector.new{1,2,3}:add(1) == Vector{2,3,4})
 function Vector:add (v)
 end
+
+----------
+-- set vector options. `opts` is a `Vector.Opts` table.
+function Vector:options (opts)
+end
+
+--[[-----------------
+@table Vector.Opts
+Options table format for `Vector.options`
+
+    autoconvert:  try to convert strings to numbers
+
+    adder: function used to perform addition and subtraction
+
+    multiplier: function used to perform multiplication and division
+@usage
+    v = Vector {{1},{2}}
+    v:options {adder = function(x,y) return {x[1]+y[1]} end}
+    assert(v:add(1) == Vector{{2},{3}})
+]]
 
 return usage
 
