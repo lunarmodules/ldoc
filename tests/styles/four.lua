@@ -8,11 +8,15 @@
 -- @copyright InfoReich 2013
 
 --- a function with typed args.
--- Note the the standard tparam aliases
+-- Note the the standard tparam aliases, and how the 'opt' and 'optchain'
+-- modifiers may also be used. If the Lua function has varargs, then
+-- you may document an indefinite number of extra arguments!
 -- @string name person's name
 -- @int age
+-- @string[opt] calender optional calendar
+-- @int[optchain] offset optional offset
 -- @treturn string
-function one (name,age)
+function one (name,age,...)
 end
 
 

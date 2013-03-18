@@ -128,6 +128,10 @@ function html.generate_output(ldoc, args, project)
       end))
    end
 
+   function ldoc.is_list (t)
+      return type(t) == 'table' and t.append
+   end
+
    function ldoc.typename (tp)
       if not tp or tp == '' then return '' end
       local optional
@@ -170,6 +174,7 @@ function html.generate_output(ldoc, args, project)
    ldoc.output = args.output
    ldoc.ipairs = ipairs
    ldoc.pairs = pairs
+   ldoc.print = print
 
    -- in single mode there is one module and the 'index' is the
    -- documentation for that module.

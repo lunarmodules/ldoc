@@ -157,13 +157,23 @@ return [==[
 #  if show_parms and item.params and #item.params > 0 then
     <h3>$(module.kinds:type_of(item).subnames):</h3>
     <ul>
-#   for p in iter(item.params) do
-      <li><span class="parameter">$(p)</span>
-#     local tp = ldoc.typename(item:type_of_param(p))
-#     if tp ~= '' then
-        <span class="types">$(tp)</span>
+#   for parm in iter(item.params) do
+#     local param,sublist = item:subparam(parm)
+#     if sublist then
+        <li><span class="parameter">$(sublist)</span>$(M(item.params[sublist],item))
+        <ul>
 #     end
-      $(M(item.params[p],item))</li>
+#     for p in iter(param) do
+#        local name,tp = item:display_name_of(p), ldoc.typename(item:type_of_param(p))
+        <li><span class="parameter">$(name)</span>
+#       if tp ~= '' then
+            <span class="types">$(tp)</span>
+#        end
+        $(M(item.params[p],item))</li>
+#     end
+#     if sublist then
+        </li></ul>
+#     end
 #   end -- for
     </ul>
 #   end -- if params

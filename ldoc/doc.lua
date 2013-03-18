@@ -493,6 +493,8 @@ local function read_del (tags,name)
    return ret
 end
 
+local build_arg_list, split_iden  -- forward declaration
+
 
 function Item:finish()
    local tags = self.tags
@@ -538,74 +540,58 @@ function Item:finish()
             self.modifiers.field = self.modifiers.param
          end
       end
-      local names, comments = List(), List()
+      local param_names, comments = List(), List()
       if params then
          for line in params:iter() do
-            local name, comment = line :match('%s*([%w_%.:]+)(.*)')
+            local name, comment = line:match('%s*([%w_%.:]+)(.*)')
             if not name then
                self:error("bad param name format '"..line.."'. Are you missing a parameter name?")
             end
-            names:append(name)
+            param_names:append(name)
             comments:append(comment)
          end
       end
       self.modifiers['return'] = self.modifiers['return'] or List()
       self.modifiers[field] = self.modifiers[field] or List()
-      -- not all arguments may be commented: we use the formal arguments
-      -- if available as the authoritative list, and warn if there's an inconsistency.
-      if self.formal_args then
-         local fargs = self.formal_args
-         if not self.ret and fargs.return_comment then
-            local retc = fargs.return_comment
-            local type,rest = retc:match '([^:]+):(.*)'
-            if type then
-               self.modifiers['return']:append{type=type}
-               retc = rest
+      -- we use the formal arguments (if available) as the authoritative list.
+      -- If there are both params and formal args, then they must match;
+      -- (A formal argument of ... may match any number of params at the end, however.)
+      -- If there are formal args and no params, we see if the args have any suitable comments.
+      -- Params may have subfields.
+      local fargs, formal = self.formal_args
+      if fargs then
+         if #param_names == 0 then
+            --docs may be embedded in argument comments; in either case, use formal arg names
+            formal = List()
+            if fargs.return_comment then
+               local retc = self:parse_argument_comment(fargs.return_comment,'return')
+               self.ret = List{retc}
             end
-            self.ret = List{retc}
-         end
-         if #fargs ~= 0 then
-            local pnames, pcomments = names, comments
-            names, comments = List(),List()
+            for i, name in ipairs(fargs) do
+               formal:append(name)
+               comments:append(self:parse_argument_comment(fargs.comments[name],self.parameter))
+            end
+         elseif #fargs > 0 then
             local varargs = fargs[#fargs] == '...'
-            for i,name in ipairs(fargs) do
-               if params then -- explicit set of param tags
-                  if pnames[i] ~= name and not varargs then
-                     if pnames[i] then
-                        self:warning("param and formal argument name mismatch: "..quote(name).." "..quote(pnames[i]))
-                     else
-                        self:warning("undocumented formal argument: "..quote(name))
+            if varargs then table.remove(fargs) end
+            local k = 0
+            for _,pname in ipairs(param_names) do
+               local _,field = split_iden(pname)
+               if not field then
+                  k = k + 1
+                  if k > #fargs then
+                     if not varargs then
+                        self:warning("extra param with no formal argument: "..quote(pname))
                      end
-                  elseif varargs then
-                     name = pnames[i]
+                  elseif pname ~= fargs[k] then
+                     self:warning("param and formal argument name mismatch: "..quote(pname).." "..quote(fargs[k]))
                   end
                end
-               names:append(name)
-               local comment = pcomments[i]
-               if not comment then
-                  -- ldoc allows comments in the formal arg list to be used, if they aren't specified with @param
-                  -- Further, these comments may start with a type followed by a colon, and are then equivalent
-                  -- to a @tparam
-                  comment = fargs.comments[name]
-                  if comment then
-                     comment = comment:gsub('^%-+%s*','')
-                     local type,rest = comment:match '([^:]+):(.*)'
-                     if type then
-                        self.modifiers[field]:append {type = type}
-                        comment = rest
-                     end
-                  end
-               end
-               comments:append (comment or '')
             end
-            -- A formal argument of ... may match any number of params, however.
-            if #pnames > #fargs then
-               for i = #fargs+1,#pnames do
-                  if not varargs then
-                     self:warning("extra param with no formal argument: "..quote(pnames[i]))
-                  else
-                     names:append(pnames[i])
-                     comments:append(pcomments[i] or '')
+            if k < #fargs then
+               for i = k+1,#fargs do
+                  if fargs[i] ~= '...' then
+                     self:warning("undocumented formal argument: "..quote(fargs[i]))
                   end
                end
             end
@@ -615,36 +601,82 @@ function Item:finish()
       -- the comments are associated with each parameter by
       -- adding name-value pairs to the params list (this is
       -- also done for any associated modifiers)
-      self.params = names
+      -- (At this point we patch up any subparameter references)
       local pmods = self.modifiers[field]
-      for i,name in ipairs(self.params) do
-         self.params[name] = comments[i]
+      local params, fields = List()
+      local original_names = formal and formal or param_names
+      local names = List()
+      self.subparams = {}
+      for i,name in ipairs(original_names) do
+         local pname,field = split_iden(name)
+         if field then
+            if not fields then
+               fields = List()
+               self.subparams[pname] = fields
+            end
+            fields:append(name)
+         else
+            names:append(name)
+            params:append(name)
+            fields = nil
+         end
+
+         params[name] = comments[i]
          if pmods then
             pmods[name] = pmods[i]
          end
       end
-
-      -- build up the string representation of the argument list,
-      -- using any opt and optchain modifiers if present.
-      -- For instance, '(a [, b])' if b is marked as optional
-      -- with @param[opt] b
-      local buffer, npending = { }, 0
-      local function acc(x) table.insert(buffer, x) end
-      for i = 1, #names  do
-         local m = pmods and pmods[i]
-         if m then
-            if not m.optchain then
-               acc ((']'):rep(npending))
-               npending=0
-            end
-            if m.opt or m.optchain then acc(' ['); npending=npending+1 end
-         end
-         if i>1 then acc (', ') end
-         acc(names[i])
-      end
-      acc ((']'):rep(npending))
-      self.args = '('..table.concat(buffer)..')'
+      self.params = params
+      self.args = build_arg_list (names,pmods)
    end
+end
+
+-- ldoc allows comments in the formal arg list to be used, if they aren't specified with @param
+-- Further, these comments may start with a type followed by a colon, and are then equivalent
+-- to a @tparam
+function Item:parse_argument_comment (comment,field)
+   if comment then
+      comment = comment:gsub('^%-+%s*','')
+      local type,rest = comment:match '([^:]+):(.*)'
+      if type then
+         self.modifiers[field]:append {type = type}
+         comment = rest
+      end
+   end
+   return comment or ''
+end
+
+function split_iden (name)
+   if name == '...' then return name end
+   local pname,field = name:match('(.-)%.(.+)')
+   if not pname then
+      return name
+   else
+      return pname,field
+   end
+end
+
+function build_arg_list (names,pmods)
+   -- build up the string representation of the argument list,
+   -- using any opt and optchain modifiers if present.
+   -- For instance, '(a [, b])' if b is marked as optional
+   -- with @param[opt] b
+   local buffer, npending = { }, 0
+   local function acc(x) table.insert(buffer, x) end
+   for i = 1, #names  do
+      local m = pmods and pmods[i]
+      if m then
+         if not m.optchain then
+            acc ((']'):rep(npending))
+            npending=0
+         end
+         if m.opt or m.optchain then acc(' ['); npending=npending+1 end
+      end
+      if i>1 then acc (', ') end
+      acc(names[i])
+   end
+   acc ((']'):rep(npending))
+   return  '('..table.concat(buffer)..')'
 end
 
 function Item:type_of_param(p)
@@ -657,6 +689,23 @@ end
 function Item:type_of_ret(idx)
    local rparam = self.modifiers['return'][idx]
    return rparam and rparam.type or ''
+end
+
+function Item:subparam(p)
+   if self.subparams[p] then
+      return self.subparams[p],p
+   else
+      return {p},nil
+   end
+end
+
+function Item:display_name_of(p)
+   local pname,field = split_iden(p)
+   if field then
+      return field
+   else
+      return pname
+   end
 end
 
 
@@ -674,6 +723,9 @@ function Item:error(msg)
 end
 
 Module.warning, Module.error = Item.warning, Item.error
+
+
+-------- Resolving References -----------------
 
 function Module:hunt_for_reference (packmod, modules)
    local mod_ref
