@@ -665,15 +665,21 @@ function build_arg_list (names,pmods)
    local function acc(x) table.insert(buffer, x) end
    for i = 1, #names  do
       local m = pmods and pmods[i]
+      local opt
       if m then
          if not m.optchain then
             acc ((']'):rep(npending))
             npending=0
          end
-         if m.opt or m.optchain then acc(' ['); npending=npending+1 end
+         opt = m.opt or m.optchain
+         if opt then
+            acc(' [')
+            npending=npending+1
+         end
       end
       if i>1 then acc (', ') end
       acc(names[i])
+      if opt and opt ~= true then acc('='..opt) end
    end
    acc ((']'):rep(npending))
    return  '('..table.concat(buffer)..')'

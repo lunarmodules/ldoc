@@ -13,8 +13,8 @@
 -- you may document an indefinite number of extra arguments!
 -- @string name person's name
 -- @int age
--- @string[opt] calender optional calendar
--- @int[optchain] offset optional offset
+-- @string[opt='gregorian'] calender optional calendar
+-- @int[optchain=0] offset optional offset
 -- @treturn string
 function one (name,age,...)
 end

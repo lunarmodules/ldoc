@@ -36,7 +36,7 @@ local function parse_at_tags(text)
          modifiers  = { }
          for x in mod_string :gmatch "[^,]+" do
             local k, v = x :match "^([^=]+)=(.*)$"
-            if not k then k, v = x, x end
+            if not k then k, v = x, true end -- wuz x, x
             modifiers[k] = v
          end
       end
