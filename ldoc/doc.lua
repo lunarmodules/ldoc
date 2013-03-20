@@ -663,6 +663,18 @@ function build_arg_list (names,pmods)
    -- with @param[opt] b
    local buffer, npending = { }, 0
    local function acc(x) table.insert(buffer, x) end
+   -- a number of trailing [opt]s can be safely converted to [opt],[optchain],...
+   if pmods then
+      local m = pmods[#names]
+      if m.opt then
+         m.optchain = m.opt
+         for i = #names-1,1,-1 do
+            m = pmods[i]
+            if not m.opt then break end
+            m.optchain = m.opt
+         end
+      end
+   end
    for i = 1, #names  do
       local m = pmods and pmods[i]
       local opt
@@ -671,7 +683,7 @@ function build_arg_list (names,pmods)
             acc ((']'):rep(npending))
             npending=0
          end
-         opt = m.opt or m.optchain
+         opt = m.optchain or m.opt
          if opt then
             acc(' [')
             npending=npending+1

@@ -35,7 +35,7 @@ local function resolve_inline_references (ldoc, txt, item, plain)
          label = label:gsub('_','\\_')
       end
       local html = ldoc.href(ref) or '#'
-      label = label or '?que'
+      label = label or qname
       local res = ('<a href="%s">%s</a>'):format(html,label)
       return res
    end))

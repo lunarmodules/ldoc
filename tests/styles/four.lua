@@ -14,9 +14,17 @@
 -- @string name person's name
 -- @int age
 -- @string[opt='gregorian'] calender optional calendar
--- @int[optchain=0] offset optional offset
+-- @int[opt=0] offset optional offset
 -- @treturn string
 function one (name,age,...)
+end
+
+---- testing [opt]
+-- @param one
+-- @param[opt] two
+-- @param three
+-- @param[opt] four
+function two (one,two,three,four)
 end
 
 
