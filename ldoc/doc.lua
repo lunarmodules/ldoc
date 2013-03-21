@@ -194,7 +194,7 @@ function File:finish()
    local function add_section (item, display_name)
       display_name = display_name or item.display_name
       this_mod.section = item
-      this_mod.kinds:add_kind(display_name,display_name,nil,item)
+      this_mod.kinds:add_kind(display_name,display_name..' ',nil,item)
       this_mod.sections:append(item)
       this_mod.sections.by_name[display_name:gsub('%A','_')] = item
    end
@@ -666,11 +666,11 @@ function build_arg_list (names,pmods)
    -- a number of trailing [opt]s can be safely converted to [opt],[optchain],...
    if pmods then
       local m = pmods[#names]
-      if m.opt then
+      if m and m.opt then
          m.optchain = m.opt
          for i = #names-1,1,-1 do
             m = pmods[i]
-            if not m.opt then break end
+            if not m or not m.opt then break end
             m.optchain = m.opt
          end
       end
