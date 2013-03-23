@@ -313,7 +313,7 @@ local function parse_file(fname, lang, package, args)
             add_module(tags,module_found,old_style)
             tags = nil
             if not t then
-               F:warning(fname,' contains no items\n','warning',1)
+               F:warning('contains no items','warning',1)
                break;
             end -- run out of file!
             -- if we did bump into a doc comment, then we can continue parsing it

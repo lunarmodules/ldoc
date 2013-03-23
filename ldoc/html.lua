@@ -73,6 +73,8 @@ function html.generate_output(ldoc, args, project)
    function ldoc.href(see)
       if see.href then -- explict reference, e.g. to Lua manual
          return see.href
+      elseif doc.Module:class_of(see) then
+         return ldoc.ref_to_module(see)
       else
          return ldoc.ref_to_module(see.mod)..'#'..see.name
       end
