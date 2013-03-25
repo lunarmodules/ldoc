@@ -700,7 +700,7 @@ end
 function Item:type_of_param(p)
    local mods = self.modifiers[self.parameter]
    if not mods then return '' end
-   local mparam = mods[p]
+   local mparam = rawget(mods,p)
    return mparam and mparam.type or ''
 end
 
@@ -710,8 +710,9 @@ function Item:type_of_ret(idx)
 end
 
 function Item:subparam(p)
-   if self.subparams[p] then
-      return self.subparams[p],p
+   local subp = rawget(self.subparams,p)
+   if subp then
+      return subp,p
    else
       return {p},nil
    end
