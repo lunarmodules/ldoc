@@ -245,7 +245,11 @@ local function parse_file(fname, lang, package, args)
          local item_follows, tags, is_local, case
          if ldoc_comment then
             comment = table.concat(comment)
-
+            if comment:match '^%s*$' then
+               ldoc_comment = nil
+            end
+         end
+         if ldoc_comment then
             if first_comment then
                first_comment = false
             else
