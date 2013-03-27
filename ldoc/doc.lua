@@ -24,7 +24,7 @@ local known_tags = {
    param = 'M', see = 'M', usage = 'ML', ['return'] = 'M', field = 'M', author='M';
    class = 'id', name = 'id', pragma = 'id', alias = 'id', within = 'id',
    copyright = 'S', summary = 'S', description = 'S', release = 'S', license = 'S',
-   fixme = 'S', todo = 'S', warning = 'S', raise = 'S',
+   fixme = 'S', todo = 'S', warning = 'S', raise = 'S', charset = 'S',
    ['local'] = 'N', export = 'N', private = 'N', constructor = 'N', static = 'N';
    -- project-level
    module = 'T', script = 'T', example = 'T', topic = 'T', submodule='T',
