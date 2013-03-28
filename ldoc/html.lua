@@ -122,7 +122,10 @@ function html.generate_output(ldoc, args, project)
       else return name end
    end
 
-   function ldoc.no_spaces(s) return (s:gsub('%A','_')) end
+   function ldoc.no_spaces(s)
+      s = s:gsub('%s*$','')
+      return (s:gsub('%W','_'))
+   end
 
    function ldoc.titlecase(s)
       return (s:gsub('(%a)(%a*)',function(f,r)
