@@ -50,7 +50,7 @@ return [==[
 # end
 
 
-# if ldoc.no_summary and module then -- bang out the functions on the side
+# if ldoc.no_summary and module and not ldoc.one then -- bang out the functions on the side
 # for kind, items in module.kinds() do
 <h2>$(kind)</h2>
 <ul>

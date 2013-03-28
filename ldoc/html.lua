@@ -191,6 +191,7 @@ function html.generate_output(ldoc, args, project)
    ldoc.module = ldoc.single
    if ldoc.single and args.one then
       ldoc.kinds_allowed = {module = true, topic = true}
+      ldoc.one = true
    end
    ldoc.root = true
    if ldoc.module then

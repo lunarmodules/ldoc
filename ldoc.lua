@@ -7,7 +7,7 @@
 --
 -- C/C++ support for Lua extensions is provided.
 --
--- Available from LuaRocks as 'ldoc' and as a [Zip file](http://stevedonovan.github.com/files/ldoc-1.3.8.zip)
+-- Available from LuaRocks as 'ldoc' and as a [Zip file](http://stevedonovan.github.com/files/ldoc-1.3.9.zip)
 --
 -- [Github Page](https://github.com/stevedonovan/ldoc)
 --
@@ -35,7 +35,7 @@ app.require_here()
 
 --- @usage
 local usage = [[
-ldoc, a documentation generator for Lua, vs 1.3.8
+ldoc, a documentation generator for Lua, vs 1.3.9
   -d,--dir (default docs) output directory
   -o,--output  (default 'index') output name
   -v,--verbose          verbose
@@ -44,7 +44,6 @@ ldoc, a documentation generator for Lua, vs 1.3.8
   -m,--module           module docs as text
   -s,--style (default !) directory for style sheet (ldoc.css)
   -l,--template (default !) directory for template (ldoc.ltp)
-  -1,--one              use one-column output layout
   -p,--project (default ldoc) project name
   -t,--title (default Reference) page title
   -f,--format (default plain) formatting - can be markdown, discount or plain
@@ -56,6 +55,8 @@ ldoc, a documentation generator for Lua, vs 1.3.8
   -C,--colon use colon style
   -B,--boilerplate ignore first comment in source files
   -M,--merge allow module merging
+  -S,--simple no return or params, no summary
+  -O,--one one-column output layout
   --dump                debug output dump
   --filter (default none) filter output as Lua data (e.g pl.pretty.dump)
   --tags (default none) show all references to given tags, comma-separated
@@ -435,6 +436,11 @@ if type(ldoc.examples) == 'table' then
       -- if there's a problem
       item.postprocess = function(code) return prettify.lua(f,code,0,true) end
    end)
+end
+
+if args.simple then
+    ldoc.no_return_or_parms=true
+    ldoc.no_summary=true
 end
 
 ldoc.readme = ldoc.readme or ldoc.topics
