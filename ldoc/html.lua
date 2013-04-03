@@ -172,7 +172,7 @@ function html.generate_output(ldoc, args, project)
 
    local function set_charset (ldoc,m)
       m = m or ldoc.module
-      ldoc.doc_charset = m.tags.charset or ldoc.charset
+      ldoc.doc_charset = (m and m.tags.charset) or ldoc.charset
    end
 
    local module_template,err = utils.readfile (path.join(args.template,ldoc.templ))
