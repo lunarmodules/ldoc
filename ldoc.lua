@@ -284,6 +284,13 @@ if args.file == '.' then
       args.file = abspath(args.file)
    end
 else
+   -- user-provided config file
+   if args.config ~= 'config.ld' then
+      local err
+      config_dir,err = read_ldoc_config(args.config)
+      if err then quit("no "..quote(args.config).." found") end
+   end
+   -- with user-provided file
    args.file = abspath(args.file)
 end
 
