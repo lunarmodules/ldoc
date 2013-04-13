@@ -301,6 +301,7 @@ end
 if type(source_dir) == 'string' and path.isfile(source_dir) then
    source_dir = path.splitpath(source_dir)
 end
+source_dir = source_dir:gsub('[/\\]%.$','')
 
 ---------- specifying the package for inferring module names --------
 -- If you use module(...), or forget to explicitly use @module, then
