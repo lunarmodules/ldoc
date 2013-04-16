@@ -410,6 +410,7 @@ function Item:set_tag (tag,value)
          value = value[1]
          modifiers = value.modifiers
       end
+      if value == nil then self:error("Tag without value: "..tag) end
       local id, rest = tools.extract_identifier(value)
       self.tags[tag] = id
       self:add_to_description(rest)

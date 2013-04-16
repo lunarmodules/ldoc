@@ -211,7 +211,7 @@ local function parse_file(fname, lang, package, args)
       else
          mod,t,v = lang:parse_module_call(tok,t,v)
          if mod ~= '...' then
-            add_module({summary='(no description)'},mod,true)
+            add_module(Tags.new{summary='(no description)'},mod,true)
             first_comment = false
             module_found = true
          end
