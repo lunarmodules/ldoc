@@ -35,7 +35,7 @@ app.require_here()
 
 --- @usage
 local usage = [[
-ldoc, a documentation generator for Lua, vs 1.3.10
+ldoc, a documentation generator for Lua, vs 1.3.11
   -d,--dir (default docs) output directory
   -o,--output  (default 'index') output name
   -v,--verbose          verbose
@@ -301,6 +301,7 @@ end
 if type(source_dir) == 'string' and path.isfile(source_dir) then
    source_dir = path.splitpath(source_dir)
 end
+source_dir = source_dir:gsub('[/\\]%.$','')
 
 ---------- specifying the package for inferring module names --------
 -- If you use module(...), or forget to explicitly use @module, then
