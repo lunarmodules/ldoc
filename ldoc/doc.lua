@@ -220,6 +220,10 @@ function File:finish()
                if mod then
                   print('found master module',mf)
                   this_mod = mod
+                  if this_mod.section then
+                     print '***closing section from master module***'
+                     this_mod.section = nil
+                  end
                   submodule = true
                end
             end
