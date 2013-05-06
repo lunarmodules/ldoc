@@ -1,9 +1,9 @@
 package = "ldoc"
-version = "scm-2"
+version = "1.3.8-2"
 
 source = {
-  dir="LDoc",
-  url = "git://github.com/stevedonovan/LDoc.git"
+  dir="ldoc",
+  url = "http://stevedonovan.github.com/files/ldoc-1.3.8.zip"
 }
 
 description = {
@@ -51,11 +51,11 @@ build = {
     ["ldoc.builtin.string"] = "ldoc/builtin/string.lua",
     ["ldoc.builtin.table"] = "ldoc/builtin/table.lua",
   },
-  copy_directories = {'doc','tests'},
   install = {
     bin = {
-      ldoc = "ldoc.lua"
+      "ldoc.lua"
     }
   }
 }
+
 
