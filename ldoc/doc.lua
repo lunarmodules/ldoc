@@ -744,7 +744,6 @@ end
 
 Module.warning, Module.error = Item.warning, Item.error
 
-
 -------- Resolving References -----------------
 
 function Module:hunt_for_reference (packmod, modules)

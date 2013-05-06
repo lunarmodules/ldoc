@@ -70,6 +70,7 @@ local function parse_colon_tags (text)
    return preamble,tag_items
 end
 
+-- Tags are stored as an ordered map
 local Tags = {}
 Tags.__index = Tags
 
@@ -79,8 +80,7 @@ function Tags.new (t)
 end
 
 function Tags:add (tag,value)
-   self[tag] = value
-   --print('adding',tag,value)
+   rawset(self,tag,value)
    self._order:append(tag)
 end
 
@@ -335,7 +335,7 @@ local function parse_file(fname, lang, package, args)
                end
             end
             if is_local or tags['local'] then
-               tags['local'] = true
+               tags:add('local',true)
             end
             if tags.name then
                current_item = F:new_item(tags,line)
