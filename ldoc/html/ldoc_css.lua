@@ -81,7 +81,7 @@ span.types:after { content:")"; }
 
 body, p, td, th { font-size: .95em; line-height: 1.2em;}
 
-p, ul { margin: 10px 0 0 10px;}
+p, ul { margin: 10px 0 0 0px;}
 
 strong { font-weight: bold;}
 
@@ -283,12 +283,19 @@ ol ol { margin-top: 0px; }
 ul ol { margin-top: 0px; }
 
 /* styles for prettification of source */
-.keyword {font-weight: bold; color: #6666AA; }
-.number  { color: #AA6666; }
-.string  { color: #8888AA; }
-.comment { color: #666600; }
-.prepro { color: #006666; }
-.global { color: #800080; }
+pre .comment { color: #558817; }
+pre .constant { color: #a8660d; }
+pre .escape { color: #844631; }
+pre .keyword { color: #2239a8; font-weight: bold; }
+pre .library { color: #0e7c6b; }
+pre .marker { color: #512b1e; background: #fedc56; font-weight: bold; }
+pre .string { color: #a8660d; }
+pre .number { color: #f8660d; }
+pre .operator { color: #2239a8; font-weight: bold; }
+pre .preprocessor, pre .prepro { color: #a33243; }
+pre .global { color: #800080; }
+pre .prompt { color: #558817; }
+pre .url { color: #272fc2; text-decoration: underline; }
 ]==]
 
 

@@ -172,6 +172,9 @@ function lexer.scan (s,matches,filter,options)
     if file then
         s = file:read()
         if not s then return nil end -- empty file
+        if s:match '^\239\187' then -- UTF-8 BOM Abomination
+           s = s:sub(4)
+         end
         s = s ..'\n'
      end
     local sz = #s

@@ -90,6 +90,10 @@ function KindMap:get_section_description (kind)
    return self.klass.descriptions[kind]
 end
 
+function KindMap:get_item (kind)
+   return self.klass.items_by_kind[kind]
+end
+
 -- called for each new item. It does not actually create separate lists,
 -- (although that would not break the interface) but creates iterators
 -- for that item type if not already created.
@@ -110,13 +114,17 @@ function KindMap._class_init (klass)
    klass.types_by_tag = {} -- indexed by tag
    klass.types_by_kind = {} -- indexed by kind
    klass.descriptions = {} -- optional description for each kind
+   klass.items_by_kind = {}  -- some kinds are items
 end
 
 
-function KindMap.add_kind (klass,tag,kind,subnames)
+function KindMap.add_kind (klass,tag,kind,subnames,item)
    if not klass.types_by_kind[kind] then
       klass.types_by_tag[tag] = kind
       klass.types_by_kind[kind] = {type=tag,subnames=subnames}
+      if item then
+         klass.items_by_kind[kind] = item
+      end
       append(klass.kinds,kind)
    end
 end
@@ -206,6 +214,7 @@ function M.writefile(name,text)
 end
 
 function M.name_of (lpath)
+   local ext
    lpath,ext = path.splitext(lpath)
    return lpath
 end

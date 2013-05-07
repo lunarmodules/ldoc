@@ -19,7 +19,7 @@ function assert(v , message) end
 --   * "step": performs a garbage-collection step. The step "size" is controlled
 --   by `arg` (larger values mean more steps) in a non-specified way. If you
 --   want to control the step size you must experimentally tune the value of
---   * `arg`. Returns true if the step finished a collection cycle.
+--   * "arg". Returns true if the step finished a collection cycle.
 --   * "setpause": sets `arg` as the new value for the *pause* of the collector
 --   (see §2.10). Returns the previous value for *pause*.
 --   * "setstepmul": sets `arg` as the new value for the *step multiplier*

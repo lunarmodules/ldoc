@@ -1,5 +1,5 @@
 ------------
--- Classic Lua 5.1 module,
+-- Classic Lua 5.1 module.
 -- Description here
 ----
 

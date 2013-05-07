@@ -26,9 +26,11 @@ end
 
 local spans = {keyword=true,number=true,string=true,comment=true,global=true}
 
-function prettify.lua (fname, code, initial_lineno)
+function prettify.lua (fname, code, initial_lineno, pre)
    local res = List()
-   res:append '<pre>\n'
+   if pre then
+      res:append '<pre>\n'
+   end
    initial_lineno = initial_lineno or 0
 
    local tok = lexer.lua(code,{},{})
@@ -58,7 +60,43 @@ function prettify.lua (fname, code, initial_lineno)
    if last:match '\n$' then
       res[#res] = last:gsub('\n+','')
    end
+   if pre then
+      res:append '</pre>\n'
+   end
    return res:join ()
+end
+
+local lxsh
+
+local lxsh_highlighers = {bib=true,c=true,lua=true,sh=true}
+
+function prettify.code (lang,fname,code,initial_lineno,pre)
+   if not lxsh then
+      return prettify.lua (fname, code, initial_lineno, pre)
+   else
+      if not lxsh_highlighers[lang] then
+         lang = 'lua'
+      end
+      code = lxsh.highlighters[lang](code, {
+         formatter = lxsh.formatters.html,
+         external = true
+      })
+      if not pre then
+         code = code:gsub("^<pre*.->(.*)</pre>$", '%1')
+      end
+      return code
+   end
+end
+
+function prettify.set_prettifier (pretty)
+   local ok
+   if pretty == 'lxsh' then
+      ok,lxsh = pcall(require,'lxsh')
+      if not ok then
+         print('pretty: '..pretty..' not found, using built-in Lua')
+         lxsh = nil
+      end
+   end
 end
 
 return prettify

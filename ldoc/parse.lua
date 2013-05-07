@@ -38,7 +38,7 @@ local luadoc_tag_value = luadoc_tag..'(.*)'
 local luadoc_tag_mod_and_value = luadoc_tag..'%[(.*)%](.*)'
 
 -- assumes that the doc comment consists of distinct tag lines
-function parse_at_tags(text)
+local function parse_at_tags(text)
    local lines = stringio.lines(text)
    local preamble, line = tools.grab_while_not(lines,luadoc_tag)
    local tag_items = {}
@@ -51,7 +51,7 @@ function parse_at_tags(text)
          modifiers  = { }
          for x in mod_string :gmatch "[^,]+" do
             local k, v = x :match "^([^=]+)=(.*)$"
-            if not k then k, v = x, x end
+            if not k then k, v = x, true end -- wuz x, x
             modifiers[k] = v
          end
       end
@@ -67,7 +67,7 @@ end
 local colon_tag = '%s*(%S-):%s'
 local colon_tag_value = colon_tag..'(.*)'
 
-function parse_colon_tags (text)
+local function parse_colon_tags (text)
    local lines = stringio.lines(text)
    local preamble, line = tools.grab_while_not(lines,colon_tag)
    local tag_items, follows = {}
@@ -85,6 +85,7 @@ function parse_colon_tags (text)
    return preamble,tag_items
 end
 
+-- Tags are stored as an ordered map
 local Tags = {}
 Tags.__index = Tags
 
@@ -94,8 +95,7 @@ function Tags.new (t)
 end
 
 function Tags:add (tag,value)
-   self[tag] = value
-   --print('adding',tag,value)
+   rawset(self,tag,value)
    self._order:append(tag)
 end
 
@@ -363,7 +363,7 @@ end -- preprocess_tag_strings
 local function extract_tags (s,args)
    local preamble,tag_items
    if s:match '^%s*$' then return {} end
-   if not args.nocolon and s:match ':%s' and not s:match '@%a' then
+   if args.colon then --and s:match ':%s' and not s:match '@%a' then
       preamble,tag_items = parse_colon_tags(s)
    else
       s = preprocess_tag_strings( s )
@@ -382,7 +382,10 @@ local function extract_tags (s,args)
    local tags = Tags.new{summary=summary and strip(summary) or '',description=description or ''}
    for _,item in ipairs(tag_items) do
       local tag, value, modifiers = Item.check_tag(tags,unpack(item))
-      value = strip(value)
+      -- treat multiline values more gently..
+      if not value:match '\n[^\n]+\n' then
+         value = strip(value)
+      end
 
       if modifiers then value = { value, modifiers=modifiers } end
       local old_value = tags[tag]
@@ -417,6 +420,8 @@ local function parse_file(fname, lang, package, args)
    local F = File(fname)
    local module_found, first_comment = false,true
    local current_item, module_item
+
+   F.args = args
 
    F.base = package
 
@@ -474,7 +479,7 @@ local function parse_file(fname, lang, package, args)
       else
          mod,t,v = lang:parse_module_call(tok,t,v)
          if mod ~= '...' then
-            add_module({summary='(no description)'},mod,true)
+            add_module(Tags.new{summary='(no description)'},mod,true)
             first_comment = false
             module_found = true
          end
@@ -508,7 +513,11 @@ local function parse_file(fname, lang, package, args)
          local item_follows, tags, is_local, case
          if ldoc_comment then
             comment = table.concat(comment)
-
+            if comment:match '^%s*$' then
+               ldoc_comment = nil
+            end
+         end
+         if ldoc_comment then
             if first_comment then
                first_comment = false
             else
@@ -516,8 +525,24 @@ local function parse_file(fname, lang, package, args)
             end
             if item_follows or comment:find '@' or comment:find ': ' then
                tags = extract_tags(comment,args)
+               -- explicitly named @module (which is recommended)
                if doc.project_level(tags.class) then
                   module_found = tags.name
+                  -- might be a module returning a single function!
+                  if tags.param or tags['return'] then
+                     local parms, ret, summ = tags.param, tags['return'],tags.summary
+                     tags.param = nil
+                     tags['return'] = nil
+                     tags.summary = nil
+                     add_module(tags,tags.name,false)
+                     tags = {
+                        summary = summ,
+                        name = 'returns...',
+                        class = 'function',
+                        ['return'] = ret,
+                        param = parms
+                     }
+                  end
                end
                doc.expand_annotation_item(tags,current_item)
                -- if the item has an explicit name or defined meaning
@@ -560,7 +585,7 @@ local function parse_file(fname, lang, package, args)
             add_module(tags,module_found,old_style)
             tags = nil
             if not t then
-               F:warning(fname,' contains no items\n','warning',1)
+               F:warning('contains no items','warning',1)
                break;
             end -- run out of file!
             -- if we did bump into a doc comment, then we can continue parsing it
@@ -578,7 +603,7 @@ local function parse_file(fname, lang, package, args)
                end
             end
             if is_local or tags['local'] then
-               tags['local'] = true
+               tags:add('local',true)
             end
             if tags.name then
                current_item = F:new_item(tags,line)

@@ -20,6 +20,7 @@ local stringx = require 'pl.stringx'
 local template = require 'pl.template'
 local tools = require 'ldoc.tools'
 local markup = require 'ldoc.markup'
+local prettify = require 'ldoc.prettify'
 local doc = require 'ldoc.doc'
 local html = {}
 
@@ -59,10 +60,21 @@ function html.generate_output(ldoc, args, project)
       return (str:gsub("['&<>\"]", escape_table))
    end
 
+   function ldoc.prettify(str)
+      return prettify.code('lua','usage',str,0,false)
+   end
+
+   -- Item descriptions come from combining the summary and description fields
+   function ldoc.descript(item)
+      return (item.summary or '?')..' '..(item.description or '')
+   end
+
    -- this generates the internal module/function references
    function ldoc.href(see)
       if see.href then -- explict reference, e.g. to Lua manual
          return see.href
+      elseif doc.Module:class_of(see) then
+         return ldoc.ref_to_module(see)
       else
          return ldoc.ref_to_module(see.mod)..'#'..see.name
       end
@@ -110,12 +122,19 @@ function html.generate_output(ldoc, args, project)
       else return name end
    end
 
-   function ldoc.no_spaces(s) return (s:gsub('%A','_')) end
+   function ldoc.no_spaces(s)
+      s = s:gsub('%s*$','')
+      return (s:gsub('%W','_'))
+   end
 
    function ldoc.titlecase(s)
       return (s:gsub('(%a)(%a*)',function(f,r)
          return f:upper()..r
       end))
+   end
+
+   function ldoc.is_list (t)
+      return type(t) == 'table' and t.append
    end
 
    function ldoc.typename (tp)
@@ -151,6 +170,11 @@ function html.generate_output(ldoc, args, project)
       return names
    end
 
+   local function set_charset (ldoc,m)
+      m = m or ldoc.module
+      ldoc.doc_charset = (m and m.tags.charset) or ldoc.charset
+   end
+
    local module_template,err = utils.readfile (path.join(args.template,ldoc.templ))
    if not module_template then
       quit("template not found at '"..args.template.."' Use -l to specify directory containing ldoc.ltp")
@@ -160,17 +184,20 @@ function html.generate_output(ldoc, args, project)
    ldoc.output = args.output
    ldoc.ipairs = ipairs
    ldoc.pairs = pairs
+   ldoc.print = print
 
    -- in single mode there is one module and the 'index' is the
    -- documentation for that module.
    ldoc.module = ldoc.single
    if ldoc.single and args.one then
       ldoc.kinds_allowed = {module = true, topic = true}
+      ldoc.one = true
    end
    ldoc.root = true
    if ldoc.module then
       ldoc.module.info = get_module_info(ldoc.module)
    end
+   set_charset(ldoc)
    local out,err = template.substitute(module_template,{
       ldoc = ldoc,
       module = ldoc.module,
@@ -209,6 +236,7 @@ function html.generate_output(ldoc, args, project)
       for m in modules() do
          ldoc.module = m
          ldoc.body = m.body
+         set_charset(ldoc)
          m.info = get_module_info(m)
          if ldoc.body and m.postprocess then
             ldoc.body = m.postprocess(ldoc.body)

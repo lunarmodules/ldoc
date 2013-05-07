@@ -483,10 +483,15 @@ Since 1.3, LDoc allows the use of _colons_ instead of @.
     --- a simple function.
     -- string name person's name
     -- int: age age of person
-    -- treturn: ?nil|string
+    -- !person: person object
+    -- treturn: ?string
     -- function check(name,age)
 
+However, you must either use the `--colon` flag or set `colon=true` in your `config.ld`.
 
+In this style, types may be used directly if prefixed with '!' or '?' (for type-or-nil)
+
+(see `tests/styles/colon.lua`)
 
 ## Adding new Tags
 
@@ -520,6 +525,22 @@ And then used as any other type:
     -- @see second_function
 
 This will also create a new module section called 'Macros'.
+
+If your new type has arguments or fields, then specify the name:
+
+    new_type("macro","Macros",false,"param")
+
+(The third argument means that this is not a _project level_ tag)
+
+Then you may say:
+
+    -----
+    -- A macro with arguments.
+    -- @macro second_macro
+    -- @param x the argument
+
+And the arguments will be displayed under the subsection 'param'
+
 
 ## Inferring more from Code
 
@@ -584,6 +605,10 @@ module comment, which is treated exactly as in Lua.
 An unknown extension can be associated with a language using a call like
 `add_language_extension('lc','c')` in `config.ld`. (Currently the language can only be 'c'
 or 'lua'.)
+
+An LDoc feature which is particularly useful for C extensions is _module merging_. If several
+files are all marked as `@module lib` then a single module `lib` is generated, containing all
+the docs from the separate files.
 
 See 'tests/examples/mylib.c' for the full example.
 
@@ -742,7 +767,7 @@ LDoc knows about the basic Lua libraries, so that it can be used as a handy cons
     v
     message
 
-Thanks to mitchell's [TextAdept](http://code.google.com/p/textadept/) project, LDoc has a
+Thanks to Mitchell's [Textadept](http://foicica.com/textadept/) project, LDoc has a
 set of `.luadoc` files for all the standard tables, plus
 [LuaFileSystem](http://keplerproject.github.com/luafilesystem/) and
 [LPeg](http://www.inf.puc-rio.br/~roberto/lpeg/lpeg.html).
@@ -960,6 +985,34 @@ defined as a tag plus a set of modifiers.  So `tparam` is defined as:
 As an extension, you're allowed to use '@param' tags in table definitions. This makes it
 possible to use type alias like '@string' to describe fields, since they will expand to
 'param'.
+
+Another modifier understood by LDoc is `opt`. For instance,
+
+    ---- testing [opt]
+    -- @param one
+    -- @param[opt] two
+    -- @param three
+    -- @param[opt] four
+    function two (one,two,three,four)
+    end
+    ----> displayed as: two (one [, two], three [, four])
+
+This modifier can also be used with type aliases. If a value is given for the modifier
+then LDoc can present this as the default value for this optional argument.
+
+    --- a function with typed args.
+    -- If the Lua function has varargs, then
+    -- you may document an indefinite number of extra arguments!
+    -- @string name person's name
+    -- @int age
+    -- @string[opt='gregorian'] calender optional calendar
+    -- @int[opt=0] offset optional offset
+    -- @treturn string
+    function one (name,age,...)
+    end
+    ----> displayed as: one (name, age [, calender='gregorian' [, offset=0]])
+
+(See `tests/styles/four.lua`)
 
 ## Fields allowed in `config.ld`
 

@@ -24,8 +24,8 @@ local known_tags = {
    param = 'M', see = 'M', usage = 'ML', ['return'] = 'M', field = 'M', author='M';
    class = 'id', name = 'id', pragma = 'id', alias = 'id', within = 'id',
    copyright = 'S', summary = 'S', description = 'S', release = 'S', license = 'S',
-   fixme = 'S', todo = 'S', warning = 'S', raise = 'S',
-   ['local'] = 'N', export = 'N', private = 'N', constructor = 'N';
+   fixme = 'S', todo = 'S', warning = 'S', raise = 'S', charset = 'S',
+   ['local'] = 'N', export = 'N', private = 'N', constructor = 'N', static = 'N';
    -- project-level
    module = 'T', script = 'T', example = 'T', topic = 'T', submodule='T',
    -- module-level
@@ -194,7 +194,7 @@ function File:finish()
    local function add_section (item, display_name)
       display_name = display_name or item.display_name
       this_mod.section = item
-      this_mod.kinds:add_kind(display_name,display_name)
+      this_mod.kinds:add_kind(display_name,display_name..' ',nil,item)
       this_mod.sections:append(item)
       this_mod.sections.by_name[display_name:gsub('%A','_')] = item
    end
@@ -215,6 +215,18 @@ function File:finish()
          if item.type == 'module' then
             -- if name is 'package.mod', then mod_name is 'mod'
             package,mname = split_dotted_name(this_mod.name)
+            if self.args.merge then
+               local mod,mf = find_module_in_files(item.name)
+               if mod then
+                  print('found master module',mf)
+                  this_mod = mod
+                  if this_mod.section then
+                     print '***closing section from master module***'
+                     this_mod.section = nil
+                  end
+                  submodule = true
+               end
+            end
          elseif item.type == 'submodule' then
             local mf
             submodule = true
@@ -288,12 +300,14 @@ function File:finish()
             if this_mod.section then
                local this_section = this_mod.section
                item.section = this_section.display_name
-               -- if it was a class, then the name should be 'Class:foo'
+               -- if it was a class, then if the name is unqualified then it becomes
+               -- 'Class:foo' (unless flagged as being a constructor, static or not a function)
                local stype = this_section.type
                if doc.class_tag(stype) then
-                  local prefix = this_section.name .. (not item.tags.constructor and ':' or '.')
-                  if not has_prefix(item.name,prefix) then
-                     item.name =  prefix .. item.name
+                  if not item.name:match '[:%.]' then -- not qualified
+                     local class = this_section.name
+                     local static = item.tags.constructor or item.tags.static or item.type ~= 'function'
+                     item.name = class..(not static and ':' or '.')..item.name
                   end
                   if stype == 'factory'  then
                      if item.tags.private then to_be_removed = true
@@ -305,7 +319,7 @@ function File:finish()
                      end
                   end
                end
-               section_description = this_section.description
+               section_description = this_section.summary..' '..this_section.description
             elseif item.tags.within then
                section_description = item.tags.within
                item.section = section_description
@@ -336,7 +350,7 @@ end
 -- is not empty.
 
 function File:add_document_section(title)
-   local section = title:gsub('%A','_')
+   local section = title:gsub('%W','_')
    self:new_item {
       name = section,
       class = 'section',
@@ -366,11 +380,12 @@ function Item:_init(tags,file,line)
    for tag in iter(tags) do
       self:set_tag(tag,tags[tag])
    end
-   --for tag,value in pairs(tags) do print('tag',tag,value) end
 end
 
 function Item:add_to_description (rest)
-   self.description = (self.description or '') .. rest
+   if type(rest) == 'string' then
+      self.description = (self.description or '') .. rest
+   end
 end
 
 function Item:set_tag (tag,value)
@@ -390,15 +405,19 @@ function Item:set_tag (tag,value)
       end
       self.tags[tag] = value
    elseif ttype == TAG_ID then
-      --print('id',tag,value)
-      if type(value) ~= 'string' then
-         -- such tags are _not_ multiple, e.g. name
-         self:error("'"..tag.."' cannot have multiple values")
-      else
-         local id, rest = tools.extract_identifier(value)
-         self.tags[tag] = id
-         self:add_to_description(rest)
+      local modifiers
+      if type(value) == 'table' then
+         if value.append then -- it was a List!
+            -- such tags are _not_ multiple, e.g. name
+            self:error("'"..tag.."' cannot have multiple values")
+         end
+         value = value[1]
+         modifiers = value.modifiers
       end
+      if value == nil then self:error("Tag without value: "..tag) end
+      local id, rest = tools.extract_identifier(value)
+      self.tags[tag] = id
+      self:add_to_description(rest)
    elseif ttype == TAG_SINGLE then
       self.tags[tag] = value
    elseif ttype == TAG_FLAG then
@@ -479,6 +498,8 @@ local function read_del (tags,name)
    return ret
 end
 
+local build_arg_list, split_iden  -- forward declaration
+
 
 function Item:finish()
    local tags = self.tags
@@ -524,74 +545,58 @@ function Item:finish()
             self.modifiers.field = self.modifiers.param
          end
       end
-      local names, comments = List(), List()
+      local param_names, comments = List(), List()
       if params then
          for line in params:iter() do
-            local name, comment = line :match('%s*([%w_%.:]+)(.*)')
+            local name, comment = line:match('%s*([%w_%.:]+)(.*)')
             if not name then
                self:error("bad param name format '"..line.."'. Are you missing a parameter name?")
             end
-            names:append(name)
+            param_names:append(name)
             comments:append(comment)
          end
       end
       self.modifiers['return'] = self.modifiers['return'] or List()
       self.modifiers[field] = self.modifiers[field] or List()
-      -- not all arguments may be commented: we use the formal arguments
-      -- if available as the authoritative list, and warn if there's an inconsistency.
-      if self.formal_args then
-         local fargs = self.formal_args
-         if not self.ret and fargs.return_comment then
-            local retc = fargs.return_comment
-            local type,rest = retc:match '([^:]+):(.*)'
-            if type then
-               self.modifiers['return']:append{type=type}
-               retc = rest
+      -- we use the formal arguments (if available) as the authoritative list.
+      -- If there are both params and formal args, then they must match;
+      -- (A formal argument of ... may match any number of params at the end, however.)
+      -- If there are formal args and no params, we see if the args have any suitable comments.
+      -- Params may have subfields.
+      local fargs, formal = self.formal_args
+      if fargs then
+         if #param_names == 0 then
+            --docs may be embedded in argument comments; in either case, use formal arg names
+            formal = List()
+            if fargs.return_comment then
+               local retc = self:parse_argument_comment(fargs.return_comment,'return')
+               self.ret = List{retc}
             end
-            self.ret = List{retc}
-         end
-         if #fargs ~= 0 then
-            local pnames, pcomments = names, comments
-            names, comments = List(),List()
+            for i, name in ipairs(fargs) do
+               formal:append(name)
+               comments:append(self:parse_argument_comment(fargs.comments[name],self.parameter))
+            end
+         elseif #fargs > 0 then
             local varargs = fargs[#fargs] == '...'
-            for i,name in ipairs(fargs) do
-               if params then -- explicit set of param tags
-                  if pnames[i] ~= name and not varargs then
-                     if pnames[i] then
-                        self:warning("param and formal argument name mismatch: "..quote(name).." "..quote(pnames[i]))
-                     else
-                        self:warning("undocumented formal argument: "..quote(name))
+            if varargs then table.remove(fargs) end
+            local k = 0
+            for _,pname in ipairs(param_names) do
+               local _,field = split_iden(pname)
+               if not field then
+                  k = k + 1
+                  if k > #fargs then
+                     if not varargs then
+                        self:warning("extra param with no formal argument: "..quote(pname))
                      end
-                  elseif varargs then
-                     name = pnames[i]
+                  elseif pname ~= fargs[k] then
+                     self:warning("param and formal argument name mismatch: "..quote(pname).." "..quote(fargs[k]))
                   end
                end
-               names:append(name)
-               local comment = pcomments[i]
-               if not comment then
-                  -- ldoc allows comments in the formal arg list to be used, if they aren't specified with @param
-                  -- Further, these comments may start with a type followed by a colon, and are then equivalent
-                  -- to a @tparam
-                  comment = fargs.comments[name]
-                  if comment then
-                     comment = comment:gsub('^%-+%s*','')
-                     local type,rest = comment:match '([^:]+):(.*)'
-                     if type then
-                        self.modifiers[field]:append {type = type}
-                        comment = rest
-                     end
-                  end
-               end
-               comments:append (comment or '')
             end
-            -- A formal argument of ... may match any number of params, however.
-            if #pnames > #fargs then
-               for i = #fargs+1,#pnames do
-                  if not varargs then
-                     self:warning("extra param with no formal argument: "..quote(pnames[i]))
-                  else
-                     names:append(pnames[i])
-                     comments:append(pcomments[i] or '')
+            if k < #fargs then
+               for i = k+1,#fargs do
+                  if fargs[i] ~= '...' then
+                     self:warning("undocumented formal argument: "..quote(fargs[i]))
                   end
                end
             end
@@ -601,42 +606,106 @@ function Item:finish()
       -- the comments are associated with each parameter by
       -- adding name-value pairs to the params list (this is
       -- also done for any associated modifiers)
-      self.params = names
+      -- (At this point we patch up any subparameter references)
       local pmods = self.modifiers[field]
-      for i,name in ipairs(self.params) do
-         self.params[name] = comments[i]
+      local params, fields = List()
+      local original_names = formal and formal or param_names
+      local names = List()
+      self.subparams = {}
+      for i,name in ipairs(original_names) do
+         local pname,field = split_iden(name)
+         if field then
+            if not fields then
+               fields = List()
+               self.subparams[pname] = fields
+            end
+            fields:append(name)
+         else
+            names:append(name)
+            params:append(name)
+            fields = nil
+         end
+
+         params[name] = comments[i]
          if pmods then
             pmods[name] = pmods[i]
          end
       end
-
-      -- build up the string representation of the argument list,
-      -- using any opt and optchain modifiers if present.
-      -- For instance, '(a [, b])' if b is marked as optional
-      -- with @param[opt] b
-      local buffer, npending = { }, 0
-      local function acc(x) table.insert(buffer, x) end
-      for i = 1, #names  do
-         local m = pmods and pmods[i]
-         if m then
-            if not m.optchain then
-               acc ((']'):rep(npending))
-               npending=0
-            end
-            if m.opt or m.optchain then acc('['); npending=npending+1 end
-         end
-         if i>1 then acc (', ') end
-         acc(names[i])
-      end
-      acc ((']'):rep(npending))
-      self.args = '('..table.concat(buffer)..')'
+      self.params = params
+      self.args = build_arg_list (names,pmods)
    end
+end
+
+-- ldoc allows comments in the formal arg list to be used, if they aren't specified with @param
+-- Further, these comments may start with a type followed by a colon, and are then equivalent
+-- to a @tparam
+function Item:parse_argument_comment (comment,field)
+   if comment then
+      comment = comment:gsub('^%-+%s*','')
+      local type,rest = comment:match '([^:]+):(.*)'
+      if type then
+         self.modifiers[field]:append {type = type}
+         comment = rest
+      end
+   end
+   return comment or ''
+end
+
+function split_iden (name)
+   if name == '...' then return name end
+   local pname,field = name:match('(.-)%.(.+)')
+   if not pname then
+      return name
+   else
+      return pname,field
+   end
+end
+
+function build_arg_list (names,pmods)
+   -- build up the string representation of the argument list,
+   -- using any opt and optchain modifiers if present.
+   -- For instance, '(a [, b])' if b is marked as optional
+   -- with @param[opt] b
+   local buffer, npending = { }, 0
+   local function acc(x) table.insert(buffer, x) end
+   -- a number of trailing [opt]s can be safely converted to [opt],[optchain],...
+   if pmods then
+      local m = pmods[#names]
+      if m and m.opt then
+         m.optchain = m.opt
+         for i = #names-1,1,-1 do
+            m = pmods[i]
+            if not m or not m.opt then break end
+            m.optchain = m.opt
+         end
+      end
+   end
+   for i = 1, #names  do
+      local m = pmods and pmods[i]
+      local opt
+      if m then
+         if not m.optchain then
+            acc ((']'):rep(npending))
+            npending=0
+         end
+         opt = m.optchain or m.opt
+         if opt then
+            acc(' [')
+            npending=npending+1
+         end
+      end
+      if i>1 then acc (', ') end
+      acc(names[i])
+      if opt and opt ~= true then acc('='..opt) end
+   end
+   acc ((']'):rep(npending))
+   return  '('..table.concat(buffer)..')'
 end
 
 function Item:type_of_param(p)
    local mods = self.modifiers[self.parameter]
    if not mods then return '' end
-   local mparam = mods[p]
+   local mparam = rawget(mods,p)
    return mparam and mparam.type or ''
 end
 
@@ -645,10 +714,28 @@ function Item:type_of_ret(idx)
    return rparam and rparam.type or ''
 end
 
+function Item:subparam(p)
+   local subp = rawget(self.subparams,p)
+   if subp then
+      return subp,p
+   else
+      return {p},nil
+   end
+end
+
+function Item:display_name_of(p)
+   local pname,field = split_iden(p)
+   if field then
+      return field
+   else
+      return pname
+   end
+end
+
 
 function Item:warning(msg)
    local file = self.file and self.file.filename
-   if type(file) == 'table' then pretty.dump(file); file = '?' end
+   if type(file) == 'table' then require 'pl.pretty'.dump(file); file = '?' end
    file = file or '?'
    io.stderr:write(file,':',self.lineno or '1',': ',self.name or '?',': ',msg,'\n')
    return nil
@@ -660,6 +747,8 @@ function Item:error(msg)
 end
 
 Module.warning, Module.error = Item.warning, Item.error
+
+-------- Resolving References -----------------
 
 function Module:hunt_for_reference (packmod, modules)
    local mod_ref

@@ -8,24 +8,25 @@
 -- @copyright InfoReich 2013
 
 --- a function with typed args.
--- Note the the standard tparam aliases
+-- Note the the standard tparam aliases, and how the 'opt' and 'optchain'
+-- modifiers may also be used. If the Lua function has varargs, then
+-- you may document an indefinite number of extra arguments!
 -- @string name person's name
 -- @int age
+-- @string[opt='gregorian'] calender optional calendar
+-- @int[opt=0] offset optional offset
 -- @treturn string
-function one (name,age)
+function one (name,age,...)
 end
 
---- second useless function.
--- If you hate @ tags, you can use colons.
--- Optional type specifiers are allowed in this format.
--- As an extension, '?' is short for '?|'.
--- Note how these types are rendered!
--- string: name
--- int: age
--- ?person2: options
--- treturn: ?table|string
-function two (name,age,options)
+---- testing [opt]
+-- @param one
+-- @param[opt] two
+-- @param three
+-- @param[opt] four
+function two (one,two,three,four)
 end
+
 
 --- third useless function.
 -- Can always put comments inline, may
@@ -50,9 +51,3 @@ person = {
 -- @int age
 -- @table person2
 
---- explicit table in colon format.
--- Note how '!' lets you use a type name directly.
--- string: surname
--- string: birthdate
--- !person2: options
--- table: person3

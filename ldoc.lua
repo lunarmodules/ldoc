@@ -7,7 +7,7 @@
 --
 -- C/C++ support for Lua extensions is provided.
 --
--- Available from LuaRocks as 'ldoc' and as a [Zip file](http://stevedonovan.github.com/files/ldoc-1.3.0.zip)
+-- Available from LuaRocks as 'ldoc' and as a [Zip file](http://stevedonovan.github.com/files/ldoc-1.3.9.zip)
 --
 -- [Github Page](https://github.com/stevedonovan/ldoc)
 --
@@ -35,7 +35,7 @@ app.require_here()
 
 --- @usage
 local usage = [[
-ldoc, a documentation generator for Lua, vs 1.3.2
+ldoc, a documentation generator for Lua, vs 1.3.11
   -d,--dir (default docs) output directory
   -o,--output  (default 'index') output name
   -v,--verbose          verbose
@@ -44,7 +44,6 @@ ldoc, a documentation generator for Lua, vs 1.3.2
   -m,--module           module docs as text
   -s,--style (default !) directory for style sheet (ldoc.css)
   -l,--template (default !) directory for template (ldoc.ltp)
-  -1,--one              use one-column output layout
   -p,--project (default ldoc) project name
   -t,--title (default Reference) page title
   -f,--format (default plain) formatting - can be markdown, discount or plain
@@ -53,8 +52,11 @@ ldoc, a documentation generator for Lua, vs 1.3.2
   -c,--config (default config.ld) configuration name
   -i,--ignore ignore any 'no doc comment or no module' warnings
   -D,--define (default none) set a flag to be used in config.ld
-  -N,--nocolon don't treat colons specially
+  -C,--colon use colon style
   -B,--boilerplate ignore first comment in source files
+  -M,--merge allow module merging
+  -S,--simple no return or params, no summary
+  -O,--one one-column output layout
   --dump                debug output dump
   --filter (default none) filter output as Lua data (e.g pl.pretty.dump)
   --tags (default none) show all references to given tags, comma-separated
@@ -77,6 +79,7 @@ local quit = utils.quit
 
 
 class.ModuleMap(KindMap)
+local ModuleMap = ModuleMap
 
 function ModuleMap:_init ()
    self.klass = ModuleMap
@@ -112,13 +115,14 @@ local file_types = {
    ['.c'] = cc,
    ['.cpp'] = cc,
    ['.cxx'] = cc,
-   ['.C'] = cc
+   ['.C'] = cc,
+   ['.mm'] = cc
 }
 
 ------- ldoc external API ------------
 
 -- the ldoc table represents the API available in `config.ld`.
-local ldoc = {}
+local ldoc = { charset = 'UTF-8' }
 local add_language_extension
 
 local function override (field)
@@ -160,12 +164,12 @@ function ldoc.add_section (name, title, subname)
 end
 
 -- new tags can be added, which can be on a project level.
-function ldoc.new_type (tag, header, project_level)
+function ldoc.new_type (tag, header, project_level,subfield)
    doc.add_tag(tag,doc.TAG_TYPE,project_level)
    if project_level then
-      ProjectMap:add_kind(tag,header)
+      ProjectMap:add_kind(tag,header,subfield)
    else
-      ModuleMap:add_kind(tag,header)
+      ModuleMap:add_kind(tag,header,subfield)
    end
 end
 
@@ -180,8 +184,8 @@ end
 local ldoc_contents = {
    'alias','add_language_extension','new_type','add_section', 'tparam_alias',
    'file','project','title','package','format','output','dir','ext', 'topics',
-   'one','style','template','description','examples',
-   'readme','all','manual_url', 'ignore', 'nocolon','boilerplate',
+   'one','style','template','description','examples', 'pretty', 'charset',
+   'readme','all','manual_url', 'ignore', 'colon','boilerplate','merge', 'wrap',
    'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
@@ -250,7 +254,6 @@ if args.module then
    if not fullpath then
       quit(mod)
    else
-      args.nocolon = on_docpath
       args.file = fullpath
       args.module = mod
    end
@@ -281,6 +284,13 @@ if args.file == '.' then
       args.file = abspath(args.file)
    end
 else
+   -- user-provided config file
+   if args.config ~= 'config.ld' then
+      local err
+      config_dir,err = read_ldoc_config(args.config)
+      if err then quit("no "..quote(args.config).." found") end
+   end
+   -- with user-provided file
    args.file = abspath(args.file)
 end
 
@@ -291,6 +301,7 @@ end
 if type(source_dir) == 'string' and path.isfile(source_dir) then
    source_dir = path.splitpath(source_dir)
 end
+source_dir = source_dir:gsub('[/\\]%.$','')
 
 ---------- specifying the package for inferring module names --------
 -- If you use module(...), or forget to explicitly use @module, then
@@ -348,6 +359,8 @@ local process_file_list = tools.process_file_list
 
 setup_package_base()
 
+override 'colon'
+override 'merge'
 
 if type(args.file) == 'table' then
    -- this can only be set from config file so we can assume it's already read
@@ -390,8 +403,10 @@ else
 end
 
 -- create the function that renders text (descriptions and summaries)
+-- (this also will initialize the code prettifier used)
 override 'format'
-ldoc.markup = markup.create(ldoc, args.format)
+override 'pretty'
+ldoc.markup = markup.create(ldoc, args.format,args.pretty)
 
 ------ 'Special' Project-level entities ---------------------------------------
 -- Examples and Topics do not contain code to be processed for doc comments.
@@ -427,8 +442,13 @@ if type(ldoc.examples) == 'table' then
       })
       -- wrap prettify for this example so it knows which file to blame
       -- if there's a problem
-      item.postprocess = function(code) return prettify.lua(f,code) end
+      item.postprocess = function(code) return prettify.lua(f,code,0,true) end
    end)
+end
+
+if args.simple then
+    ldoc.no_return_or_parms=true
+    ldoc.no_summary=true
 end
 
 ldoc.readme = ldoc.readme or ldoc.topics
@@ -539,7 +559,7 @@ local function style_dir (sname)
       elseif type(style) == 'string' and path.isdir(style) then
          dir = style
       else
-         quit(quote(tostring(name)).." is not a directory")
+         quit(quote(tostring(style)).." is not a directory")
       end
       args[sname] = dir
    end
@@ -561,7 +581,6 @@ override 'output'
 override 'dir'
 override 'ext'
 override 'one'
-override 'nocolon'
 override 'boilerplate'
 
 if not args.ext:find '^%.' then
