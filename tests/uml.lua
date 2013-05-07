@@ -1,13 +1,14 @@
 #!/usr/bin/env lua
 -------------------------------------------------------------------------------
---- Lua UML Documentation Example                                          <br>
---- Implements a binding to the Lua Blah Blah interface.                   <br>
+--- Test multiple simple UML diagrams in one comment                       <br>
 ---
---- @startuml{"fileType":"gif"}
+--- @startuml
 --- a->b:test request
 --- a<-b:test response
 --- @enduml
+---
 --- <BR>
+---
 --- @startuml
 --- a2->b2:test 2 request
 --- a2<-b2:test 2 response
@@ -31,7 +32,7 @@
 -------------------------------------------------------------------------------
 
 ----------------------------------------------------------------
---- Test_SeqDiagramUseCase7
+--- Test_SeqDiagramUseCase1
 ---
 --- Test the sequence diagram use case
 --- Nothing, then Nav Starts/Stops.                         <br>
@@ -53,3 +54,48 @@
 local function Test_SeqDiagramUseCase1()
 end
 
+----------------------------------------------------------------
+--- Test_SeqDiagramUseCase2
+---
+--- Test the sequence diagram use case
+--- Nothing, then Nav Starts/Stops.                         <br>
+---                                                         <br>
+--- <br><br><b><u>ABOVE:</u></b><br>
+--- @startuml{"showSyntax":"above"}
+--- a1->b1:test request
+--- a1<-b1:test response
+--- @enduml
+---
+--- <br><br><b><u>BELOW:</u></b><br>
+--- @startuml{"showSyntax":"below"}
+--- a1->b1:test request
+--- a1<-b1:test response
+--- @enduml
+---
+--- <br><br><b><u>LEFT:</u></b><br>
+--- @startuml{"showSyntax":"left"}
+--- a1->b1:test request
+--- a1<-b1:test response
+--- @enduml
+---
+--- <br><br><b><u>RIGHT:</u></b><br>
+--- @startuml{"showSyntax":"right"}
+--- a1->b1:test request
+--- a1<-b1:test response
+--- @enduml
+---
+--- <br><br><b><u>NONE:</u></b><br>
+--- @startuml{"showSyntax":"none"}
+--- a1->b1:test request
+--- a1<-b1:test response
+--- @enduml
+---
+--- <br><br><b><u>not defined:</u></b><br>
+--- @startuml
+--- a1->b1:test request
+--- a1<-b1:test response
+--- @enduml
+---
+----------------------------------------------------------------
+local function Test_SeqDiagramUseCase2()
+end

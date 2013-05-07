@@ -5,8 +5,9 @@ Copyright (C) 2011-2012 Steve Donovan.
 ## Branch/Fork Rationale
 
 I've added the ability to:
-1. embed images into the HTML
-2. embed plant UML sequence diagram syntax and generate the images and/or embed them into the HTML
+
+  - embed or link images into the HTML
+  - embed plant UML sequence diagram syntax and generate the images and/or embed/link them into the HTML
 
 ## Rationale
 

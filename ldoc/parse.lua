@@ -146,6 +146,49 @@ local function preprocess_tag_strings( s )
       return html
    end
 
+   local function create_embedded_syntax( filename, syntaxStyle )
+
+      local html = ""
+
+      -- Now open the new syntax file and create an HTML version
+      local fp = io.open( filename, "rb" )
+      if fp then
+
+         -- This could be more efficient instead of
+         -- reading all since the definitions are
+         -- typically small this will work for now
+         local uml = fp:read("*all")
+         fp:close()
+
+         -- The '@' will trigger an error for unknown tag,
+         -- so just remove them, it will still be understood
+         uml = string.gsub(uml, "@startuml", "")
+         uml = string.gsub(uml, "@enduml", "")
+
+         uml = string.gsub(uml, "&", "&amp;")
+         uml = string.gsub(uml, "<", "&lt;")
+         uml = string.gsub(uml, ">", "&gt;")
+         uml = string.gsub(uml, ">", "&gt;")
+
+         -- TODO: Needs work because the style needs to be cleared
+         if syntaxStyle == "left" then
+            html = string.format( '<pre alt="" style="float: left; margin-right: 5px;">\n%s\n</pre>',  uml)
+         elseif syntaxStyle == "right" then
+            html = string.format( '<pre alt="" style="float: right; margin-right: 5px;">\n%s\n</pre>',  uml)
+         else
+            html = string.format( '<pre>\n%s\n</pre>',  uml)
+         end
+
+      else
+         local errStr = string.format("LDoc error opening UML file: %q", filename)
+         -- Just log the error in the doc
+         html = "<br><br><b><u>"..errStr.."</u></b><br><br>"
+         print(errStr)
+      end
+
+      return html
+   end
+
    ----------------------------------------------------------
    -- Embedded UML
    ------------------
@@ -166,6 +209,7 @@ local function preprocess_tag_strings( s )
       local preStr        = string.sub(s, 1, spos-1)
       local postStr       = string.sub(s, epos+1)
       local fileType      = "png"
+      local showSyntax    = "none"
       local fp            = io.open( uml_filename, "w" )
       local html          = ""
       local cacheFileName = nil
@@ -210,6 +254,12 @@ local function preprocess_tag_strings( s )
             sEmbedImage = "false"
          end
 
+         -- "showSyntax":"left"|"right"|"above"|"below"|"none"[default]
+         -- By using this option you can specify that you also want the
+         -- syntax to be shown: "left"|"right"|"above"|"below".  "none"
+         -- is the same as not specifying this option.
+         showSyntax = string.match(sFmt, '.-"showSyntax"%s-:%s-"(.-)".-') or showSyntax
+
          -- "forceEmbed":true
          -- if true, this will still embed the image even if the "cacheFile"
          -- option is enabled.  This makes it possible to cache AND embed
@@ -251,6 +301,20 @@ local function preprocess_tag_strings( s )
             os.remove( img_filename ) -- this is the PNG from plantUml
          end
 
+         if showSyntax and showSyntax ~= "none" then
+
+            local umlSyntax = create_embedded_syntax( uml_filename, showSyntax )
+
+            if showSyntax == "above" then
+               html = umlSyntax.."<br>"..html
+            elseif showSyntax == "below" then
+               html = html.."<br>"..umlSyntax
+            else
+               html = html..umlSyntax
+            end
+
+         end
+
          os.remove( uml_filename ) -- this is the UML
 
       else
@@ -259,6 +323,7 @@ local function preprocess_tag_strings( s )
          html = "<br><br><b><u>"..errStr.."</u></b><br><br>"
          print(errStr)
       end
+
       s = preStr..html..postStr
 
       spos = string.find(s, "@startuml", #preStr+#html+1)
