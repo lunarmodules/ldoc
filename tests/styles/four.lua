@@ -1,8 +1,8 @@
 ------------
 -- Yet another module.
--- @module four
 -- Description can continue after simple tags, if you
--- like
+-- like - but to keep backwards compatibility, say 'not_luadoc=true'
+-- @module four
 -- @author bob, james
 -- @license MIT
 -- @copyright InfoReich 2013

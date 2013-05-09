@@ -185,7 +185,8 @@ local ldoc_contents = {
    'alias','add_language_extension','new_type','add_section', 'tparam_alias',
    'file','project','title','package','format','output','dir','ext', 'topics',
    'one','style','template','description','examples', 'pretty', 'charset', 'plain',
-   'readme','all','manual_url', 'ignore', 'colon','boilerplate','merge', 'wrap',
+   'readme','all','manual_url', 'ignore', 'colon',
+   'boilerplate','merge', 'wrap', 'not_luadoc',
    'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
@@ -361,6 +362,7 @@ setup_package_base()
 
 override 'colon'
 override 'merge'
+override 'not_luadoc'
 
 if type(args.file) == 'table' then
    -- this can only be set from config file so we can assume it's already read

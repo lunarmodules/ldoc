@@ -388,14 +388,21 @@ function Item:add_to_description (rest)
    end
 end
 
+function Item:trailing_warning (kind,tag,rest)
+   if type(rest)=='string' and #rest > 0 then
+      Item.warning(self,kind.." tag: '"..tag..'" has trailing text; use no_luadoc=true\n'..rest)
+   end
+end
+
 function Item:set_tag (tag,value)
    local ttype = known_tags[tag]
+   local args = self.file.args
 
    if ttype == TAG_MULTI or ttype == TAG_MULTI_LINE then -- value is always a List!
       if getmetatable(value) ~= List then
          value = List{value}
       end
-      if ttype ~= TAG_MULTI_LINE then
+      if ttype ~= TAG_MULTI_LINE and args.not_luadoc then
          local last = value[#value]
          if type(last) == 'string' and last:match '\n' then
             local line,rest = last:match('([^\n]+)(.*)')
@@ -417,12 +424,20 @@ function Item:set_tag (tag,value)
       if value == nil then self:error("Tag without value: "..tag) end
       local id, rest = tools.extract_identifier(value)
       self.tags[tag] = id
-      self:add_to_description(rest)
+      if args.not_luadoc then
+         self:add_to_description(rest)
+      else
+         self:trailing_warning('id',tag,rest)
+      end
    elseif ttype == TAG_SINGLE then
       self.tags[tag] = value
    elseif ttype == TAG_FLAG then
       self.tags[tag] = true
-      self:add_to_description(value)
+      if args.not_luadoc then
+         self:add_to_description(value)
+      else
+         self:trailing_warning('flag',tag,value)
+      end
    else
       Item.warning(self,"unknown tag: '"..tag.."' "..tostring(ttype))
    end
