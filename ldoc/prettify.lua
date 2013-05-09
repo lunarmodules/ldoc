@@ -24,7 +24,7 @@ local function span(t,val)
    return ('<span class="%s">%s</span>'):format(t,val)
 end
 
-local spans = {keyword=true,number=true,string=true,comment=true,global=true}
+local spans = {keyword=true,number=true,string=true,comment=true,global=true,backtick=true}
 
 function prettify.lua (fname, code, initial_lineno, pre)
    local res = List()
@@ -47,7 +47,7 @@ function prettify.lua (fname, code, initial_lineno, pre)
          t = 'global'
       end
       if spans[t] then
-         if t == 'comment' then -- may contain @{ref}
+         if t == 'comment' or t == 'backtick' then -- may contain @{ref} or `..`
             val = prettify.resolve_inline_references(val,error_reporter)
          end
          res:append(span(t,val))

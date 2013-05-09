@@ -17,16 +17,12 @@
 -- iden    n
 -- keyword do
 -- </pre>
--- See the Guide for further <a href="../../index.html#lexer">discussion</a> <br>
--- @class module
--- @name pl.lexer
+--
+-- Based on pl.lexer from Penlight
 
 local strfind = string.find
 local strsub = string.sub
 local append = table.insert
---[[
-module ('pl.lexer',utils._module)
-]]
 
 local function assert_arg(idx,val,tp)
     if type(val) ~= tp then
@@ -68,6 +64,14 @@ local function sdump(tok,options)
         tok = tok:sub(2,-2)
     end
     return "string",tok
+end
+
+-- strings enclosed in back ticks
+local function bdump(tok,options)
+    if options and options.string then
+        tok = tok:sub(2,-2)
+    end
+    return "backtick",tok
 end
 
 -- long Lua strings need extra work to get rid of the quotes
@@ -298,6 +302,7 @@ function lexer.lua(s,filter,options)
             {STRING3,sdump},
             {STRING1,sdump},
             {STRING2,sdump},
+            {'^`[^`]+`',bdump},
             {'^%-%-%[(=*)%[.-%]%1%]',cdump},
             {'^%-%-.-\n',cdump},
             {'^%[(=*)%[.-%]%1%]',sdump_l},

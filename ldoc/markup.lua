@@ -233,7 +233,6 @@ local function get_formatter(format)
    end
 end
 
-
 local function text_processor(ldoc)
    return function(txt,item)
       if txt == nil then return '' end
@@ -243,10 +242,17 @@ local function text_processor(ldoc)
    end
 end
 
+local plain_processor
 
 local function markdown_processor(ldoc, formatter)
-   return function (txt,item)
+   return function (txt,item,plain)
       if txt == nil then return '' end
+      if plain then
+         if not plain_processor then
+            plain_processor = text_processor(ldoc)
+         end
+         return plain_processor(txt,item)
+      end
       if utils.is_type(item,doc.File) then
          txt = process_multiline_markdown(ldoc, txt, item)
       else
@@ -257,7 +263,6 @@ local function markdown_processor(ldoc, formatter)
       return (txt:gsub('^%s*<p>(.+)</p>%s*$','%1'))
    end
 end
-
 
 local function get_processor(ldoc, format)
    if format == 'plain' then return text_processor(ldoc) end

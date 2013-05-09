@@ -24,7 +24,8 @@ return [==[
 # local use_li = ldoc.use_li
 # local display_name = ldoc.display_name
 # local iter = ldoc.modules.iter
-# local M = ldoc.markup
+# ---local M = ldoc.markup
+# local function M(txt,item) return ldoc.markup(txt,item,ldoc.plain) end
 # local nowrap = ldoc.wrap and '' or 'nowrap'
 
 <!-- Menu -->
