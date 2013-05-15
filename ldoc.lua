@@ -35,8 +35,8 @@ app.require_here()
 
 --- @usage
 local usage = [[
-ldoc, a documentation generator for Lua, vs 1.3.11
-  -d,--dir (default docs) output directory
+ldoc, a documentation generator for Lua, vs 1.3.12
+  -d,--dir (default doc) output directory
   -o,--output  (default 'index') output name
   -v,--verbose          verbose
   -a,--all              show local functions, etc, in docs
@@ -63,7 +63,8 @@ ldoc, a documentation generator for Lua, vs 1.3.11
   <file> (string) source file or directory containing source
 
   `ldoc .` reads options from an `config.ld` file in same directory;
-  `ldoc -c path/to/myconfig.ld .` reads options from `path/to/myconfig.ld`
+  `ldoc -c path/to/myconfig.ld <file>` reads options from `path/to/myconfig.ld`
+  and processes <file> if 'file' was not defined in the ld file.
 ]]
 local args = lapp(usage)
 local lfs = require 'lfs'

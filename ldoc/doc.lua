@@ -115,10 +115,10 @@ function doc.expand_annotation_item (tags, last_item)
    if tags.summary ~= '' then return false end
    for tag, value in pairs(tags) do
       if known_tags._annotation_tags[tag] then
-         tags.class = 'annotation'
-         tags.summary = value
+         tags:add('class','annotation')
+         tags:add('summary',value)
          local item_name = last_item and last_item.tags.name or '?'
-         tags.name = item_name..'-'..tag..acount
+         tags:add('name',item_name..'-'..tag..acount)
          acount = acount + 1
          return true
       end
@@ -268,6 +268,7 @@ function File:finish()
          -- add the item to the module's item list
          if this_mod then
             -- new-style modules will have qualified names like 'mod.foo'
+            --require 'pl.pretty'.dump(item.tags)
             local mod,fname = split_dotted_name(item.name)
             -- warning for inferred unqualified names in new style modules
             -- (retired until we handle methods like Set:unset() properly)
@@ -402,7 +403,7 @@ function Item:set_tag (tag,value)
       if getmetatable(value) ~= List then
          value = List{value}
       end
-      if ttype ~= TAG_MULTI_LINE and args.not_luadoc then
+      if ttype ~= TAG_MULTI_LINE and args and args.not_luadoc then
          local last = value[#value]
          if type(last) == 'string' and last:match '\n' then
             local line,rest = last:match('([^\n]+)(.*)')
@@ -424,7 +425,7 @@ function Item:set_tag (tag,value)
       if value == nil then self:error("Tag without value: "..tag) end
       local id, rest = tools.extract_identifier(value)
       self.tags[tag] = id
-      if args.not_luadoc then
+      if args and args.not_luadoc then
          self:add_to_description(rest)
       else
          self:trailing_warning('id',tag,rest)

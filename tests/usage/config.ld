@@ -11,3 +11,5 @@ pretty='lxsh'
 -- suppress @params and the summary at the top
 no_return_or_parms=true
 no_summary=true
+not_luadoc=true
+
