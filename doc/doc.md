@@ -566,9 +566,9 @@ See 'tests/examples/mylib.c' for the full example.
 For example, to process all files in the 'lua' directory:
 
     $ ldoc lua
-    output written to docs/
+    output written to doc/
 
-Thereafter the `docs` directory will contain `index.html` which points to individual modules
+Thereafter the `doc` directory will contain `index.html` which points to individual modules
 in the `modules` subdirectory.  The `--dir` flag can specify where the output is generated,
 and will ensure that the directory exists. The output structure is like LuaDoc: there is an
 `index.html` and the individual modules are in the `modules` subdirectory. This applies to
@@ -590,35 +590,6 @@ For new-style modules, that don't use `module()`, it is recommended that the mod
 has an explicit `@module PACKAGE.NAME`. If it does not, then `ldoc` will still attempt to
 deduce the module name, but may need help with `--package/-b` as above.
 
-`format = 'markdown'` can be used in your `config.ld` and will be used to process summaries
-and descriptions. This requires [markdown.lua](http://www.frykholm.se/files/markdown.lua) by
-Niklas Frykholm to be installed (this can be most easily done with `luarocks install
-markdown`.)  A much faster alternative is
-[lua-discount](http://asbradbury.org/projects/lua-discount/) which you can use by setting
-`format` to 'discount' after installing using `luarocks install lua-discount`)  The
-[discount](http://www.pell.portland.or.us/~orc/Code/discount/) Markdown processor
-additionally has more features than the pure Lua version, such as PHP-Extra style tables.
-As a special case, LDoc will fall back to using `markdown.lua` if it cannot find `discount`.
-
-`format = 'markdown'` can be used in your `config.ld` and will be used to process summaries
-and descriptions. This requires a markdown processor.
-LDoc knows how to use:
-
-   - [markdown.lua](http://www.frykholm.se/files/markdown.lua) a pure Lua processor by
-Niklas Frykholm (this can be installed easily with `luarocks install markdown`.)
-  - [lua-discount](http://asbradbury.org/projects/lua-discount/), a faster alternative
-(installed with `luarocks install lua-discount`).  lua-discount uses the C
-[discount](http://www.pell.portland.or.us/~orc/Code/discount/) Markdown processor which has
-more features than the pure Lua version, such as PHP-Extra style tables.
-  - [lunamark](http://jgm.github.com/lunamark/), another pure Lua processor,  faster than
-markdown, and with extra features (`luarocks install lunamark`).
-
-You can request the processor you like with `format = 'markdown|discount|lunamark'`, and
-LDoc will attempt to use it.  If it can't find it, it will look for one of the other
-markdown processors.  If it can't find any markdown processer, it will fall back to text
-processing.
-
-
 A special case is if you simply say 'ldoc .'. Then there _must_ be a `config.ld` file
 available in the directory, and it can specify the file:
 
@@ -634,6 +605,35 @@ In `config.ld`, `file` may be a Lua table, containing file names or directories;
 an `exclude` field then that will be used to exclude files from the list, for example
 `{'examples', exclude = {'examples/slow.lua'}}`.
 
+A particular configuration file can be specified with the `-c` flag. Configuration files don't
+_have_ to contain a `file` field, but in that case LDoc does need an explicit file on the command
+line. This is useful if you have some defaults you wish to apply to all of your docs.
+
+## Markdown Support
+
+`format = 'markdown'` can be used in your `config.ld` and will be used to process summaries
+and descriptions; you can also use the `-f` flag. This requires a markdown processor.
+LDoc knows how to use:
+
+   - [markdown.lua](http://www.frykholm.se/files/markdown.lua) a pure Lua processor by
+Niklas Frykholm. For convenience, LDoc comes with a copy of markdown.lua.
+  - [lua-discount](http://asbradbury.org/projects/lua-discount/), a faster alternative
+(installed with `luarocks install lua-discount`).  lua-discount uses the C
+[discount](http://www.pell.portland.or.us/~orc/Code/discount/) Markdown processor which has
+more features than the pure Lua version, such as PHP-Extra style tables.
+  - [lunamark](http://jgm.github.com/lunamark/), another pure Lua processor,  faster than
+markdown, and with extra features (`luarocks install lunamark`).
+
+You can request the processor you like with `format = 'markdown|discount|lunamark'`, and
+LDoc will attempt to use it.  If it can't find it, it will look for one of the other
+markdown processors.
+
+Even with the default of 'plain' some minimal processing takes place, in particular empty lines
+are treated as line breaks.
+
+This formatting applies to all of a project, including any readmes and so forth. You may want
+Markdown for this 'narrative' documentation, but not for your code comments. `plain=true` will
+switch off formatting for code.
 
 ## Processing Single Modules
 
@@ -641,8 +641,8 @@ an `exclude` field then that will be used to exclude files from the list, for ex
 special case when a single module file is specified. Here an index would be redundant, so
 the single HTML file generated contains the module documentation.
 
-    $ ldoc mylib.lua --> results in docs/index.html
-    $ ldoc --output mylib mylib.lua --> results in docs/mylib.html
+    $ ldoc mylib.lua --> results in doc/index.html
+    $ ldoc --output mylib mylib.lua --> results in doc/mylib.html
     $ ldoc --output mylib --dir html mylib.lua --> results in html/mylib.html
 
 The default sections used by LDoc are 'Functions', 'Tables' and 'Fields', corresponding to
@@ -840,6 +840,13 @@ resolves to 'examples/testu.lua.html'.
 Examples may link back to the API documentation, for instance the example `input.lua` has a
 @\{spawn_process} inline reference.
 
+By default, LDoc uses a built-in Lua code 'prettifier'. See-references are allowed in comments,
+and also in code if they're enclosed in backticks.
+
+[lxsh](https://github.com/xolox/lua-lxsh)
+can be used (available from LuaRocks) if you want support for C as well. `pretty='lxsh'` will
+cause `lxsh` to be used, if available.
+
 ##  Readme files
 
 Like all good Github projects, Winapi has a `readme.md`:
@@ -858,7 +865,7 @@ the first indented line is '@plain'. (See the source for this readme to see how 
 Another name for `readme` is `topics`, which is more descriptive. From LDoc 1.2,
 `readme/topics` can be a list of documents. These act as a top-level table-of-contents for
 your documentation. Currently, if you want them in a particular order, then use names like
-`01-introduction.md` etc which sort appropriately.
+`01-introduction.md` etc, which sort appropriately.
 
 The first line of a document may be a Markdown `#` title. If so, then LDoc will regard the
 next level as the subheadings, normally second-level `##`. But if the title is already
@@ -975,24 +982,33 @@ of files and directories.
   - `all` show local functions, etc as well in the docs
   - `format` markup processor, can be 'plain' (default), 'markdown' or 'discount'
   - `output` output name (default 'index')
-  - `dir` directory for output files (default 'docs')
+  - `dir` directory for output files (default 'doc')
+  - `colon` use colon style, instead of @ tag style
+  - `boilerplate` ignore first comment in all source files (e.g. license comments)
   - `ext` extension for output (default 'html')
   - `one` use a one-column layout
   - `style`, `template`: together these specify the directories for the style and and the
 template. In `config.ld` they may also be `true`, meaning use the same directory as the
 configuration file.
+  - `merge` allow documentation from different files to be merged into modules without
+     explicit @submodule tag
 
 These only appear in `config.ld`:
 
   - `description` a project description used under the project title
   - `examples` a directory or file: can be a table
-  - `readme` name of readme file (to be processed with Markdown)
+  - `readme` or `topics` readme files (to be processed with Markdown)
+  - `pretty` code prettify 'lua' (default) or 'lxsh'
+  - `charset` use if you want to override the UTF-8 default (also @charset in files)
   - `no_return_or_parms` don't show parameters or return values in output
   - `backtick_references` whether references in backticks will be resolved
+  - `plain` set to true if `format` is set but you don't want code comments processed
+  - `wrap` ??
   -  `manual_url` point to an alternative or local location for the Lua manual, e.g.
 'file:///D:/dev/lua/projects/lua-5.1.4/doc/manual.html'
-  - `one` use a one-column output format
   - `no_summary` suppress the Contents summary
+  - `custom_see_handler` function that filters see-references
+  - `not_luadoc` set to `true` if the docs break LuaDoc compatibility
 
 Available functions are:
 
