@@ -524,10 +524,7 @@ function Item:finish()
    self.type = read_del(tags,'class')
    self.modifiers = extract_tag_modifiers(tags)
    self.usage = read_del(tags,'usage')
-   -- see tags are multiple, but they may also be comma-separated
-   if tags.see then
-      tags.see = tools.expand_comma_list(read_del(tags,'see'))
-   end
+   tags.see = read_del(tags,'see')
    if  doc.project_level(self.type) then
       -- we are a module, so become one!
       self.items = List()

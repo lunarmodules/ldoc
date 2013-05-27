@@ -151,22 +151,6 @@ function M.split_dotted_name (s)
    end
 end
 
--- expand lists of possibly qualified identifiers
--- given something like {'one , two.2','three.drei.drie)'}
--- it will output {"one","two.2","three.drei.drie"}
-function M.expand_comma_list (ls)
-   local new_ls = List()
-   for s in ls:iter() do
-      s = s:gsub('[^%.:%-%w_]*$','')
-      if s:find ',' then
-         new_ls:extend(List.split(s,'%s*,%s*'))
-      else
-         new_ls:append(s)
-      end
-   end
-   return new_ls
-end
-
 -- grab lines from a line iterator `iter` until the line matches the pattern.
 -- Returns the joined lines and the line, which may be nil if we run out of
 -- lines.
