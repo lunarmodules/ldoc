@@ -320,7 +320,7 @@ function File:finish()
                      end
                   end
                end
-               section_description = this_section.summary..' '..this_section.description
+               section_description = this_section.summary..' '..(this_section.description or '')
             elseif item.tags.within then
                section_description = item.tags.within
                item.section = section_description

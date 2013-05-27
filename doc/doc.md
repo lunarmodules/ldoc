@@ -396,6 +396,8 @@ One added convenience is that it is easier to name entities:
     -- @class module
     -- @name simple
 
+becomes:
+
     ------------
     -- a simple module.
     -- (LDoc)
@@ -557,7 +559,7 @@ or 'lua'.)
 
 An LDoc feature which is particularly useful for C extensions is _module merging_. If several
 files are all marked as `@module lib` then a single module `lib` is generated, containing all
-the docs from the separate files.
+the docs from the separate files. For this, use `merge=true`.
 
 See 'tests/examples/mylib.c' for the full example.
 
@@ -785,6 +787,10 @@ can suppress the contents summary with `no_summary`.
 
 ## Customizing the Page
 
+A basic customization is to override the default UTF-8 encoding using `charset`. For instance,
+Brazillian software would find it useful to put `charset='ISO-8859-1'` in `config.ld`, or use
+the @charset tag for individual files.
+
 Setting `no_return_or_parms` to `true` will suppress the display of 'param' and 'return'
 tags. This may appeal to programmers who dislike the traditional @tag soup xDoc style and
 prefer to comment functions just with a description. This is particularly useful when using
@@ -811,7 +817,6 @@ to the original:
     no_return_or_parms = true
     format = 'discount'
 
-
 Generally, using Markdown gives you the opportunity to structure your documentation in any
 way you want; particularly if using lua-discount and its [table
 syntax](http://michelf.com/projects/php-markdown/extra/#table); the desired result can often
@@ -834,7 +839,7 @@ The line in the `config.ld` that enables this is:
     examples = {'examples', exclude = {'examples/slow.lua'}}
 
 That is, all files in the `examples` folder are to be pretty-printed, except for `slow.lua`
-which is meant to be called from one of the examples. The see-reference to `testu.lua`
+which is meant to be called from one of the examples. Now a see-reference to `testu.lua`
 resolves to 'examples/testu.lua.html'.
 
 Examples may link back to the API documentation, for instance the example `input.lua` has a
