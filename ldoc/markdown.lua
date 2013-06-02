@@ -121,7 +121,7 @@ THE SOFTWARE.
 local M = {}
 local MT = {__index = _G}
 setmetatable(M, MT)
-setfenv(1, M)
+if setfenv then setfenv(1, M) end -- if true, we are using LUA 5.1
 
 ----------------------------------------------------------------------
 -- Utility functions
@@ -1134,7 +1134,7 @@ end
 -- End of module
 ----------------------------------------------------------------------
 
-setfenv(1, _G)
+if setfenv then setfenv(1, _G) end
 M.lock(M)
 
 -- Expose markdown function to the world
