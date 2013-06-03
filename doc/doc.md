@@ -518,7 +518,7 @@ you can write:
         B = 2; -- beta
     }
 
-Simularly, function parameter comments can be directly used:
+Similarly, function parameter comments can be directly used:
 
     ------------
     -- third function. Can also provide parameter comments inline,
