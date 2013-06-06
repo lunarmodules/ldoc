@@ -626,6 +626,9 @@ function Item:finish()
       local names = List()
       self.subparams = {}
       for i,name in ipairs(original_names) do
+         if type(name) ~= 'string' then
+            self:error("declared table cannot have array entries")
+         end
          local pname,field = split_iden(name)
          if field then
             if not fields then
