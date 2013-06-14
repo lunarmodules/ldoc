@@ -118,10 +118,10 @@ THE SOFTWARE.
 
 
 -- Set up a table for holding local functions to avoid polluting the global namespace
+-- Penlight 1.2 defines compatible 5.1 setfenv in utils table
 local M = {}
 local MT = {__index = _G}
 setmetatable(M, MT)
-if setfenv then setfenv(1, M) end -- if true, we are using LUA 5.1
 
 ----------------------------------------------------------------------
 -- Utility functions
@@ -1134,7 +1134,6 @@ end
 -- End of module
 ----------------------------------------------------------------------
 
-if setfenv then setfenv(1, _G) end
 M.lock(M)
 
 -- Expose markdown function to the world
