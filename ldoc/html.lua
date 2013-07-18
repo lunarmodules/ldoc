@@ -18,6 +18,7 @@ local utils = require 'pl.utils'
 local path = require 'pl.path'
 local stringx = require 'pl.stringx'
 local template = require 'pl.template'
+local tablex = require 'pl.tablex'
 local tools = require 'ldoc.tools'
 local markup = require 'ldoc.markup'
 local prettify = require 'ldoc.prettify'
@@ -55,6 +56,19 @@ local escape_table = { ["'"] = "&apos;", ["\""] = "&quot;", ["<"] = "&lt;", [">"
 
 function html.generate_output(ldoc, args, project)
    local check_directory, check_file, writefile = tools.check_directory, tools.check_file, tools.writefile
+   local original_ldoc
+
+   local function save_ldoc ()
+      if not original_ldoc then
+         original_ldoc = tablex.copy(ldoc)
+      end
+   end
+
+   local function restore_ldoc ()
+      if original_ldoc then
+         ldoc = original_ldoc
+      end
+   end
 
    function ldoc.escape(str)
       return (str:gsub("['&<>\"]", escape_table))
@@ -236,6 +250,14 @@ function html.generate_output(ldoc, args, project)
       for m in modules() do
          ldoc.module = m
          ldoc.body = m.body
+         if m.tags.set then
+            save_ldoc()
+            for s in m.tags.set:iter() do
+               local var,val = s:match('([^=]+)=(.+)')
+               print('setting',var,val)
+               ldoc[var] = val
+            end
+         end
          set_charset(ldoc)
          m.info = get_module_info(m)
          if ldoc.body and m.postprocess then
@@ -251,6 +273,7 @@ function html.generate_output(ldoc, args, project)
             out = cleanup_whitespaces(out)
             writefile(args.dir..lkind..'/'..m.name..args.ext,out)
          end
+         restore_ldoc()
       end
    end
    if not args.quiet then print('output written to '..tools.abspath(args.dir)) end
