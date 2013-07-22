@@ -21,7 +21,7 @@ local TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE,TAG_FLAG,TAG_MULTI_LINE = 'M','id','S
 --  - 'N' tags which have no associated value, like 'local` (TAG_FLAG)
 --  - 'T' tags which represent a type, like 'function' (TAG_TYPE)
 local known_tags = {
-   param = 'M', see = 'M', usage = 'ML', ['return'] = 'M', field = 'M', author='M';
+   param = 'M', see = 'M', usage = 'ML', ['return'] = 'M', field = 'M', author='M',set='M';
    class = 'id', name = 'id', pragma = 'id', alias = 'id', within = 'id',
    copyright = 'S', summary = 'S', description = 'S', release = 'S', license = 'S',
    fixme = 'S', todo = 'S', warning = 'S', raise = 'S', charset = 'S',
@@ -626,6 +626,9 @@ function Item:finish()
       local names = List()
       self.subparams = {}
       for i,name in ipairs(original_names) do
+         if type(name) ~= 'string' then
+            self:error("declared table cannot have array entries")
+         end
          local pname,field = split_iden(name)
          if field then
             if not fields then
