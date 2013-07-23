@@ -917,7 +917,7 @@ local function dump_tags (tags)
 end
 
 function Module:dump(verbose)
-   if self.type ~= 'module' then return end
+   if not doc.project_level(self.type) then return end
    print '----'
    print(self.type..':',self.name,self.summary)
    if self.description then print(self.description) end

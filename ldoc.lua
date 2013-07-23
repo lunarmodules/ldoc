@@ -604,11 +604,11 @@ if args.style == '!' or args.template == '!' then
       utils.writefile(path.join(tmpdir,name),require('ldoc.html.'..name:gsub('%.','_')))
    end
    if args.style == '!' then
-      tmpwrite(ldoc.templ)
+      tmpwrite(ldoc.css)
       args.style = tmpdir
    end
    if args.template == '!' then
-      tmpwrite(ldoc.css)
+      tmpwrite(ldoc.templ)
       args.template = tmpdir
    end
 end
