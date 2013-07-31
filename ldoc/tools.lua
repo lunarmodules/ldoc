@@ -22,15 +22,26 @@ local lfs = require 'lfs'
 -- (something rather similar exists in LuaDoc)
 function M.type_iterator (list,field,value)
    return function()
-      local i = 1
-      return function()
-         local val = list[i]
-         while val and val[field] ~= value do
+      local i, fls = 1, {}
+      for j = 1,#list do
+         local val = list[j]
+         if val[field] == value then
+            fls[i] = val
             i = i + 1
-            val = list[i]
          end
+      end
+      i = 0
+      local mod = fls[1].module
+      local ldoc = mod and mod.ldoc
+      if ldoc and ldoc.sort then
+         table.sort(fls,function(ia,ib)
+            return ia.name < ib.name
+         end)
+      end
+      return function()
          i = i + 1
-         if val then return val end
+         local val = fls[i]
+         if val ~= nil then return val end
       end
    end
 end

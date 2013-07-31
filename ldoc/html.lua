@@ -58,9 +58,20 @@ function html.generate_output(ldoc, args, project)
    local check_directory, check_file, writefile = tools.check_directory, tools.check_file, tools.writefile
    local original_ldoc
 
-   local function save_ldoc ()
+   local function save_and_set_ldoc (set)
+      if not set then return end
       if not original_ldoc then
          original_ldoc = tablex.copy(ldoc)
+      end
+      for s in set:iter() do
+         local var,val = s:match('([^=]+)=(.+)')
+         local num = tonumber(val)
+         if num then val = num
+         elseif val == 'true' then val = true
+         elseif val == 'false' then val = false
+         end
+         print('setting',var,val)
+         ldoc[var] = val
       end
    end
 
@@ -210,6 +221,8 @@ function html.generate_output(ldoc, args, project)
    ldoc.root = true
    if ldoc.module then
       ldoc.module.info = get_module_info(ldoc.module)
+      ldoc.module.ldoc = ldoc
+      save_and_set_ldoc(ldoc.module.tags.set)
    end
    set_charset(ldoc)
    local out,err = template.substitute(module_template,{
@@ -218,6 +231,7 @@ function html.generate_output(ldoc, args, project)
     })
    ldoc.root = false
    if not out then quit("template failed: "..err) end
+   restore_ldoc()
 
    check_directory(args.dir) -- make sure output directory is ok
 
@@ -250,13 +264,9 @@ function html.generate_output(ldoc, args, project)
       for m in modules() do
          ldoc.module = m
          ldoc.body = m.body
+         m.ldoc = ldoc
          if m.tags.set then
-            save_ldoc()
-            for s in m.tags.set:iter() do
-               local var,val = s:match('([^=]+)=(.+)')
-               print('setting',var,val)
-               ldoc[var] = val
-            end
+            save_and_set_ldoc(m.tags.set)
          end
          set_charset(ldoc)
          m.info = get_module_info(m)
