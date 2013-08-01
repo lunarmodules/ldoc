@@ -18,31 +18,22 @@ local lfs = require 'lfs'
 
 -- this constructs an iterator over a list of objects which returns only
 -- those objects where a field has a certain value. It's used to iterate
--- only over functions or tables, etc.
+-- only over functions or tables, etc.  If the list of item has a module
+-- with a context, then use that to pre-sort the fltered items.
 -- (something rather similar exists in LuaDoc)
 function M.type_iterator (list,field,value)
    return function()
-      local i, fls = 1, {}
-      for j = 1,#list do
-         local val = list[j]
-         if val[field] == value then
-            fls[i] = val
-            i = i + 1
-         end
-      end
-      i = 0
-      local mod = fls[1].module
+      local fls = list:filter(function(item)
+         return item[field] == value
+      end)
+      local mod = fls[1] and fls[1].module
       local ldoc = mod and mod.ldoc
       if ldoc and ldoc.sort then
-         table.sort(fls,function(ia,ib)
+         fls:sort(function(ia,ib)
             return ia.name < ib.name
          end)
       end
-      return function()
-         i = i + 1
-         local val = fls[i]
-         if val ~= nil then return val end
-      end
+      return fls:iter()
    end
 end
 

@@ -177,7 +177,7 @@ local function mod_section_type (this_mod)
    return this_mod and this_mod.section and this_mod.section.type
 end
 
-local function find_module_in_files (name)
+function File:find_module_in_files (name)
    for f in File.list:iter() do
       for m in f.modules:iter() do
          if m.name == name then
@@ -216,7 +216,7 @@ function File:finish()
             -- if name is 'package.mod', then mod_name is 'mod'
             package,mname = split_dotted_name(this_mod.name)
             if self.args.merge then
-               local mod,mf = find_module_in_files(item.name)
+               local mod,mf = self:find_module_in_files(item.name)
                if mod then
                   print('found master module',mf)
                   this_mod = mod
@@ -230,7 +230,7 @@ function File:finish()
          elseif item.type == 'submodule' then
             local mf
             submodule = true
-            this_mod,mf = find_module_in_files(item.name)
+            this_mod,mf = self:find_module_in_files(item.name)
             if this_mod == nil then
                self:error("'"..item.name.."' not found for submodule")
             end

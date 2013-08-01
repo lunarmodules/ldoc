@@ -211,6 +211,7 @@ function html.generate_output(ldoc, args, project)
    ldoc.pairs = pairs
    ldoc.print = print
 
+   -- Bang out the index.
    -- in single mode there is one module and the 'index' is the
    -- documentation for that module.
    ldoc.module = ldoc.single
@@ -237,14 +238,16 @@ function html.generate_output(ldoc, args, project)
 
    args.dir = args.dir .. path.sep
 
-   check_file(args.dir..css, path.join(args.style,css)) -- has CSS been copied?
+   if ldoc.css then -- has CSS been copied?
+      check_file(args.dir..css, path.join(args.style,css))
+   end
 
    -- write out the module index
    out = cleanup_whitespaces(out)
    writefile(args.dir..args.output..args.ext,out)
 
    -- in single mode, we exclude any modules since the module has been done;
-   -- this step is then only for putting out any examples or topics
+   -- ext step is then only for putting out any examples or topics
    local mods = List()
    for kind, modules in project() do
       local lkind = kind:lower()

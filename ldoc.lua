@@ -186,7 +186,7 @@ local ldoc_contents = {
    'alias','add_language_extension','new_type','add_section', 'tparam_alias',
    'file','project','title','package','format','output','dir','ext', 'topics',
    'one','style','template','description','examples', 'pretty', 'charset', 'plain',
-   'readme','all','manual_url', 'ignore', 'colon', 'sort',
+   'readme','all','manual_url', 'ignore', 'colon', 'sort', 'module_file',
    'boilerplate','merge', 'wrap', 'not_luadoc',
    'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
 }
@@ -261,6 +261,27 @@ if args.module then
    end
 end
 
+local function fixup_module_file (file, fullpath)
+   if args.module_file then
+      for mname, f in pairs(args.module_file) do
+         if f == file then
+            args.module_file[mname] = fullpath
+            args.module_file[fullpath] = true
+            return "master for "..mname
+         end
+      end
+   end
+   return ''
+end
+
+-- partial sort of file list, where anything in module_file is now upfront!
+local function reorder_module_file (files)
+   if args.module_file then
+      local mf = args.module_file
+      table.sort(files,function(x,y) return mf[x] and not mf[y] end)
+   end
+end
+
 local abspath = tools.abspath
 
 -- a special case: 'ldoc .' can get all its parameters from config.ld
@@ -274,14 +295,16 @@ if args.file == '.' then
       lfs.chdir(config_path)
    end
    config_is_read = true
+   override 'module_file'
    args.file = ldoc.file or '.'
    if args.file == '.' then
       args.file = lfs.currentdir()
    elseif type(args.file) == 'table' then
       for i,f in ipairs(args.file) do
          args.file[i] = abspath(f)
-         print(args.file[i])
+         fixup_module_file(f,args.file[i])
       end
+      reorder_module_file(args.file)
    else
       args.file = abspath(args.file)
    end
@@ -345,7 +368,7 @@ local function process_file (f, flist)
    local ext = path.extension(f)
    local ftype = file_types[ext]
    if ftype then
-      if args.verbose then print(path.basename(f)) end
+      if args.verbose then print(f) end
       local F,err = parse.file(f,ftype,args)
       if err then
          if F then
