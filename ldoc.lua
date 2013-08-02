@@ -261,27 +261,6 @@ if args.module then
    end
 end
 
-local function fixup_module_file (file, fullpath)
-   if args.module_file then
-      for mname, f in pairs(args.module_file) do
-         if f == file then
-            args.module_file[mname] = fullpath
-            args.module_file[fullpath] = true
-            return "master for "..mname
-         end
-      end
-   end
-   return ''
-end
-
--- partial sort of file list, where anything in module_file is now upfront!
-local function reorder_module_file (files)
-   if args.module_file then
-      local mf = args.module_file
-      table.sort(files,function(x,y) return mf[x] and not mf[y] end)
-   end
-end
-
 local abspath = tools.abspath
 
 -- a special case: 'ldoc .' can get all its parameters from config.ld
@@ -295,16 +274,13 @@ if args.file == '.' then
       lfs.chdir(config_path)
    end
    config_is_read = true
-   override 'module_file'
    args.file = ldoc.file or '.'
    if args.file == '.' then
       args.file = lfs.currentdir()
    elseif type(args.file) == 'table' then
       for i,f in ipairs(args.file) do
          args.file[i] = abspath(f)
-         fixup_module_file(f,args.file[i])
       end
-      reorder_module_file(args.file)
    else
       args.file = abspath(args.file)
    end
@@ -387,9 +363,26 @@ setup_package_base()
 override 'colon'
 override 'merge'
 override 'not_luadoc'
+override 'module_file'
+
+-- ldoc.module_file establishes a partial ordering where the
+-- master module files are processed first.
+local function reorder_module_file ()
+   if args.module_file then
+      local mf = {}
+      for mname, f in pairs(args.module_file) do
+         local fullpath = abspath(f)
+         mf[fullpath] = true
+      end
+      return function(x,y)
+         return mf[x] and not mf[y]
+      end
+   end
+end
 
 if type(args.file) == 'table' then
    -- this can only be set from config file so we can assume it's already read
+   args.file.sortfn = reorder_module_file()
    process_file_list(args.file,'*.*',process_file, file_list)
    if #file_list == 0 then quit "no source files specified" end
 elseif path.isdir(args.file) then
@@ -406,9 +399,13 @@ elseif path.isdir(args.file) then
          end
       end
    end
+   -- process files, optionally in order that respects master module files
+   local sortfn = reorder_module_file()
+   if sortfn then files:sort(sortfn) end
    for f in files:iter() do
       process_file(f, file_list)
    end
+
    if #file_list == 0 then
       quit(quote(args.file).." contained no source files")
    end
