@@ -143,7 +143,7 @@ function html.generate_output(ldoc, args, project)
 
    function ldoc.display_name(item)
       local name = item.display_name or item.name
-      if item.type == 'function' or item.type == 'lfunction' then return name..'&nbsp;'..item.args
+      if item.type == 'function' or item.type == 'lfunction' then return name..' '..item.args -- &nbsp;
       else return name end
    end
 
@@ -229,6 +229,7 @@ function html.generate_output(ldoc, args, project)
    local out,err = template.substitute(module_template,{
       ldoc = ldoc,
       module = ldoc.module,
+      _escape = ldoc.template_escape
     })
    ldoc.root = false
    if not out then quit("template failed: "..err) end
@@ -238,7 +239,7 @@ function html.generate_output(ldoc, args, project)
 
    args.dir = args.dir .. path.sep
 
-   if ldoc.css then -- has CSS been copied?
+   if css then -- has CSS been copied?
       check_file(args.dir..css, path.join(args.style,css))
    end
 
@@ -259,7 +260,9 @@ function html.generate_output(ldoc, args, project)
    -- write out the per-module documentation
    -- note that we reset the internal ordering of the 'kinds' so that
    -- e.g. when reading a topic the other Topics will be listed first.
-   ldoc.css = '../'..css
+   if css then
+      ldoc.css = '../'..css
+   end
    for m in mods:iter() do
       local kind, lkind, modules = unpack(m)
       check_directory(args.dir..lkind)
@@ -278,7 +281,8 @@ function html.generate_output(ldoc, args, project)
          end
          out,err = template.substitute(module_template,{
             module=m,
-            ldoc = ldoc
+            ldoc = ldoc,
+            _escape = ldoc.template_escape
          })
          if not out then
             quit('template failed for '..m.name..': '..err)

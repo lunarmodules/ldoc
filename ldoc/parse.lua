@@ -229,6 +229,9 @@ local function parse_file(fname, lang, package, args)
 
          if lang:empty_comment(v)  then -- ignore rest of empty start comments
             t,v = tok()
+            if t == 'space' and not v:match '\n' then
+               t,v = tok()
+            end
          end
 
          while t and t == 'comment' do

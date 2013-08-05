@@ -5,6 +5,7 @@
 
 local class = require 'pl.class'
 local utils = require 'pl.utils'
+local List =  require 'pl.List'
 local tools = require 'ldoc.tools'
 local lexer = require 'ldoc.lexer'
 local quit = utils.quit
@@ -262,4 +263,44 @@ function CC:grab_block_comment(v,tok)
    return 'comment',v:sub(1,-3)
 end
 
-return { lua = Lua(), cc = CC() }
+local Moon = class(Lua)
+
+function Moon:_init()
+   self.line_comment = '^%-%-+' -- used for stripping
+   self.start_comment_ = '^%s*%-%-%-+'     -- used for doc comment line start
+   self.block_comment = '^%-%-%[=*%[%-+' -- used for block doc comments
+   self.end_comment_ = '[^%-]%-%-+\n$' ---- exclude --- this kind of comment ---
+   self:finalize()
+end
+
+function Moon:item_follows (t,v,tok)
+   if t == 'iden' then
+      local name,t,v = v, tnext(tok) --tools.get_fun_name(tok,v)
+      if name == 'class' then
+         name = v
+         --name,t,v = tools.get_fun_name(tok,v)
+         -- class!
+         return function(tags,tok)
+            tags:add('class','type')
+            tags:add('name',name)
+         end
+      elseif t == '=' or t == ':' then -- function/method
+         t,v = tnext(tok)
+         return function(tags,tok)
+            if not tags.name then
+               tags:add('name',name)
+            end
+            if t == '(' then
+               tags.formal_args = tools.get_parameters(tok)
+            else
+               tags.formal_args = List()
+            end
+            tags:add('class','function')
+         end
+      else
+         return nil
+      end
+   end
+end
+
+return { lua = Lua(), cc = CC(), moon = Moon() }

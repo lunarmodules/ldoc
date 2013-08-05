@@ -117,7 +117,8 @@ local file_types = {
    ['.cpp'] = cc,
    ['.cxx'] = cc,
    ['.C'] = cc,
-   ['.mm'] = cc
+   ['.mm'] = cc,
+   ['.moon'] = lang.moon,
 }
 
 ------- ldoc external API ------------
@@ -187,7 +188,7 @@ local ldoc_contents = {
    'file','project','title','package','format','output','dir','ext', 'topics',
    'one','style','template','description','examples', 'pretty', 'charset', 'plain',
    'readme','all','manual_url', 'ignore', 'colon', 'sort', 'module_file',
-   'boilerplate','merge', 'wrap', 'not_luadoc',
+   'boilerplate','merge', 'wrap', 'not_luadoc', 'template_escape',
    'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
@@ -573,9 +574,20 @@ end
 
 ldoc.css, ldoc.templ = 'ldoc.css','ldoc.ltp'
 
+if args.ext == 'md' then
+   ldoc.templ = 'ldoc.mdtp'
+   ldoc.template_escape = '>'
+   ldoc.style = false
+   args.ext = '.md'
+end
+
 local function style_dir (sname)
    local style = ldoc[sname]
    local dir
+   if style==false and sname == 'style' then
+      args.style = false
+      ldoc.css = false
+   end
    if style then
       if style == true then
          dir = config_dir
