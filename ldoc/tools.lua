@@ -421,7 +421,7 @@ end
 function M.process_file_list (list, mask, operation, ...)
    local exclude_list = list.exclude and M.files_from_list(list.exclude, mask)
    local files = List()
-   local function process (f,...)
+   local function process (f)
       f = M.abspath(f)
       if not exclude_list or exclude_list and exclude_list:index(f) == nil then
          files:append(f)
@@ -429,19 +429,21 @@ function M.process_file_list (list, mask, operation, ...)
    end
    for _,f in ipairs(list) do
       if path.isdir(f) then
-         local files = List(dir.getallfiles(f,mask))
-         for f in files:iter() do
-            files:append(f)
+         local dfiles = List(dir.getallfiles(f,mask))
+         for f in dfiles:iter() do
+            process(f)
          end
       elseif path.isfile(f) then
-         files:append(f)
+         process(f)
       else
          quit("file or directory does not exist: "..M.quote(f))
       end
    end
+
    if list.sortfn then
       files:sort(list.sortfn)
    end
+
    for f in files:iter() do
       operation(f,...)
    end
