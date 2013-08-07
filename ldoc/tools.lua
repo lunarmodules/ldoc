@@ -352,10 +352,12 @@ function M.get_parameters (tok,endtoken,delim)
    return args
 end
 
--- parse a Lua identifier - contains names separated by . and :.
-function M.get_fun_name (tok,first)
+-- parse a Lua identifier - contains names separated by . and (optionally) :.
+-- Set `colon` to be the secondary separator, '' for none.
+function M.get_fun_name (tok,first,colon)
    local res = {}
    local t,name,sep
+   colon = colon or ':'
    if not first then
       t,name = tnext(tok)
    else
@@ -363,7 +365,7 @@ function M.get_fun_name (tok,first)
    end
    if t ~= 'iden' then return nil end
    t,sep = tnext(tok)
-   while sep == '.' or sep == ':' do
+   while sep == '.' or sep == colon do
       append(res,name)
       append(res,sep)
       t,name = tnext(tok)

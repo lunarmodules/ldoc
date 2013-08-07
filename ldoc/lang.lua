@@ -274,11 +274,13 @@ function Moon:_init()
 end
 
 function Moon:item_follows (t,v,tok)
+   if t == '.' then -- enclosed in with statement
+      t,v = tnext(tok)
+   end
    if t == 'iden' then
-      local name,t,v = v, tnext(tok) --tools.get_fun_name(tok,v)
+      local name,t,v = tools.get_fun_name(tok,v,'')
       if name == 'class' then
-         name = v
-         --name,t,v = tools.get_fun_name(tok,v)
+         name,t,v = tools.get_fun_name(tok,v,'')
          -- class!
          return function(tags,tok)
             tags:add('class','type')
