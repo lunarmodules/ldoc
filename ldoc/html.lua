@@ -152,10 +152,8 @@ function html.generate_output(ldoc, args, project)
       return (s:gsub('%W','_'))
    end
 
-   function ldoc.titlecase(s)
-      return (s:gsub('(%a)(%a*)',function(f,r)
-         return f:upper()..r
-      end))
+   function ldoc.module_typename(m)
+      return doc.presentation_name(m.type)
    end
 
    function ldoc.is_list (t)

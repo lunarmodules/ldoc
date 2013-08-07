@@ -104,6 +104,7 @@ end
 
 ProjectMap:add_kind('module','Modules')
 ProjectMap:add_kind('script','Scripts')
+ProjectMap:add_kind('classmod','Classes')
 ProjectMap:add_kind('topic','Topics')
 ProjectMap:add_kind('example','Examples')
 

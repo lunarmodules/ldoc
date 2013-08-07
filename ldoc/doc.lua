@@ -27,7 +27,7 @@ local known_tags = {
    fixme = 'S', todo = 'S', warning = 'S', raise = 'S', charset = 'S',
    ['local'] = 'N', export = 'N', private = 'N', constructor = 'N', static = 'N';
    -- project-level
-   module = 'T', script = 'T', example = 'T', topic = 'T', submodule='T',
+   module = 'T', script = 'T', example = 'T', topic = 'T', submodule='T', classmod='T',
    -- module-level
    ['function'] = 'T', lfunction = 'T', table = 'T', section = 'T', type = 'T',
    annotation = 'T', factory = 'T';
@@ -39,12 +39,18 @@ known_tags._project_level = {
    script = true,
    example = true,
    topic = true,
-   submodule = true;
+   submodule = true,
+   classmod = true,
 }
 
 known_tags._code_types = {
    module = true,
-   script = true
+   script = true,
+   classmod = true,
+}
+
+known_tags._presentation_names = {
+   classmod = 'Class',
 }
 
 known_tags._module_info = {
@@ -97,6 +103,18 @@ end
 -- is it a class tag, like 'type' or 'factory'?
 function doc.class_tag (tag)
    return tag == 'type' or tag == 'factory'
+end
+
+-- how the type wants to be formally presented; e.g. 'module' becomes 'Module'
+-- but 'classmod' will become 'Class'
+function doc.presentation_name (tag)
+   local name = known_tags._presentation_names[tag]
+   if not name then
+      name = tag:gsub('(%a)(%a*)',function(f,r)
+         return f:upper()..r
+      end)
+   end
+   return name
 end
 
 function doc.module_info_tags ()
@@ -268,7 +286,6 @@ function File:finish()
          -- add the item to the module's item list
          if this_mod then
             -- new-style modules will have qualified names like 'mod.foo'
-            --require 'pl.pretty'.dump(item.tags)
             local mod,fname = split_dotted_name(item.name)
             -- warning for inferred unqualified names in new style modules
             -- (retired until we handle methods like Set:unset() properly)
@@ -298,15 +315,19 @@ function File:finish()
 
             -- right, this item was within a section or a 'class'
             local section_description
-            if this_mod.section then
+            local classmod = this_mod.type == 'classmod'
+            if this_mod.section or classmod then
+               local stype
                local this_section = this_mod.section
-               item.section = this_section.display_name
+               if this_section then
+                  item.section = this_section.display_name
+                  stype = this_section.type
+               end
                -- if it was a class, then if the name is unqualified then it becomes
                -- 'Class:foo' (unless flagged as being a constructor, static or not a function)
-               local stype = this_section.type
-               if doc.class_tag(stype) then
+               if doc.class_tag(stype) or classmod then
                   if not item.name:match '[:%.]' then -- not qualified
-                     local class = this_section.name
+                     local class = classmod and this_mod.name or this_section.name
                      local lang = this_mod.file.lang
                      local static = item.tags.constructor or item.tags.static or item.type ~= 'function'
                      item.name = class..(not static and lang.method_call or '.')..item.name
@@ -321,7 +342,16 @@ function File:finish()
                      end
                   end
                end
-               section_description = this_section.summary..' '..(this_section.description or '')
+               if this_section then
+                  section_description = this_section.summary..' '..(this_section.description or '')
+                  this_section.summary = ''
+               elseif item.tags.within then
+                  section_description = item.tags.within
+                  item.section = section_description
+               else
+                  section_description = "Methods"
+                  item.section = item.type
+               end
             elseif item.tags.within then
                section_description = item.tags.within
                item.section = section_description

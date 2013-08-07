@@ -85,7 +85,7 @@ return [==[
 <div id="content">
 
 #if module then
-<h1>$(ldoc.titlecase(module.type)) <code>$(module.name)</code></h1>
+<h1>$(ldoc.module_typename(module)) <code>$(module.name)</code></h1>
 # end
 
 # if ldoc.body then -- verbatim HTML as contents; 'non-code' entries

@@ -74,9 +74,19 @@ end
 local Tags = {}
 Tags.__index = Tags
 
-function Tags.new (t)
+function Tags.new (t,name)
+   local class
+   if name then
+      class = t
+      t = {}
+   end
    t._order = List()
-   return setmetatable(t,Tags)
+   local tags = setmetatable(t,Tags)
+   if name then
+      tags:add('class',class)
+      tags:add('name',name)
+   end
+   return tags
 end
 
 function Tags:add (tag,value)
@@ -346,6 +356,11 @@ local function parse_file(fname, lang, package, args)
                if doc.project_level(tags.class) then
                   if module_item then
                      F:error("Module already declared!")
+                  end
+                  if tags.class == 'classmod' then
+                     tags = tags.new('section','methods')
+                     tags:add('summary','Methods')
+                     F:new_item(tags,line)
                   end
                   module_item = current_item
                end
