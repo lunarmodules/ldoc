@@ -154,15 +154,15 @@ local function parse_file(fname, lang, package, args)
    local current_item, module_item
 
    F.args = args
-
+   F.lang = lang
    F.base = package
 
    local tok,f = lang.lexer(fname)
    if not tok then return nil end
 
-    local function lineno ()
+   local function lineno ()
       return tok:lineno()
-    end
+   end
 
    local function filename () return fname end
 

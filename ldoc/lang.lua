@@ -75,6 +75,7 @@ function Lua:_init()
    self.start_comment_ = '^%-%-%-+'     -- used for doc comment line start
    self.block_comment = '^%-%-%[=*%[%-+' -- used for block doc comments
    self.end_comment_ = '[^%-]%-%-+\n$' ---- exclude --- this kind of comment ---
+   self.method_call = ':'
    self:finalize()
 end
 
@@ -240,7 +241,8 @@ end
 
 
 -- note a difference here: we scan C/C++ code in full-text mode, not line by line.
--- This is because we can't detect multiline comments in line mode
+-- This is because we can't detect multiline comments in line mode.
+-- Note: this applies to C/C++ code used to generate _Lua_ documentation!
 
 local CC = class(Lang)
 
@@ -248,6 +250,7 @@ function CC:_init()
    self.line_comment = '^//+'
    self.start_comment_ = '^///+'
    self.block_comment = '^/%*%*+'
+   self.method_call = ':'
    self:finalize()
 end
 
@@ -270,6 +273,7 @@ function Moon:_init()
    self.start_comment_ = '^%s*%-%-%-+'     -- used for doc comment line start
    self.block_comment = '^%-%-%[=*%[%-+' -- used for block doc comments
    self.end_comment_ = '[^%-]%-%-+\n$' ---- exclude --- this kind of comment ---
+   self.method_call = '.'
    self:finalize()
 end
 
@@ -293,11 +297,15 @@ function Moon:item_follows (t,v,tok)
                tags:add('name',name)
             end
             if t == '(' then
-               tags.formal_args = tools.get_parameters(tok)
+               tags.formal_args,t,v = tools.get_parameters(tok)
             else
                tags.formal_args = List()
             end
             tags:add('class','function')
+            if t == '=' then
+               tags.formal_args:insert(1,'self')
+               tags.formal_args.comments = {self=''}
+            end
          end
       else
          return nil

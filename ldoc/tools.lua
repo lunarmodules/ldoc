@@ -275,7 +275,7 @@ function M.get_parameters (tok,endtoken,delim)
    tok = M.space_skip_getter(tok)
    local args = List()
    args.comments = {}
-   local ltl = lexer.get_separated_list(tok,endtoken,delim)
+   local ltl,tt = lexer.get_separated_list(tok,endtoken,delim)
 
    if not ltl or not ltl[1] or #ltl[1] == 0 then return args end -- no arguments
 
@@ -330,7 +330,6 @@ function M.get_parameters (tok,endtoken,delim)
       end
    end
 
-   ----[[
    -- we had argument comments
    -- but the last one may be outside the parens! (Geoff style)
    -- (only try this stunt if it's a function parameter list!)
@@ -339,17 +338,17 @@ function M.get_parameters (tok,endtoken,delim)
       local last_arg = args[n]
       if not args.comments[last_arg] then
          while true do
-            local t = {tok()}
-            if type_of(t) == 'comment' then
-               set_comment(n,t)
+            tt = {tok()}
+            if type_of(tt) == 'comment' then
+               set_comment(n,tt)
             else
                break
             end
          end
       end
    end
-   --]]
-   return args
+   -- return what token we ended on as well - can be token _past_ ')'
+   return args,tt[1],tt[2]
 end
 
 -- parse a Lua identifier - contains names separated by . and (optionally) :.

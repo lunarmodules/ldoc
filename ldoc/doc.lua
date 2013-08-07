@@ -307,8 +307,9 @@ function File:finish()
                if doc.class_tag(stype) then
                   if not item.name:match '[:%.]' then -- not qualified
                      local class = this_section.name
+                     local lang = this_mod.file.lang
                      local static = item.tags.constructor or item.tags.static or item.type ~= 'function'
-                     item.name = class..(not static and ':' or '.')..item.name
+                     item.name = class..(not static and lang.method_call or '.')..item.name
                   end
                   if stype == 'factory'  then
                      if item.tags.private then to_be_removed = true
