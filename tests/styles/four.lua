@@ -27,7 +27,6 @@ end
 function two (one,two,three,four)
 end
 
-
 --- third useless function.
 -- Can always put comments inline, may
 -- be multiple.
@@ -37,6 +36,11 @@ function three ( -- person:
     age  -- int:
         -- not less than zero!
 )
+
+---- function with single optional arg
+-- @param[opt] one
+function four (one)
+end
 
 --- an implicit table.
 -- Again, we can use the comments

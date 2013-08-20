@@ -191,6 +191,7 @@ local ldoc_contents = {
    'readme','all','manual_url', 'ignore', 'colon', 'sort', 'module_file',
    'boilerplate','merge', 'wrap', 'not_luadoc', 'template_escape',
    'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
+   'no_space_before_args',
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 

@@ -737,7 +737,7 @@ function build_arg_list (names,pmods)
          end
          opt = m.optchain or m.opt
          if opt then
-            acc(' [')
+            acc('[')
             npending=npending+1
          end
       end

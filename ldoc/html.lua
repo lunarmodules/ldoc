@@ -143,8 +143,14 @@ function html.generate_output(ldoc, args, project)
 
    function ldoc.display_name(item)
       local name = item.display_name or item.name
-      if item.type == 'function' or item.type == 'lfunction' then return name..' '..item.args -- &nbsp;
-      else return name end
+      if item.type == 'function' or item.type == 'lfunction' then
+         if not ldoc.no_space_before_args then
+            name = name..' '
+         end
+         return name..item.args
+      else
+         return name
+      end
    end
 
    function ldoc.no_spaces(s)
