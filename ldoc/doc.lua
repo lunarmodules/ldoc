@@ -422,7 +422,7 @@ end
 
 function Item:trailing_warning (kind,tag,rest)
    if type(rest)=='string' and #rest > 0 then
-      Item.warning(self,kind.." tag: '"..tag..'" has trailing text; use no_luadoc=true\n'..rest)
+      Item.warning(self,kind.." tag: '"..tag..'" has trailing text; use not_luadoc=true if you want description to continue between tags\n'..rest)
    end
 end
 
