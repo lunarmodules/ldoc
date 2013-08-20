@@ -201,7 +201,7 @@ return [==[
 
 #   if item.see then
 #     local li,il = use_li(item.see)
-    <h3>see also:</h3>
+    <h3>See also:</h3>
     <ul>
 #     for see in iter(item.see) do
          $(li)<a href="$(ldoc.href(see))">$(see.label)</a>$(il)
