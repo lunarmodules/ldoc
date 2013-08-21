@@ -556,6 +556,9 @@ function Item:finish()
    self.modifiers = extract_tag_modifiers(tags)
    self.usage = read_del(tags,'usage')
    tags.see = read_del(tags,'see')
+   if tags.see then
+      tags.see = tools.identifier_list(tags.see)
+   end
    if  doc.project_level(self.type) then
       -- we are a module, so become one!
       self.items = List()

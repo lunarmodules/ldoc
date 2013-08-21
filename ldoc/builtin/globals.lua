@@ -83,11 +83,17 @@ local tables = globals.tables
 
 local function function_ref (name,tbl)
    local href
-   tbl = tbl or ''
-   if tables[tbl] then
+   if not tbl then -- can only be a standard Lua global function
+      if globals.functions[name] then
+        return {href = fun_ref..name, label = name}
+      else
+         return nil
+      end
+   end
+   if tables[tbl] then -- function inside standard Lua table
       name = tbl..'.'..name
       href = fun_ref..name
-   elseif xlibs[tbl] then
+   elseif xlibs[tbl] then -- in external libs, use LDoc style
       href = xlib_url..xlibs[tbl]..'#'..name
       name = tbl..'.'..name
    else
@@ -98,9 +104,9 @@ end
 
 local function module_ref (tbl)
    local href
-   if tables[tbl] ~= nil then
+   if tables[tbl] ~= nil then -- standard Lua table
       href = manual..tables[tbl]
-   elseif xlibs[tbl] then
+   elseif xlibs[tbl] then -- external lib
       href = xlib_url..xlibs[tbl]
    else
       return nil

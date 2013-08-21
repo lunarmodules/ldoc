@@ -172,6 +172,19 @@ function M.extract_identifier (value)
    return value:match('([%.:%-_%w]+)(.*)$')
 end
 
+function M.identifier_list (ls)
+   local ns = List()
+   if type(ls) == 'string' then ls = List{ns} end
+   for s in ls:iter() do
+      if s:match ',' then
+         ns:extend(List.split(s,'[,%s]+'))
+      else
+         ns:append(s)
+      end
+   end
+   return ns
+end
+
 function M.strip (s)
    return s:gsub('^%s+',''):gsub('%s+$','')
 end
