@@ -285,21 +285,21 @@ function markup.create (ldoc, format, pretty)
    global_context = ldoc.package and ldoc.package .. '.'
    prettify.set_prettifier(pretty)
 
-   markup.process_reference = function(name)
+   markup.process_reference = function(name,istype)
       if local_context == 'none.' and not name:match '%.' then
          return nil,'not found'
       end
       local mod = ldoc.single or ldoc.module or ldoc.modules[1]
-      local ref,err = mod:process_see_reference(name, ldoc.modules)
+      local ref,err = mod:process_see_reference(name, ldoc.modules, istype)
       if ref then return ref end
       if global_context then
          local qname = global_context .. name
-         ref = mod:process_see_reference(qname, ldoc.modules)
+         ref = mod:process_see_reference(qname, ldoc.modules, istype)
          if ref then return ref end
       end
       if local_context then
          local qname = local_context .. name
-         ref = mod:process_see_reference(qname, ldoc.modules)
+         ref = mod:process_see_reference(qname, ldoc.modules, istype)
          if ref then return ref end
       end
       -- note that we'll return the original error!

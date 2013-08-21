@@ -180,7 +180,7 @@ function html.generate_output(ldoc, args, project)
       end
       local types = {}
       for name in tp:gmatch("[^|]+") do
-         local ref,err = markup.process_reference(name)
+         local ref,err = markup.process_reference(name,true)
          if ref then
             types[#types+1] = ('<a class="type" href="%s">%s</a>'):format(ldoc.href(ref),ref.label or name)
          else

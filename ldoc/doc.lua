@@ -830,19 +830,26 @@ local function reference (s, mod_ref, item_ref)
    return {mod = mod_ref, name = name, label=s}
 end
 
-function Module:process_see_reference (s,modules)
+function Module:process_see_reference (s,modules,istype)
    local mod_ref,fun_ref,name,packmod
    local ref = custom_see_references(s)
    if ref then return ref end
    if not s:match '^[%w_%.%:%-]+$' or not s:match '[%w_]$' then
       return nil, "malformed see reference: '"..s..'"'
    end
+   local function ismod(item)
+      if item == nil then return false end
+      if not istype then return true
+      else
+         return item.type == 'classmod'
+      end
+   end
    -- is this a fully qualified module name?
    local mod_ref = modules.by_name[s]
-   if mod_ref then return reference(s, mod_ref,nil) end
+   if ismod(mod_ref) then return reference(s, mod_ref,nil) end
    -- module reference?
    mod_ref = self:hunt_for_reference(s, modules)
-   if mod_ref then return mod_ref end
+   if ismod(mod_ref) then return mod_ref end
    -- method reference? (These are of form CLASS.NAME)
    fun_ref = self.items.by_name[s]
    if fun_ref then return reference(s,self,fun_ref) end
@@ -871,7 +878,7 @@ function Module:process_see_reference (s,modules)
       end
    else -- plain jane name; module in this package, function in this module
       mod_ref = modules.by_name[self.package..'.'..s]
-      if mod_ref then return reference(s, mod_ref,nil) end
+      if ismod(mod_ref) then return reference(s, mod_ref,nil) end
       fun_ref = self.items.by_name[s]
       if fun_ref then return reference(s, self,fun_ref)
       else
