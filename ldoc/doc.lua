@@ -752,11 +752,23 @@ function build_arg_list (names,pmods)
    return  '('..table.concat(buffer)..')'
 end
 
-function Item:type_of_param(p)
+function Item:param_modifiers (p)
    local mods = self.modifiers[self.parameter]
    if not mods then return '' end
-   local mparam = rawget(mods,p)
+   return rawget(mods,p)
+end
+
+function Item:type_of_param(p)
+   local mparam = self:param_modifiers(p)
    return mparam and mparam.type or ''
+end
+
+function Item:default_of_param(p)
+   local m = self:param_modifiers(p)
+   if not m then return nil end
+   local opt = m.optchain or m.opt
+   if opt == true then return nil end
+   return opt
 end
 
 function Item:type_of_ret(idx)
