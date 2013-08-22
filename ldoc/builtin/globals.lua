@@ -91,9 +91,17 @@ local function function_ref (name,tbl)
       end
    end
    if tables[tbl] then -- function inside standard Lua table
+      local t = rawget(_G,tbl) -- do a quick sanity check
+      if not rawget(t,name) then
+         return nil
+      end
       name = tbl..'.'..name
       href = fun_ref..name
    elseif xlibs[tbl] then -- in external libs, use LDoc style
+      local t = require('ldoc.builtin.'..tbl)
+      if not rawget(t,name) then
+         return nil
+      end
       href = xlib_url..xlibs[tbl]..'#'..name
       name = tbl..'.'..name
    else

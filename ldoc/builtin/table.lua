@@ -1,6 +1,7 @@
 --- manipulating Lua tables.
+-- @module table
 
-module 'table'
+local table = {}
 
 ---
 -- Given an array where all elements are strings or numbers, returns
@@ -39,3 +40,5 @@ function table.remove(table , pos) end
 -- (so that `not comp(a[i+1],a[i])` will be true after the sort). If `comp`
 -- is not given, then the '<' operator will be used.
 function table.sort(table , comp) end
+
+return table

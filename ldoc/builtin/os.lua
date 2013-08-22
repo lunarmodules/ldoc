@@ -1,6 +1,7 @@
 --- Operating System facilities like date, time and program execution.
+-- @module os
 
-module 'os'
+local os = {}
 
 ---
 -- Returns an approximation of the amount in seconds of CPU time used by
@@ -108,3 +109,4 @@ function os.time(table) end
 -- removes the file when the program ends.
 function os.tmpname() end
 
+return os

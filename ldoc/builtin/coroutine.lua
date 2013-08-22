@@ -1,6 +1,7 @@
 --- creating and controlling coroutines.
+-- @module coroutine
 
-module 'coroutine'
+local coroutine = {}
 
 ---
 -- Creates a new coroutine, with body `f`. `f` must be a Lua
@@ -46,3 +47,4 @@ function coroutine.wrap(f) end
 -- `yield` are passed as extra results to `resume`.
 function coroutine.yield(...) end
 
+return coroutine

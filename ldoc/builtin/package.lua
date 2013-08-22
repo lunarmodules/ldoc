@@ -1,6 +1,7 @@
 --- controlling how `require` finds packages.
+-- @module package
 
-module 'package'
+local package = {}
 
 ---
 -- The path used by `require` to search for a C loader.
@@ -93,3 +94,4 @@ function package.loadlib(libname, funcname) end
 -- environment. To be used as an option to function `module`.
 function package.seeall(module) end
 
+return package

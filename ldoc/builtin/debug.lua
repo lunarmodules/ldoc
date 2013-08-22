@@ -1,7 +1,7 @@
 --- getting runtime debug information.
+-- @module debug
 
-module 'debug'
-
+local debug = {}
 ---
 -- Enters an interactive mode with the user, running each string that
 -- the user enters. Using simple commands and other debug facilities,
@@ -121,3 +121,4 @@ function debug.setmetatable(object, table) end
 -- with the given index. Otherwise, it returns the name of the upvalue.
 function debug.setupvalue(func, up, value) end
 
+return debug

@@ -1,6 +1,7 @@
 --- string operations like searching and matching.
+-- @module string
 
-module 'string'
+local string = {}
 
 ---
 -- Returns the internal numerical codes of the characters `s[i]`, `s[i+1]`,
@@ -169,4 +170,6 @@ function string.sub(s, i , j) end
 -- letters changed to uppercase. All other characters are left unchanged. The
 -- definition of what a lowercase letter is depends on the current locale.
 function string.upper(s) end
+
+return string
 

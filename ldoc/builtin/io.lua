@@ -1,6 +1,7 @@
 --- Reading and Writing Files.
+-- @module io
 
-module 'io'
+local io = {}
 
 ---
 -- Equivalent to `file:close()`. Without a `file`, closes the default
@@ -155,3 +156,4 @@ function file:setvbuf(mode , size) end
 -- `string.format` before `write`.
 function file:write(...) end
 
+return io

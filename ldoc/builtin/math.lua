@@ -1,6 +1,7 @@
 --- standard mathematical functions.
+-- @module math
 
-module 'math'
+local math = {}
 
 ---
 -- Returns the absolute value of `x`.
@@ -140,3 +141,4 @@ function math.tan(x) end
 -- Returns the hyperbolic tangent of `x`.
 function math.tanh(x) end
 
+return math
