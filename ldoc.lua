@@ -51,6 +51,7 @@ ldoc, a documentation generator for Lua, vs 1.3.12
   -x,--ext (default html) output file extension
   -c,--config (default config.ld) configuration name
   -i,--ignore ignore any 'no doc comment or no module' warnings
+  -X,--not_luadoc break LuaDoc compatibility. Descriptions may continue after tags.
   -D,--define (default none) set a flag to be used in config.ld
   -C,--colon use colon style
   -B,--boilerplate ignore first comment in source files

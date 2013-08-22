@@ -45,7 +45,7 @@ local function resolve_inline_references (ldoc, txt, item, plain)
          if ref then
             return ('<a href="%s">%s</a> '):format(ldoc.href(ref),name)
          else
-            return '`'..name..'`'
+            return '<code>'..name..'</code>'
          end
       end)
    end
@@ -281,6 +281,10 @@ end
 function markup.create (ldoc, format, pretty)
    local processor
    markup.plain = true
+   if format == 'backtick' then
+      ldoc.backtick_references = true
+      format = 'plain'
+   end
    backtick_references = ldoc.backtick_references
    global_context = ldoc.package and ldoc.package .. '.'
    prettify.set_prettifier(pretty)

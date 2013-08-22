@@ -106,7 +106,7 @@ return [==[
     <h3>Info:</h3>
     <ul>
 #     for tag, value in ldoc.pairs(module.info) do
-        <li><strong>$(tag)</strong>: $(value)</li>
+        <li><strong>$(tag)</strong>: $(M(value,module))</li>
 #     end
     </ul>
 #   end -- if module.info

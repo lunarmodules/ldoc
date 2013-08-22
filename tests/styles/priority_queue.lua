@@ -77,7 +77,7 @@ do
     return front_elem[PRIORITY_KEY], front_elem[VALUE_KEY]
   end
 
-  --- construct a @{priority_queue}.
+  --- construct a `priority_queue`.
   -- @constructor
   make_priority_queue = function()
     --- @export
