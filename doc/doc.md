@@ -225,7 +225,7 @@ If you want to document scripts, then use `@script` instead of `@module`. New wi
 ## See References
 
 The tag 'see' is used to reference other parts of the documentation, and 'usage' can provide
-examples of use:
+examples of use; there can be multiple such tags:
 
     ---------
     -- split a string in two.
@@ -897,7 +897,7 @@ For instance, if I am talking about `pl.utils`, then I can say `@lookup utils` a
 thereafter references like `@{\printf}` will resolve correctly.
 
 If you look at the source for this document, you will see a `@lookup doc.md` which allows
-direct references to sections like @{Readme_files|this}.
+direct references to sections like @{Readme_files|this} with `@{\Readme_files|this}`.
 
 Remember that the default is for references in backticks to be resolved; unlike @
 references, it is not an error if the reference cannot be found.
@@ -906,21 +906,26 @@ The _sections_ of a document (the second-level headings) are also references. Th
 particular section can be refered to as `@{\doc.md.Resolving_References_in_Documents}` - the
 rule is that any non-alphabetic character is replaced by an underscore.
 
-
 ## Tag Modifiers
 
 Ay tag may have _tag modifiers_. For instance, you may say
 `@param[type=number]` and this associates the modifier `type` with value `number` with this
-particular param tag. A shorthand can be introduced for this common case, which is `@tparam
+particular param tag. A shorthand has been introduced for this common case, which is `@tparam
 <type> <parmname> <comment>`; in the same way `@treturn` is defined.
 
 This is useful for larger projects where you want to provide the argument and return value
-types for your API, in a structured way that can be easily extracted later. There is a
-useful function for creating new tags that can be used in `config.ld`:
+types for your API, in a structured way that can be easily extracted later.
+
+These types can be combined, so that "?string|number" means "ether a string or a number";
+"?string" is short for "?|nil|string". However, for this last case you should usually use the
+`opt` modifier discussed below.
+
+There is a useful function for creating new tags that can be used in `config.ld`:
 
     tparam_alias('string','string')
 
-That is, "@string" will now have the same meaning as "@tparam string".
+That is, "@string" will now have the same meaning as "@tparam string"; this also applies
+to the optional type syntax "?|T1|T2".
 
 From 1.3, the following standard type aliases are predefined:
 
@@ -932,19 +937,18 @@ From 1.3, the following standard type aliases are predefined:
   *  `tab` 'table'
   * `thread`
 
-The exact form of `<type>` is not defined, but here is a suggested scheme:
+When using 'colon-style' (@{colon.lua}) it's possible to directly use types by prepending
+them with '!'; '?' is also naturally understood.
 
-    number  -- a plain type
-    Bonzo   -- a known type; a reference link will be generated
-    {string,number}  -- a 'list' tuple, built from type expressions
-    {A=string,N=number} -- a 'struct' tuple, ditto
-    {Bonzo,...}   -- an array of Bonzo objects
-    {[string]=Bonzo,...} -- a map of Bonzo objects with string keys
-    Array(Bonzo) -- (assuming that Array is a container)
+The exact form of `<type>` is not defined, but here is one suggested scheme:
 
-Currently the `type` modifier is the only one known and used by LDoc when generating HTML
-output. However, any other modifiers are allowed and are available for use with your own
-templates or for extraction by your own tools.
+  * `number`  -- a plain type
+  * `Bonzo`   -- a known type; a reference link will be generated
+  * `{string,number}`  -- a 'list' tuple of two values, built from type expressions
+  * `{A=string,N=number}` -- a 'struct', ditto (But it's often better to create a named table and refer to it)
+  * `{Bonzo,...}`   -- an array of Bonzo objects
+  * `{[string]=Bonzo,...}` -- a map of Bonzo objects with string keys
+  * `Array(Bonzo)` -- (assuming that Array is a container type)
 
 The `alias` function within configuration files has been extended so that alias tags can be
 defined as a tag plus a set of modifiers.  So `tparam` is defined as:
@@ -966,7 +970,7 @@ Another modifier understood by LDoc is `opt`. For instance,
     end
     ----> displayed as: two (one [, two], three [, four])
 
-This modifier can also be used with type aliases. If a value is given for the modifier
+This modifier can also be used with type aliases. If a value is given for `opt`
 then LDoc can present this as the default value for this optional argument.
 
     --- a function with typed args.
@@ -980,6 +984,10 @@ then LDoc can present this as the default value for this optional argument.
     function one (name,age,...)
     end
     ----> displayed as: one (name, age [, calender='gregorian' [, offset=0]])
+
+Currently the `type` and `opt` modifiers are the only ones known and used by LDoc when generating HTML
+output. However, any other modifiers are allowed and are available for use with your own
+templates or for extraction by your own tools.
 
 (See @{four.lua})
 
@@ -1006,7 +1014,7 @@ configuration file.
   - `merge` allow documentation from different files to be merged into modules without
 explicit @submodule tag
 
-_These only appear in `config.ld`:_
+_These only appear in config.ld:_
 
   - `description` a short project description used under the project title
   - `full_description` when you _really_ need a longer project description

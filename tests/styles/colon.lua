@@ -11,14 +11,21 @@
 
 --- first useless function.
 -- Optional type specifiers are allowed in this format.
--- As an extension, '?' is short for '?|'.
+-- As an extension, '?T' is short for '?nil|T'.
 -- Note how these types are rendered!
 -- string: name
 -- int: age
--- ?person2: options
+-- ?person3: options
 -- treturn: ?table|string
 function one (name,age,options)
 end
+
+--- implicit table can always use colon notation.
+person2 = {
+    id=true, -- string: official ID number
+    sex=true, -- string: one of 'M', 'F' or 'N'
+    spouse=true, -- ?person3: wife or husband
+}
 
 --- explicit table in colon format.
 -- Note how '!' lets you use a type name directly.

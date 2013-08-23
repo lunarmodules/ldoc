@@ -11,7 +11,7 @@
 -- Note the the standard tparam aliases, and how the 'opt' and 'optchain'
 -- modifiers may also be used. If the Lua function has varargs, then
 -- you may document an indefinite number of extra arguments!
--- @string name person's name
+-- @tparam ?string|Person name person's name
 -- @int age
 -- @string[opt='gregorian'] calender optional calendar
 -- @int[opt=0] offset optional offset
