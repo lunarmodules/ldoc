@@ -122,7 +122,7 @@ function doc.module_info_tags ()
 end
 
 
--- annotation tags can appear anywhere in the code and may contain of these tags:
+-- annotation tags can appear anywhere in the code and may contain any of these tags:
 known_tags._annotation_tags = {
    fixme = true, todo = true, warning = true
 }

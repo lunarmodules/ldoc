@@ -15,6 +15,7 @@ local backtick_references
 -- inline <references> use same lookup as @see
 local function resolve_inline_references (ldoc, txt, item, plain)
    local res = (txt:gsub('@{([^}]-)}',function (name)
+      if name:match '^\\' then return '@{'..name:sub(2)..'}' end
       local qname,label = utils.splitv(name,'%s*|')
       if not qname then
          qname = name

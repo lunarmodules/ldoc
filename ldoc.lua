@@ -35,7 +35,7 @@ app.require_here()
 
 --- @usage
 local usage = [[
-ldoc, a documentation generator for Lua, vs 1.3.12
+ldoc, a documentation generator for Lua, vs 1.4.0
   -d,--dir (default doc) output directory
   -o,--output  (default 'index') output name
   -v,--verbose          verbose
@@ -178,11 +178,11 @@ function ldoc.new_type (tag, header, project_level,subfield)
 end
 
 function ldoc.manual_url (url)
-    global.set_manual_url(url)
+   global.set_manual_url(url)
 end
 
 function ldoc.custom_see_handler(pat, handler)
-    doc.add_custom_see_handler(pat, handler)
+   doc.add_custom_see_handler(pat, handler)
 end
 
 local ldoc_contents = {
