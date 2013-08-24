@@ -549,8 +549,12 @@ if args.module then
    if args.module == true then
       file_list[1]:dump(args.verbose)
    else
-      local fun = module_list[1].items.by_name[args.module]
-      if not fun then quit(quote(args.module).." is not part of "..quote(args.file)) end
+      local M,name = module_list[1], args.module
+      local fun = M.items.by_name[name]
+      if not fun then
+         fun = M.items.by_name[M.mod_name..':'..name]
+      end
+      if not fun then quit(quote(name).." is not part of "..quote(args.file)) end
       fun:dump(true)
    end
    return

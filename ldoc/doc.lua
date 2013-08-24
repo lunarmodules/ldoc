@@ -121,7 +121,6 @@ function doc.module_info_tags ()
    return List.iter(known_tags._module_info)
 end
 
-
 -- annotation tags can appear anywhere in the code and may contain any of these tags:
 known_tags._annotation_tags = {
    fixme = true, todo = true, warning = true
