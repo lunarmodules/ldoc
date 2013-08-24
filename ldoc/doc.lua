@@ -405,10 +405,7 @@ function Item:_init(tags,file,line)
    self.tags = {}
    self.formal_args = tags.formal_args
    tags.formal_args = nil
-   local iter = tags.iter
-   if not iter then
-      iter = Map.iter
-   end
+   local iter = tags.iter or Map.Iter
    for tag in iter(tags) do
       self:set_tag(tag,tags[tag])
    end
@@ -482,7 +479,7 @@ function Item.check_tag(tags,tag, value, modifiers)
    if alias then
       if type(alias) == 'string' then
          tag = alias
-      else
+      elseif type(alias) == 'table' then --{ tag, value=, modifiers = }
          local avalue,amod
          tag, avalue, amod = alias[1],alias.value,alias.modifiers
          if avalue then value = avalue..' '..value end
@@ -496,6 +493,8 @@ function Item.check_tag(tags,tag, value, modifiers)
                modifiers[m] = v
             end
          end
+      else -- has to be a function
+         alias(tags,value,modifiers)
       end
    end
    local ttype = known_tags[tag]
@@ -684,6 +683,9 @@ function Item:finish()
       self.params = params
       self.args = build_arg_list (names,pmods)
    end
+   if self.ret then
+      self:build_return_groups()
+   end
 end
 
 -- ldoc allows comments in the formal arg list to be used, if they aren't specified with @param
@@ -776,6 +778,33 @@ function Item:type_of_ret(idx)
    return rparam and rparam.type or ''
 end
 
+local function integer_keys(t)
+   for k in pairs(t) do
+      local num = tonumber(k)
+      if num then return num end
+   end
+   return 0
+end
+
+function Item:build_return_groups()
+   local retmod = self.modifiers['return']
+   local groups = List()
+   local lastg, group
+   for i,ret in ipairs(self.ret) do
+      local mods = retmod[i]
+      local g = integer_keys(mods)
+      print(g,lastg)
+      if g ~= lastg then
+         group = List()
+         groups:append(group)
+         lastg = g
+      end
+      group:append({text=ret, type = mods.type or ''})
+   end
+   print(groups)
+   self.retgroups = groups
+end
+
 function Item:subparam(p)
    local subp = rawget(self.subparams,p)
    if subp then
@@ -793,7 +822,6 @@ function Item:display_name_of(p)
       return pname
    end
 end
-
 
 function Item:warning(msg)
    local file = self.file and self.file.filename

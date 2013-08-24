@@ -149,6 +149,18 @@ function ldoc.tparam_alias (name,type)
    ldoc.alias(name,{'param',modifiers={type=type}})
 end
 
+ldoc.alias ('error',function(tags,value,modifiers)
+    local t = List{'nil','error message'}
+    local oret = tags['return']
+    if not oret or type(oret) == 'string' then
+        if oret then t:insert(1,oret) end
+        tags:add('return',t)
+    else
+        tags['return']:extend(t)
+    end
+end)
+
+
 ldoc.tparam_alias 'string'
 ldoc.tparam_alias 'number'
 ldoc.tparam_alias 'int'

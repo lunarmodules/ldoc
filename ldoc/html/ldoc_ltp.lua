@@ -183,19 +183,22 @@ return [==[
     </ul>
 #   end -- if params
 
-#   if show_return and item.ret then
-#     local li,il = use_li(item.ret)
+#  if show_return and item.retgroups then local groups = item.retgroups
     <h3>Returns:</h3>
+#   for i,group in ldoc.ipairs(groups) do local li,il = use_li(group)
     <ol>
-#     for i,r in ldoc.ipairs(item.ret) do
+#   for r in group:iter() do
         $(li)
-#       local tp = ldoc.typename(item:type_of_ret(i))
-#       if tp ~= '' then
+#      local tp = ldoc.typename(r.type);   if tp ~= '' then
           <span class="types">$(tp)</span>
-#       end
-        $(M(r,item))$(il)
-#     end -- for
+#      end
+        $(M(r.text,item))$(il)
+#     end -- for r
     </ol>
+#   if i < #groups then
+     <h3>Or</h3>
+#   end
+#   end -- for group
 #   end -- if returns
 
 #   if show_return and item.raise then
