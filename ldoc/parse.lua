@@ -70,7 +70,8 @@ local function parse_colon_tags (text)
    return preamble,tag_items
 end
 
--- Tags are stored as an ordered map
+-- Tags are stored as an ordered multi map from strings to strings
+-- If the same key is used, then the value becomes a list
 local Tags = {}
 Tags.__index = Tags
 
@@ -89,9 +90,22 @@ function Tags.new (t,name)
    return tags
 end
 
-function Tags:add (tag,value)
+function Tags:add (tag,value,modifiers)
+   if modifiers then -- how modifiers are encoded
+      value = {value,modifiers=modifiers}
+   end
+   local ovalue = rawget(self,tag)
+   if ovalue then -- previous value?
+      if getmetatable(ovalue) ~= List then
+         ovalue = List{ovalue}
+      end
+      ovalue:append(value)
+      value = ovalue
+   end
    rawset(self,tag,value)
-   self._order:append(tag)
+   if not ovalue then
+      self._order:append(tag)
+   end
 end
 
 function Tags:iter ()
@@ -128,17 +142,8 @@ local function extract_tags (s,args)
       if not value:match '\n[^\n]+\n' then
          value = strip(value)
       end
-
-      if modifiers then value = { value, modifiers=modifiers } end
-      local old_value = tags[tag]
-
-      if not old_value then -- first element
-         tags:add(tag,value)
-      elseif type(old_value)=='table' and old_value.append then -- append to existing list
-         old_value :append (value)
-      else -- upgrade string->list
-         tags:add(tag,List{old_value, value})
-      end
+      
+      tags:add(tag,value,modifiers)
    end
    return tags --Map(tags)
 end

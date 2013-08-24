@@ -405,7 +405,7 @@ function Item:_init(tags,file,line)
    self.tags = {}
    self.formal_args = tags.formal_args
    tags.formal_args = nil
-   local iter = tags.iter or Map.Iter
+   local iter = tags.iter or Map.iter
    for tag in iter(tags) do
       self:set_tag(tag,tags[tag])
    end
@@ -494,7 +494,7 @@ function Item.check_tag(tags,tag, value, modifiers)
             end
          end
       else -- has to be a function
-         alias(tags,value,modifiers)
+         return alias(tags,value,modifiers)
       end
    end
    local ttype = known_tags[tag]
@@ -793,7 +793,6 @@ function Item:build_return_groups()
    for i,ret in ipairs(self.ret) do
       local mods = retmod[i]
       local g = integer_keys(mods)
-      print(g,lastg)
       if g ~= lastg then
          group = List()
          groups:append(group)
@@ -801,7 +800,6 @@ function Item:build_return_groups()
       end
       group:append({text=ret, type = mods.type or ''})
    end
-   print(groups)
    self.retgroups = groups
 end
 
