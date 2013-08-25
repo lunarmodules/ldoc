@@ -4,9 +4,7 @@
 -- A module reference to an example `test-fun.lua` would look like
 -- `@{example:test-fun}`.
 local List = require 'pl.List'
-local lexer = require 'ldoc.lexer'
 local globals = require 'ldoc.builtin.globals'
-local tnext = lexer.skipws
 local prettify = {}
 
 local escaped_chars = {
@@ -26,14 +24,23 @@ end
 
 local spans = {keyword=true,number=true,string=true,comment=true,global=true,backtick=true}
 
-function prettify.lua (fname, code, initial_lineno, pre)
-   local res = List()
+local cpp_lang = {c = true, cpp = true, cxx = true, h = true}
+
+function prettify.lua (lang, fname, code, initial_lineno, pre)
+   local res, lexer, tokenizer = List(), require 'ldoc.lexer'
+   local tnext = lexer.skipws
+   if not cpp_lang[lang] then
+      tokenizer = lexer.lua
+   else
+      tokenizer = lexer.cpp
+   end
+
    if pre then
       res:append '<pre>\n'
    end
    initial_lineno = initial_lineno or 0
 
-   local tok = lexer.lua(code,{},{})
+   local tok = tokenizer(code,{},{})
    local error_reporter = {
       warning = function (self,msg)
          io.stderr:write(fname..':'..tok:lineno()+initial_lineno..': '..msg,'\n')
@@ -72,7 +79,7 @@ local lxsh_highlighers = {bib=true,c=true,lua=true,sh=true}
 
 function prettify.code (lang,fname,code,initial_lineno,pre)
    if not lxsh then
-      return prettify.lua (fname, code, initial_lineno, pre)
+      return prettify.lua (lang,fname, code, initial_lineno, pre)
    else
       if not lxsh_highlighers[lang] then
          lang = 'lua'

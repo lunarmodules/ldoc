@@ -7,7 +7,7 @@
 --
 -- C/C++ support for Lua extensions is provided.
 --
--- Available from LuaRocks as 'ldoc' and as a [Zip file](http://stevedonovan.github.com/files/ldoc-1.3.9.zip)
+-- Available from LuaRocks as 'ldoc' and as a [Zip file](http://stevedonovan.github.com/files/ldoc-1.4.0.zip)
 --
 -- [Github Page](https://github.com/stevedonovan/ldoc)
 --
@@ -475,7 +475,8 @@ if type(ldoc.examples) == 'table' then
       })
       -- wrap prettify for this example so it knows which file to blame
       -- if there's a problem
-      item.postprocess = function(code) return prettify.lua(f,code,0,true) end
+      local ext = path.extension(f):sub(2)
+      item.postprocess = function(code) return prettify.lua(ext,f,code,0,true) end
    end)
 end
 
