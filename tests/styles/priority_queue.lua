@@ -1,7 +1,10 @@
 --------------------------------------------------------------------------------
---- Queue of objects sorted by priority
+--- Queue of objects sorted by priority.
 -- @module lua-nucleo.priority_queue
--- This file is a part of lua-nucleo library
+-- This file is a part of lua-nucleo library. Note that if you wish to spread
+-- the description after tags, then invoke with `not_luadoc=true`. 
+-- The flags here are `ldoc -X -f backtick priority_queue.lua`, which
+-- also expands backticks.
 -- @copyright lua-nucleo authors (see file `COPYRIGHT` for the license)
 --------------------------------------------------------------------------------
 
@@ -34,7 +37,7 @@ do
 
   local insert = function(self, priority, value)
     method_arguments(
-        self,
+        s
         "number", priority
       )
     assert(value ~= nil, "value can't be nil") -- value may be of any type, except nil

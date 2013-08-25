@@ -778,6 +778,7 @@ function Item:type_of_ret(idx)
 end
 
 local function integer_keys(t)
+   if not t then return 0 end
    for k in pairs(t) do
       local num = tonumber(k)
       if num then return num end
@@ -785,8 +786,14 @@ local function integer_keys(t)
    return 0
 end
 
+function Item:return_type(r)
+   if not r.type then return '' end
+   return r.type, r.ctypes
+end
+
 function Item:build_return_groups()
-   local retmod = self.modifiers['return']
+   local modifiers = self.modifiers
+   local retmod = modifiers['return']
    local groups = List()
    local lastg, group
    for i,ret in ipairs(self.ret) do
@@ -797,9 +804,29 @@ function Item:build_return_groups()
          groups:append(group)
          lastg = g
       end
-      group:append({text=ret, type = mods.type or ''})
+      group:append({text=ret, type = mods.type or '',mods = mods})
    end
    self.retgroups = groups
+   -- cool, now see if there are any treturns that have tfields to associate with
+   local fields = self.tags.field
+   if fields then
+      local fcomments = List()
+      for i,f in ipairs(fields) do
+         local name, comment = f:match('%s*([%w_%.:]+)(.*)')
+         fields[i] = name
+         fcomments[i] = coment
+      end
+      local fmods = modifiers.field
+      for group in groups:iter() do for r in group:iter() do
+         if r.mods and r.mods.type  == '*'  then
+            local ctypes = List()
+            for i,f in  ipairs(fields) do
+               ctypes:append {name=f,type=fmods[i].type,comment=fcomments[i]}
+            end
+            r.ctypes = ctypes
+         end
+      end end
+   end
 end
 
 function Item:subparam(p)

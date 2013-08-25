@@ -187,12 +187,21 @@ return [==[
     <h3>Returns:</h3>
 #   for i,group in ldoc.ipairs(groups) do local li,il = use_li(group)
     <ol>
-#   for r in group:iter() do
+#   for r in group:iter() do local type, ctypes = item:return_type(r)
         $(li)
-#      local tp = ldoc.typename(r.type);   if tp ~= '' then
-          <span class="types">$(tp)</span>
-#      end
+#      if type ~= '' then
+           <span class="types">$(ldoc.typename(type))</span>
+#     end
         $(M(r.text,item))$(il)
+#    if ctypes then
+      <ul>
+#    for c in ctypes:iter() do
+            <li><span class="parameter">$(c.name)</span>
+            <span class="types">$(ldoc.typename(c.type))</span>
+            $(M(c.comment,item))</li>
+#     end
+        </ul>
+#    end -- if ctypes
 #     end -- for r
     </ol>
 #   if i < #groups then
