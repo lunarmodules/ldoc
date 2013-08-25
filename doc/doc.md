@@ -218,7 +218,7 @@ However, you must either use the `--colon` flag or set `colon=true` in your `con
 
 In this style, types may be used directly if prefixed with '!' or '?' (for type-or-nil)
 
-(see @{colon.lua})
+(see @{colon.lua}, rendered [here](http://stevedonovan.github.io/ldoc/examples/colon))
 
 By default, LDoc will process any file ending in '.lua' or '.luadoc' in a specified
 directory; you may point it to a single file as well. A 'project' usually consists of many
@@ -371,6 +371,11 @@ In that example, both `question` and `answer` are local and therefore private to
 the module, but `answer` has been explicitly exported. (If you invoke LDoc with
 the `-a` flag on this file, you will see the documentation for the unexported
 function as well.)
+
+`@set` is a powerful tag which assigns a configuration variable to a value _just for this module_.
+Saying `@set no_summary=true` in a module comment will temporarily disable summary generation when
+the template is expanded. Generally configuration variables that effect template expansion
+are modifiable in this way.
 
 ## Sections
 
@@ -1028,11 +1033,37 @@ then LDoc can present this as the default value for this optional argument.
     end
     ----> displayed as: one (name, age [, calender='gregorian' [, offset=0]])
 
-Currently the `type` and `opt` modifiers are the only ones known and used by LDoc when generating HTML
+
+(See @{four.lua}, rendered [here](http://stevedonovan.github.io/ldoc/examples/four))
+
+An experimental feature in 1.4 allows different 'return groups' to be defined. There may be
+multiple `@return` tags, and the meaning of this is well-defined, since Lua functions may
+return multiple values.  However, being a dynamic language it may return a single value if
+successful and two values (`nil`,an error message) if there is an error. This is in fact the
+convention for returning 'normal' errors (like 'file not found') as opposed to parameter errors
+(like 'file must be a string') that are often raised as errors.
+
+Return groups allow a documenter to specify the various possible return values of a function,
+by specifying _number_ modifiers. All `return` tags with the same digit modifier belong together
+as a group:
+
+    -----
+    -- function with return groups.
+    -- @return[1] result
+    -- @return[2] nil
+    -- @return[2] error message
+    function mul1() ... end
+
+This is the first function in @{multiple.lua}, and the [output](http://stevedonovan.github.io/ldoc/examples/multiple)
+shows how return groups are presented, with an **Or** between the groups.
+
+This is rather clumsy, and so there is a shortcut, the `@error` tag which achieves the same result,
+with helpful type information.
+
+Currently the `type`,`opt` and `<digit>` modifiers are the only ones known and used by LDoc when generating HTML
 output. However, any other modifiers are allowed and are available for use with your own
 templates or for extraction by your own tools.
 
-(See @{four.lua})
 
 ## Fields allowed in `config.ld`
 
@@ -1139,7 +1170,11 @@ embedded with '$(...)'.
 
 This is then styled with `ldoc.css`. Currently the template and stylesheet is very much
 based on LuaDoc, so the results are mostly equivalent; the main change that the template has
-been more generalized. The default location (indicated by '!') is the directory of `ldoc.lua`.
+been more generalized. The default location (indicated by '!') is the directory of `ldoc_ltp.lua`.
+
+You will notice that the built-in templates and stylesheets end in `.lua`; this is simply to
+make it easier for LDoc to find them.  Where you are customizing one or both of the template
+and stylesheet, they will have their usual extensions.
 
 You may customize how you generate your documentation by specifying an alternative style
 sheet and/or template, which can be deployed with your project. The parameters are `--style`
@@ -1151,7 +1186,14 @@ be a valid directory relative to the ldoc invocation.
 An example of fully customized documentation is `tests/example/style`: this is what you
 could call 'minimal Markdown style' where there is no attempt to tag things (except
 emphasizing parameter names). The narrative alone _can_ to be sufficient, if it is written
-appropriately.
+well.
+
+There are two other stylesheets available in LDoc since 1.4; the first is `ldoc_one.css` which is what
+you get from `one=true` and the second is `ldoc_pale.css`. This is a lighter theme which
+might give some relief from the heavier colours of the default. You can use this style with
+`style="!pale"` or `-s !pale`.
+See the [Lake](http://stevedonovan.github.io/lake/modules/lakelibs.html) documentation
+as an example of its use.
 
 Of course, there's no reason why LDoc must always generate HTML. `--ext` defines what output
 extension to use; this can also be set in the configuration file. So it's possible to write
@@ -1159,8 +1201,10 @@ a template that converts LDoc output to LaTex, for instance. The separation of p
 and presentation makes this kind of new application possible with LDoc.
 
 From 1.4, LDoc has some limited support for generating Markdown output, although only
-for single files currently. Use `--ext md` for this.  'ldoc/html/ldoc_mdtp.lua' defines
-the template for Markdown.
+for single files currently. Use `--ext md` for this.  'ldoc/html/ldoc_md_ltp.lua' defines
+the template for Markdown, but this can be overriden with `template` as above. It's another
+example of minimal structure, and provides a better place to learn about these templates than the
+rather elaborate default HTML template.
 
 ## Internal Data Representation
 

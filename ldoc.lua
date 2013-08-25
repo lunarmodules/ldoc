@@ -586,13 +586,34 @@ if args.filter ~= 'none' then
    os.exit()
 end
 
+-- can specify format, output, dir and ext in config.ld
+override 'output'
+override 'dir'
+override 'ext'
+override 'one'
+override 'boilerplate'
+
+-- handling styling and templates --
 ldoc.css, ldoc.templ = 'ldoc.css','ldoc.ltp'
 
+-- special case: user wants to generate a .md file from a .lua file
 if args.ext == 'md' then
-   ldoc.templ = 'ldoc.mdtp'
+   if #module_list ~= 1 then
+      quit("can currently only generate Markdown output from one module only")
+   end
+   if ldoc.template == '!' then
+      ldoc.template = '!md'
+   end
+   args.output = module_list[1].name
+   args.dir = '.'
    ldoc.template_escape = '>'
    ldoc.style = false
    args.ext = '.md'
+end
+
+local function match_bang (s)
+   if type(s) ~= 'string' then return end
+   return s:match '^!(.*)'
 end
 
 local function style_dir (sname)
@@ -605,7 +626,7 @@ local function style_dir (sname)
    if style then
       if style == true then
          dir = config_dir
-      elseif type(style) == 'string' and path.isdir(style) then
+      elseif type(style) == 'string' and (path.isdir(style) or match_bang(style)) then
          dir = style
       else
          quit(quote(tostring(style)).." is not a directory")
@@ -613,7 +634,6 @@ local function style_dir (sname)
       args[sname] = dir
    end
 end
-
 
 -- the directories for template and stylesheet can be specified
 -- either by command-line '--template','--style' arguments or by 'template and
@@ -625,35 +645,41 @@ end
 style_dir 'style'
 style_dir 'template'
 
--- can specify format, output, dir and ext in config.ld
-override 'output'
-override 'dir'
-override 'ext'
-override 'one'
-override 'boilerplate'
-
 if not args.ext:find '^%.' then
    args.ext = '.'..args.ext
 end
 
 if args.one then
-   ldoc.css = 'ldoc_one.css'
+   ldoc.style = '!one'
 end
 
-if args.style == '!' or args.template == '!' then
+local builtin_style, builtin_template = match_bang(args.style),match_bang(args.template)
+if builtin_style or builtin_template then
    -- '!' here means 'use built-in templates'
    local tmpdir = path.join(path.is_windows and os.getenv('TMP') or '/tmp','ldoc')
    if not path.isdir(tmpdir) then
       lfs.mkdir(tmpdir)
    end
    local function tmpwrite (name)
-      utils.writefile(path.join(tmpdir,name),require('ldoc.html.'..name:gsub('%.','_')))
+      local ok,text = pcall(require,'ldoc.html.'..name:gsub('%.','_'))
+      if not ok then
+         quit("cannot find builtin template "..name..": "..text)
+      end
+      if not utils.writefile(path.join(tmpdir,name),text) then
+         quit("cannot write to temp directory "..tmpdir)
+      end
    end
-   if args.style == '!' then
+   if builtin_style then
+      if builtin_style ~= '' then
+         ldoc.css = 'ldoc_'..builtin_style..'.css'
+      end
       tmpwrite(ldoc.css)
       args.style = tmpdir
    end
-   if args.template == '!' then
+   if builtin_template then
+      if builtin_template ~= '' then
+         ldoc.templ = 'ldoc_'..builtin_template..'.ltp'
+      end
       tmpwrite(ldoc.templ)
       args.template = tmpdir
    end

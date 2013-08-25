@@ -10,6 +10,7 @@ examples = {
     '../tests/styles/colon.lua',
     '../tests/styles/four.lua',
     '../tests/styles/three.lua',
+    '../tests/styles/multiple.lua',
     '../tests/example/mylib.c',
     '../tests/moonscript/List.moon',
 }
