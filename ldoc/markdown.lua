@@ -118,8 +118,8 @@ THE SOFTWARE.
 
 
 -- Set up a table for holding local functions to avoid polluting the global namespace
--- Penlight 1.2 defines compatible 5.1 setfenv in utils table
 local M = {}
+local unpack = unpack or table.unpack
 local MT = {__index = _G}
 setmetatable(M, MT)
 

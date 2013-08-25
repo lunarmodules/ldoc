@@ -23,6 +23,7 @@ local tools = require 'ldoc.tools'
 local markup = require 'ldoc.markup'
 local prettify = require 'ldoc.prettify'
 local doc = require 'ldoc.doc'
+local unpack = utils.unpack
 local html = {}
 
 

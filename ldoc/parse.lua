@@ -1,5 +1,6 @@
 -- parsing code for doc comments
 
+local utils = require 'pl.utils'
 local List = require 'pl.List'
 local Map = require 'pl.Map'
 local stringio = require 'pl.stringio'
@@ -7,6 +8,7 @@ local lexer = require 'ldoc.lexer'
 local tools = require 'ldoc.tools'
 local doc = require 'ldoc.doc'
 local Item,File = doc.Item,doc.File
+local unpack = utils.unpack
 
 ------ Parsing the Source --------------
 -- This uses the lexer from PL, but it should be possible to use Peter Odding's
@@ -142,7 +144,7 @@ local function extract_tags (s,args)
       if not value:match '\n[^\n]+\n' then
          value = strip(value)
       end
-      
+
       tags:add(tag,value,modifiers)
    end
    return tags --Map(tags)
