@@ -22,9 +22,20 @@ function mul2 () end
 -- @error bad format
 function mul3 () end
 
+----
+-- function with inline return and errors
+-- @string name
+function mul4 (name)
+    if type(name) ~= 'string' then
+        --- @error not a string
+        return nil, 'not a string'
+    end
+    --- @treturn string converted to uppercase
+    return name:upper()
+end
 -----
 -- function that raises an error.
 -- @string filename
 -- @treturn string result
 -- @raise 'file not found'
-function mul4(filename) end
+function mul5(filename) end

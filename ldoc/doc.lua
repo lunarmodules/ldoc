@@ -138,8 +138,11 @@ function doc.expand_annotation_item (tags, last_item)
          tags:add('name',item_name..'-'..tag..acount)
          acount = acount + 1
          return true
+      elseif tag == 'return' then
+         last_item:set_tag(tag,value)
       end
    end
+   return false
 end
 
 -- we process each file, resulting in a File object, which has a list of Item objects.
@@ -422,12 +425,21 @@ function Item:trailing_warning (kind,tag,rest)
    end
 end
 
+local function is_list (l)
+   return getmetatable(l) == List
+end
+
 function Item:set_tag (tag,value)
    local ttype = known_tags[tag]
    local args = self.file.args
 
    if ttype == TAG_MULTI or ttype == TAG_MULTI_LINE then -- value is always a List!
-      if getmetatable(value) ~= List then
+      local ovalue = self.tags[tag]
+      if is_list(ovalue) then
+         ovalue:append(value)
+         value = ovalue
+      end
+      if not is_list(value) then
          value = List{value}
       end
       if ttype ~= TAG_MULTI_LINE and args and args.not_luadoc then
@@ -833,11 +845,14 @@ function Item:build_return_groups()
       local g = integer_keys(mods)
       if g ~= lastg then
          group = List()
+         group.g = g
          groups:append(group)
          lastg = g
       end
       group:append({text=ret, type = mods.type or '',mods = mods})
    end
+   -- order by groups to force error groups to the end
+   table.sort(groups,function(g1,g2) return g1.g < g2.g end)
    self.retgroups = groups
    -- cool, now see if there are any treturns that have tfields to associate with
    local fields = self.tags.field
@@ -881,7 +896,6 @@ function doc.error_macro(tags,value,modifiers)
          if grp > 0 then -- cool, create new group
             g = tostring(grp+1)
             text:append(value)
-            print(text)
          end
       end
    end
