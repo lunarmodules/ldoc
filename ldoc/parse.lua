@@ -96,17 +96,24 @@ function Tags:add (tag,value,modifiers)
    if modifiers then -- how modifiers are encoded
       value = {value,modifiers=modifiers}
    end
-   local ovalue = rawget(self,tag)
-   if ovalue then -- previous value?
-      if getmetatable(ovalue) ~= List then
-         ovalue = List{ovalue}
-      end
+   local ovalue = self:get(tag)
+   if ovalue then
       ovalue:append(value)
       value = ovalue
    end
    rawset(self,tag,value)
    if not ovalue then
       self._order:append(tag)
+   end
+end
+
+function Tags:get (tag)
+   local ovalue = rawget(self,tag)
+   if ovalue then -- previous value?
+      if getmetatable(ovalue) ~= List then
+         ovalue = List{ovalue}
+      end
+      return ovalue
    end
 end
 

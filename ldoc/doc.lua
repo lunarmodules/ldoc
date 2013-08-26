@@ -492,7 +492,7 @@ function Item.check_tag(tags,tag, value, modifiers)
                modifiers[m] = v
             end
          end
-      else -- has to be a function
+      else -- has to be a function that at least returns tag, value
          return alias(tags,value,modifiers)
       end
    end
@@ -545,6 +545,13 @@ end
 
 local build_arg_list, split_iden  -- forward declaration
 
+function Item:split_param (line)
+   local name, comment = line:match('%s*([%w_%.:]+)(.*)')
+   if not name then
+      self:error("bad param name format '"..line.."'. Are you missing a parameter name?")
+   end
+   return name, comment
+end
 
 function Item:finish()
    local tags = self.tags
@@ -593,10 +600,7 @@ function Item:finish()
       local param_names, comments = List(), List()
       if params then
          for line in params:iter() do
-            local name, comment = line:match('%s*([%w_%.:]+)(.*)')
-            if not name then
-               self:error("bad param name format '"..line.."'. Are you missing a parameter name?")
-            end
+            local name, comment = self:split_param(line)
             param_names:append(name)
             comments:append(comment)
          end
@@ -612,16 +616,10 @@ function Item:finish()
       if fargs then
          if #param_names == 0 then
             --docs may be embedded in argument comments; in either case, use formal arg names
-            formal = List()
-            if fargs.return_comment then
-               local retc = self:parse_argument_comment(fargs.return_comment,'return')
-               self.ret = List{retc}
-            end
-            for i, name in ipairs(fargs) do
-               formal:append(name)
-               comments:append(self:parse_argument_comment(fargs.comments[name],self.parameter))
-            end
-         elseif #fargs > 0 then
+            local ret
+            formal,comments,ret = self:parse_formal_arguments(fargs)
+            if ret and not self.ret then self.ret = ret end
+         elseif #fargs > 0 then -- consistency check!
             local varargs = fargs[#fargs] == '...'
             if varargs then table.remove(fargs) end
             local k = 0
@@ -639,14 +637,12 @@ function Item:finish()
                end
             end
             if k < #fargs then
-               for i = k+1,#fargs do
-                  if fargs[i] ~= '...' then
-                     self:warning("undocumented formal argument: "..quote(fargs[i]))
-                  end
-               end
+               for i = k+1,#fargs do if fargs[i] ~= '...' then
+                  self:warning("undocumented formal argument: "..quote(fargs[i]))
+               end end
             end
-         end
-      end
+         end -- #fargs > 0
+      end -- fargs
 
       -- the comments are associated with each parameter by
       -- adding name-value pairs to the params list (this is
@@ -702,6 +698,19 @@ function Item:parse_argument_comment (comment,field)
    return comment or ''
 end
 
+function Item:parse_formal_arguments (fargs)
+   local formal, comments, ret = List(), List()
+   if fargs.return_comment then
+      local retc = self:parse_argument_comment(fargs.return_comment,'return')
+      ret = List{retc}
+   end
+   for i, name in ipairs(fargs) do
+      formal:append(name)
+      comments:append(self:parse_argument_comment(fargs.comments[name],self.parameter))
+   end
+   return formal, comments, ret
+end
+
 function split_iden (name)
    if name == '...' then return name end
    local pname,field = name:match('(.-)%.(.+)')
@@ -753,6 +762,9 @@ function build_arg_list (names,pmods)
    return  '('..table.concat(buffer)..')'
 end
 
+------ retrieving information about parameters -----
+-- The template leans on these guys heavily....
+
 function Item:param_modifiers (p)
    local mods = self.modifiers[self.parameter]
    if not mods then return '' end
@@ -798,7 +810,7 @@ function Item:type_of_ret(idx)
 end
 
 local function integer_keys(t)
-   if not t then return 0 end
+   if type(t) ~= 'table' then return 0 end
    for k in pairs(t) do
       local num = tonumber(k)
       if num then return num end
@@ -832,7 +844,7 @@ function Item:build_return_groups()
    if fields then
       local fcomments = List()
       for i,f in ipairs(fields) do
-         local name, comment = f:match('%s*([%w_%.:]+)(.*)')
+         local name, comment = self:split_param(f)
          fields[i] = name
          fcomments[i] = coment
       end
@@ -852,12 +864,33 @@ end
 -- this alias macro implements @error.
 -- Alias macros need to return the same results as Item:check_tags...
 function doc.error_macro(tags,value,modifiers)
+   local g = '2' -- our default group id
+   -- Were we given an explicit group modifier?
    local key = integer_keys(modifiers)
-   local g = key > 0 and tostring(key) or '2'
+   if key > 0 then
+      g = tostring(key)
+   else
+      local l = tags:get 'return'
+      if l then -- there were returns already......
+         -- maximum group of _existing_ error return
+         local grp, text = 0, List()
+         for r in l:iter() do if type(r) == 'table' then
+            grp = math.max(grp,r.modifiers._err or 0)
+            text:append(r[1])
+         end end
+         if grp > 0 then -- cool, create new group
+            g = tostring(grp+1)
+            text:append(value)
+            print(text)
+         end
+      end
+   end
    tags:add('return','',{[g]=true,type='nil'})
-   return 'return', value, {[g]=true,type='string'}
+   -- note that this 'return' is tagged with _err!
+   return 'return', value, {[g]=true,_err=tonumber(g),type='string'}
 end
 
+---------- bothering the user --------------------
 
 function Item:warning(msg)
    local file = self.file and self.file.filename

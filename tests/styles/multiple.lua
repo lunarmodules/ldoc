@@ -18,8 +18,8 @@ function mul2 () end
 -----
 -- function with multiple error tags
 -- @return  result
--- @error[1] not found
--- @error[2] bad format
+-- @error not found
+-- @error bad format
 function mul3 () end
 
 -----
