@@ -772,6 +772,26 @@ function Item:default_of_param(p)
    return opt
 end
 
+function Item:subparam(p)
+   local subp = rawget(self.subparams,p)
+   if subp then
+      return subp,p
+   else
+      return {p},nil
+   end
+end
+
+function Item:display_name_of(p)
+   local pname,field = split_iden(p)
+   if field then
+      return field
+   else
+      return pname
+   end
+end
+
+-------- return values and types -------
+
 function Item:type_of_ret(idx)
    local rparam = self.modifiers['return'][idx]
    return rparam and rparam.type or ''
@@ -829,23 +849,15 @@ function Item:build_return_groups()
    end
 end
 
-function Item:subparam(p)
-   local subp = rawget(self.subparams,p)
-   if subp then
-      return subp,p
-   else
-      return {p},nil
-   end
+-- this alias macro implements @error.
+-- Alias macros need to return the same results as Item:check_tags...
+function doc.error_macro(tags,value,modifiers)
+   local key = integer_keys(modifiers)
+   local g = key > 0 and tostring(key) or '2'
+   tags:add('return','',{[g]=true,type='nil'})
+   return 'return', value, {[g]=true,type='string'}
 end
 
-function Item:display_name_of(p)
-   local pname,field = split_iden(p)
-   if field then
-      return field
-   else
-      return pname
-   end
-end
 
 function Item:warning(msg)
    local file = self.file and self.file.filename

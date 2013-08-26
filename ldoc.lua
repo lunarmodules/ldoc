@@ -25,6 +25,8 @@ local List = require 'pl.List'
 local stringx = require 'pl.stringx'
 local tablex = require 'pl.tablex'
 
+-- Penlight compatibility
+utils.unpack = utils.unpack or unpack or table.unpack
 
 local append = table.insert
 
@@ -149,11 +151,7 @@ function ldoc.tparam_alias (name,type)
    ldoc.alias(name,{'param',modifiers={type=type}})
 end
 
-ldoc.alias ('error',function(tags,value)
-    local g = '2'
-    tags:add('return','',{[g]=true,type='nil'})
-    return 'return', value, {[g]=true,type='string'}
-end)
+ldoc.alias ('error',doc.error_macro)
 
 ldoc.tparam_alias 'string'
 ldoc.tparam_alias 'number'

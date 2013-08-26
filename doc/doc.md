@@ -375,7 +375,8 @@ function as well.)
 `@set` is a powerful tag which assigns a configuration variable to a value _just for this module_.
 Saying `@set no_summary=true` in a module comment will temporarily disable summary generation when
 the template is expanded. Generally configuration variables that effect template expansion
-are modifiable in this way.
+are modifiable in this way.  For instance, if you wish that the contents of a particular module
+be sorted, then `@set sort=true` will do it _just_ for that module.
 
 ## Sections
 
@@ -830,8 +831,11 @@ description. There are then sections for the following tags: 'param', 'usage', '
 'see' in that order. (For tables, 'Fields' is used instead of 'Parameters' but internally
 fields of a table are stored as the 'param' tag.)
 
+By default, the items appear in the order of declaration within their section. If `sort=true`
+then they will be sorted alphabetically. (This can be set per-module with @{Module_Tags|@set}.)
+
 You can of course customize the default template, but there are some parameters that can
-control what the template will generate. Setting `one` to `true` in your configuration file
+control what the template will generate. Setting `one=true` in your configuration file
 will give a _one-column_ layout, which can be easier to use as a programming reference.  You
 can suppress the contents summary with `no_summary`.
 

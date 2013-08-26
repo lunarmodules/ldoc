@@ -16,8 +16,15 @@ function mul1 () end
 function mul2 () end
 
 -----
+-- function with multiple error tags
+-- @return  result
+-- @error[1] not found
+-- @error[2] bad format
+function mul3 () end
+
+-----
 -- function that raises an error.
 -- @string filename
 -- @treturn string result
 -- @raise 'file not found'
-function mul3(filename) end
+function mul4(filename) end
