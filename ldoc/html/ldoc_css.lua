@@ -272,6 +272,11 @@ table.function_list td {
 table.function_list td.name { background-color: #f0f0f0; ; min-width: 200px; }
 table.function_list td.summary { width: 100%; }
 
+ul.nowrap {
+    overflow:auto;
+    whitespace:nowrap;
+}
+
 dl.table dt, dl.function dt {border-top: 1px solid #ccc; padding-top: 1em;}
 dl.table dd, dl.function dd {padding-bottom: 1em; margin: 10px 0 0 20px;}
 dl.table h3, dl.function h3 {font-size: .95em;}

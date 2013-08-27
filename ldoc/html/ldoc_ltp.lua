@@ -24,7 +24,6 @@ return [==[
 # local use_li = ldoc.use_li
 # local display_name = ldoc.display_name
 # local iter = ldoc.modules.iter
-# ---local M = ldoc.markup
 # local function M(txt,item) return ldoc.markup(txt,item,ldoc.plain) end
 # local nowrap = ldoc.wrap and '' or 'nowrap'
 
@@ -54,7 +53,7 @@ return [==[
 # if ldoc.no_summary and module and not ldoc.one then -- bang out the functions on the side
 # for kind, items in module.kinds() do
 <h2>$(kind)</h2>
-<ul>
+<ul class="nowrap">
 # for item in items() do
     <li><a href="#$(item.name)">$(display_name(item))</a></li>
 # end
@@ -67,7 +66,7 @@ return [==[
 # for kind, mods, type in ldoc.kinds() do
 #  if not ldoc.kinds_allowed or ldoc.kinds_allowed[type] then
 <h2>$(kind)</h2>
-<ul>
+<ul class="nowrap">
 #  for mod in mods() do
 #   if mod.name == this_mod then -- highlight current module, link to others
   <li><strong>$(mod.name)</strong></li>
@@ -187,10 +186,10 @@ return [==[
     <h3>Returns:</h3>
 #   for i,group in ldoc.ipairs(groups) do local li,il = use_li(group)
     <ol>
-#   for r in group:iter() do local type, ctypes = item:return_type(r)
+#   for r in group:iter() do local type, ctypes = item:return_type(r); local rt = ldoc.typename(type)
         $(li)
-#      if type ~= '' then
-           <span class="types">$(ldoc.typename(type))</span>
+#     if rt ~= '' then
+           <span class="types">$(rt)</span>
 #     end
         $(M(r.text,item))$(il)
 #    if ctypes then
