@@ -29,7 +29,7 @@ del,ins {
     text-decoration: none;
 }
 li {
-    list-style: bullet;
+    list-style: disc;
     margin-left: 20px;
 }
 caption,th {
@@ -253,7 +253,7 @@ table.module_list td {
     border-style: solid;
     border-color: #cccccc;
 }
-table.module_list td.name { background-color: #f0f0f0; ; min-width: 200px; }
+table.module_list td.name { background-color: #f0f0f0; min-width: 200px; }
 table.module_list td.summary { width: 100%; }
 
 
@@ -269,12 +269,12 @@ table.function_list td {
     border-style: solid;
     border-color: #cccccc;
 }
-table.function_list td.name { background-color: #f0f0f0; ; min-width: 200px; }
+table.function_list td.name { background-color: #f0f0f0; min-width: 200px; }
 table.function_list td.summary { width: 100%; }
 
 ul.nowrap {
     overflow:auto;
-    whitespace:nowrap;
+    white-space:nowrap;
 }
 
 dl.table dt, dl.function dt {border-top: 1px solid #ccc; padding-top: 1em;}
