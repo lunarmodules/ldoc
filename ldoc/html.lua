@@ -95,6 +95,14 @@ function html.generate_output(ldoc, args, project)
       return (item.summary or '?')..' '..(item.description or '')
    end
 
+   function ldoc.module_name (mod)
+      local name = mod.name
+      if mod.type == 'module' then
+         name = name:gsub('^.-%.','')
+      end
+      return name
+   end
+
    -- this generates the internal module/function references
    function ldoc.href(see)
       if see.href then -- explict reference, e.g. to Lua manual

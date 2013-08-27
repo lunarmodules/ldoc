@@ -71,7 +71,7 @@ return [==[
 #   if mod.name == this_mod then -- highlight current module, link to others
   <li><strong>$(mod.name)</strong></li>
 #   else
-  <li><a href="$(ldoc.ref_to_module(mod))">$(mod.name)</a></li>
+  <li><a href="$(ldoc.ref_to_module(mod))">$(ldoc.module_name(mod))</a></li>
 #   end
 #  end
 # end
