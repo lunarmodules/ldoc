@@ -67,11 +67,11 @@ return [==[
 #  if not ldoc.kinds_allowed or ldoc.kinds_allowed[type] then
 <h2>$(kind)</h2>
 <ul class="nowrap">
-#  for mod in mods() do
-#   if mod.name == this_mod then -- highlight current module, link to others
-  <li><strong>$(mod.name)</strong></li>
+#  for mod in mods() do local name = ldoc.module_name(mod)
+#   if mod.name == this_mod then
+  <li><strong>$(name)</strong></li>
 #   else
-  <li><a href="$(ldoc.ref_to_module(mod))">$(ldoc.module_name(mod))</a></li>
+  <li><a href="$(ldoc.ref_to_module(mod))">$(name)</a></li>
 #   end
 #  end
 # end

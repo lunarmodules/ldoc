@@ -1092,7 +1092,7 @@ configuration file.
   - `merge` allow documentation from different files to be merged into modules without
 explicit @submodule tag
 
-_These only appear in config.ld:_
+_These only appear in the configuration file:_
 
   - `description` a short project description used under the project title
   - `full_description` when you _really_ need a longer project description

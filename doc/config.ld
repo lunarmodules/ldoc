@@ -6,6 +6,7 @@ backtick_references=false
 file='../ldoc.lua'
 dir='../out'
 readme='doc.md'
+style='!pale'
 examples = {
     '../tests/styles/colon.lua',
     '../tests/styles/four.lua',
