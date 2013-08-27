@@ -5,8 +5,9 @@
 -----
 -- returns a 'struct'.
 -- @string name your name dammit
--- @treturn * details of person
--- @tfield string name of person
--- @tfield int age of person
+-- @tfield string arb stuff
+-- @treturn st details of person
+-- @tfield[st] string name of person
+-- @tfield[st] int age of person
 function struct(name) end
 

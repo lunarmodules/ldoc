@@ -130,6 +130,8 @@ local file_types = {
 -- the ldoc table represents the API available in `config.ld`.
 local ldoc = { charset = 'UTF-8' }
 local add_language_extension
+-- hacky way for doc module to be passed options...
+doc.ldoc = ldoc
 
 local function override (field)
    if ldoc[field] ~= nil then args[field] = ldoc[field] end
@@ -193,8 +195,8 @@ local ldoc_contents = {
    'alias','add_language_extension','new_type','add_section', 'tparam_alias',
    'file','project','title','package','format','output','dir','ext', 'topics',
    'one','style','template','description','examples', 'pretty', 'charset', 'plain',
-   'readme','all','manual_url', 'ignore', 'colon', 'sort', 'module_file',
-   'boilerplate','merge', 'wrap', 'not_luadoc', 'template_escape',
+   'readme','all','manual_url', 'ignore', 'colon', 'sort', 'module_file','vars',
+   'boilerplate','merge', 'wrap', 'not_luadoc', 'template_escape','merge_error_groups',
    'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
    'no_space_before_args',
 }
@@ -372,6 +374,10 @@ override 'colon'
 override 'merge'
 override 'not_luadoc'
 override 'module_file'
+
+if ldoc.merge_error_groups == nil then
+   ldoc.merge_error_groups = 'Error Message'
+end
 
 -- ldoc.module_file establishes a partial ordering where the
 -- master module files are processed first.

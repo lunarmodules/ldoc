@@ -168,7 +168,7 @@ function html.generate_output(ldoc, args, project)
    end
 
    function ldoc.typename (tp)
-      if not tp or tp == '' then return '' end
+      if not tp or tp == '' or tp:match '^@' then return '' end
       local optional
       -- ?<type> is short for ?nil|<type>
       if tp:match("^%?") and not tp:match '|' then

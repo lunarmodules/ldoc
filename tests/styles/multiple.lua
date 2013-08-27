@@ -27,8 +27,12 @@ function mul3 () end
 -- @string name
 function mul4 (name)
     if type(name) ~= 'string' then
-        --- @error not a string
+        --- @error[1] not a string
         return nil, 'not a string'
+    end
+    if #name == 0 then
+        --- @error[2] zero-length string
+        return nil, 'zero-length string'
     end
     --- @treturn string converted to uppercase
     return name:upper()

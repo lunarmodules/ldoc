@@ -21,7 +21,7 @@ local TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE,TAG_FLAG,TAG_MULTI_LINE = 'M','id','S
 --  - 'N' tags which have no associated value, like 'local` (TAG_FLAG)
 --  - 'T' tags which represent a type, like 'function' (TAG_TYPE)
 local known_tags = {
-   param = 'M', see = 'M', usage = 'ML', ['return'] = 'M', field = 'M', author='M',set='M';
+   param = 'M', see = 'M', comment = 'M', usage = 'ML', ['return'] = 'M', field = 'M', author='M',set='M';
    class = 'id', name = 'id', pragma = 'id', alias = 'id', within = 'id',
    copyright = 'S', summary = 'S', description = 'S', release = 'S', license = 'S',
    fixme = 'S', todo = 'S', warning = 'S', raise = 'S', charset = 'S',
@@ -130,11 +130,11 @@ local acount = 1
 
 function doc.expand_annotation_item (tags, last_item)
    if tags.summary ~= '' then return false end
+   local item_name = last_item and last_item.tags.name or '?'
    for tag, value in pairs(tags) do
       if known_tags._annotation_tags[tag] then
          tags:add('class','annotation')
          tags:add('summary',value)
-         local item_name = last_item and last_item.tags.name or '?'
          tags:add('name',item_name..'-'..tag..acount)
          acount = acount + 1
          return true
@@ -435,10 +435,16 @@ function Item:set_tag (tag,value)
 
    if ttype == TAG_MULTI or ttype == TAG_MULTI_LINE then -- value is always a List!
       local ovalue = self.tags[tag]
-      if is_list(ovalue) then
-         ovalue:append(value)
+      if ovalue then -- already defined, must be a list
+         --print(tag,ovalue,value)
+         if is_list(value) then
+            ovalue:extend(value)
+         else
+            ovalue:append(value)
+         end
          value = ovalue
       end
+      -- these multiple values are always represented as lists
       if not is_list(value) then
          value = List{value}
       end
@@ -835,6 +841,8 @@ function Item:return_type(r)
    return r.type, r.ctypes
 end
 
+local struct_return_type = '*'
+
 function Item:build_return_groups()
    local modifiers = self.modifiers
    local retmod = modifiers['return']
@@ -849,11 +857,13 @@ function Item:build_return_groups()
          groups:append(group)
          lastg = g
       end
+      --require 'pl.pretty'.dump(ret)
       group:append({text=ret, type = mods.type or '',mods = mods})
    end
    -- order by groups to force error groups to the end
    table.sort(groups,function(g1,g2) return g1.g < g2.g end)
    self.retgroups = groups
+   --require 'pl.pretty'.dump(groups)
    -- cool, now see if there are any treturns that have tfields to associate with
    local fields = self.tags.field
    if fields then
@@ -861,24 +871,28 @@ function Item:build_return_groups()
       for i,f in ipairs(fields) do
          local name, comment = self:split_param(f)
          fields[i] = name
-         fcomments[i] = coment
+         fcomments[i] = comment
       end
       local fmods = modifiers.field
       for group in groups:iter() do for r in group:iter() do
-         if r.mods and r.mods.type  == '*'  then
-            local ctypes = List()
-            for i,f in  ipairs(fields) do
+         if r.mods and r.mods.type  then
+            local ctypes, T = List(), r.mods.type
+            for i,f in  ipairs(fields) do if fmods[i][T] then
                ctypes:append {name=f,type=fmods[i].type,comment=fcomments[i]}
-            end
+            end end
             r.ctypes = ctypes
+            --require 'pl.pretty'.dump(ctypes)
          end
       end end
    end
 end
 
+local ecount = 0
+
 -- this alias macro implements @error.
 -- Alias macros need to return the same results as Item:check_tags...
 function doc.error_macro(tags,value,modifiers)
+   local merge_groups = doc.ldoc.merge_error_groups
    local g = '2' -- our default group id
    -- Were we given an explicit group modifier?
    local key = integer_keys(modifiers)
@@ -888,14 +902,36 @@ function doc.error_macro(tags,value,modifiers)
       local l = tags:get 'return'
       if l then -- there were returns already......
          -- maximum group of _existing_ error return
-         local grp, text = 0, List()
+         local grp, lastr = 0
          for r in l:iter() do if type(r) == 'table' then
-            grp = math.max(grp,r.modifiers._err or 0)
-            text:append(r[1])
+            local rg = r.modifiers._err
+            if rg then
+               lastr = r
+               grp = math.max(grp,rg)
+            end
          end end
          if grp > 0 then -- cool, create new group
-            g = tostring(grp+1)
-            text:append(value)
+            if not merge_groups then
+               g = tostring(grp+1)
+            else
+               local mods, text, T = lastr.modifiers
+               local new = function(text)
+                  return mods._collected..' '..text,{type='string',[T]=true}
+               end
+               if not mods._collected then
+                  text = lastr[1]
+                  lastr[1] = merge_groups
+                  T = '@'..ecount
+                  mods.type = T
+                  mods._collected = 1
+                  ecount = ecount + 1
+                  tags:add('field',new(text))
+               else
+                  T = mods.type
+               end
+               mods._collected = mods._collected + 1
+               return 'field',new(value)
+            end
          end
       end
    end
