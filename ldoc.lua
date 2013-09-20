@@ -198,7 +198,7 @@ local ldoc_contents = {
    'readme','all','manual_url', 'ignore', 'colon', 'sort', 'module_file','vars',
    'boilerplate','merge', 'wrap', 'not_luadoc', 'template_escape','merge_error_groups',
    'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
-   'no_space_before_args',
+   'no_space_before_args','parse_extra',
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
@@ -355,6 +355,7 @@ local function process_file (f, flist)
    local ftype = file_types[ext]
    if ftype then
       if args.verbose then print(f) end
+      ftype.extra = ldoc.parse_extra or {}
       local F,err = parse.file(f,ftype,args)
       if err then
          if F then
@@ -544,6 +545,7 @@ end)
 
 ldoc.single = modcount == 1 and first_module or nil
 
+--do return end
 
 -------- three ways to dump the object graph after processing -----
 

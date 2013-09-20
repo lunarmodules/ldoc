@@ -266,6 +266,54 @@ function CC:grab_block_comment(v,tok)
    return 'comment',v:sub(1,-3)
 end
 
+--- here the argument name is always last, and the type is composed of any tokens before
+function CC:extract_arg (tl,idx)
+   idx = idx or 1
+   local res = List()
+   for i = idx,#tl-1 do
+      res:append(tl[i][2])
+   end
+   local type = res:join ' '
+   return tl[#tl][2], type
+end
+
+function CC:item_follows (t,v,tok)
+   if not self.extra.C then
+      return false
+   end
+   if t == 'iden' or t == 'keyword' then --
+      if v == self.extra.export then -- this is not part of the return type!
+         t,v = tnext(tok)
+      end
+      -- TBD collecting types which are not single tokens (may contain '*')
+      local return_type = v
+      t,v = tnext(tok)
+      if t == 'iden' or t=='keyword' then
+         local name = v
+         t,v = tnext(tok)
+         if t ~= '(' then
+            return_type = return_type .. ' ' .. name
+            name = v
+            t,v = tnext(tok)
+         end
+         print ('got',name,t,v,return_type)
+         return function(tags,tok)
+            if not tags.name then
+               tags:add('name',name)
+            end
+            tags:add('class','function')
+            if t == '(' then
+               tags.formal_args,t,v = tools.get_parameters(tok,')',',',self)
+               if return_type ~= 'void' then
+                  tags.formal_args.return_type = return_type
+               end
+            end
+         end
+      end
+   end
+   return false
+end
+
 local Moon = class(Lua)
 
 function Moon:_init()

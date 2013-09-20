@@ -659,6 +659,21 @@ function Item:finish()
                   self:warning("undocumented formal argument: "..quote(fargs[i]))
                end end
             end
+            -- formal arguments may come with types, inferred by the
+            -- appropriate code in ldoc.lang
+            if fargs.types then
+               self.modifiers[field] = List()
+               for t in fargs.types:iter() do
+                  self:add_type(field,t)
+               end
+               if fargs.return_type then
+                  if not self.ret then -- type, but no comment; no worries
+                     self.ret = List{''}
+                  end
+                  self.modifiers['return'] = List()
+                  self:add_type('return',fargs.return_type)
+               end
+            end
          end -- #fargs > 0
       end -- fargs
 
@@ -701,6 +716,10 @@ function Item:finish()
    end
 end
 
+function Item:add_type(field,type)
+   self.modifiers[field]:append {type = type}
+end
+
 -- ldoc allows comments in the formal arg list to be used, if they aren't specified with @param
 -- Further, these comments may start with a type followed by a colon, and are then equivalent
 -- to a @tparam
@@ -709,7 +728,7 @@ function Item:parse_argument_comment (comment,field)
       comment = comment:gsub('^%-+%s*','')
       local type,rest = comment:match '([^:]+):(.*)'
       if type then
-         self.modifiers[field]:append {type = type}
+         self:add_type(field,type)
          comment = rest
       end
    end

@@ -284,7 +284,7 @@ local function value_of (tok) return tok[2] end
 -- following the arguments. ldoc will use these in addition to explicit
 -- param tags.
 
-function M.get_parameters (tok,endtoken,delim)
+function M.get_parameters (tok,endtoken,delim,lang)
    tok = M.space_skip_getter(tok)
    local args = List()
    args.comments = {}
@@ -292,8 +292,18 @@ function M.get_parameters (tok,endtoken,delim)
 
    if not ltl or not ltl[1] or #ltl[1] == 0 then return args end -- no arguments
 
-   local function strip_comment (text)
-      return text:match("%s*%-%-+%s*(.*)")
+   local strip_comment, extract_arg
+
+   if lang then
+      strip_comment = utils.bind1(lang.trim_comment,lang)
+      extract_arg = utils.bind1(lang.extract_arg,lang)
+   else
+      strip_comment = function(text)
+         return text:match("%s*%-%-+%s*(.*)")
+      end
+      extract_arg = function(tl,idx)
+         return value_of(tl[idx or 1])
+      end
    end
 
    local function set_comment (idx,tok)
@@ -305,6 +315,15 @@ function M.get_parameters (tok,endtoken,delim)
         text = current_comment .. " " .. text
       end
       args.comments[arg] = text
+   end
+
+   local function add_arg (tl,idx)
+      local name, type = extract_arg(tl,idx)
+      args:append(name)
+      if type then
+         if not args.types then args.types = List() end
+         args.types:append(type)
+      end
    end
 
    for i = 1,#ltl do
@@ -323,10 +342,10 @@ function M.get_parameters (tok,endtoken,delim)
                j = j + 1
             end
             if #tl > 1 then
-               args:append(value_of(tl[j]))
+               add_arg(tl,j)
             end
          else
-            args:append(value_of(tl[1]))
+            add_arg(tl,1)
          end
          if i == #ltl and #tl > 1 then
             while j <= #tl and type_of(tl[j]) ~= 'comment' do

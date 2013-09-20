@@ -371,6 +371,7 @@ function lexer.cpp(s,filter,options)
             {'^|=',tdump},
             {'^%^=',tdump},
             {'^::',tdump},
+            {'^%.%.%.',tdump},
             {'^.',tdump}
         }
     end
