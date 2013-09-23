@@ -1,4 +1,5 @@
---- simplified LDoc style
+--- simplified LDoc colon style.
+-- You have to use -C flag or 'colon=true' for this one!
 module 'easy'
 
 --- First one.

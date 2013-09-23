@@ -1,6 +1,7 @@
 --- File and Directory manipulation
+-- @module lfs
 
-module 'lfs'
+local lfs = {}
 
 ---
 -- Returns a table with the file attributes corresponding to filepath (or nil
@@ -73,7 +74,7 @@ function lfs.dir(path) end
 -- and its length; both should be numbers.
 -- Returns true if the operation was successful; in case of error, it returns
 -- nil plus an error string.
-function lfs.lock(filehandle, mode, start, length)
+function lfs.lock(filehandle, mode, start, length) end
 
 ---
 -- Creates a new directory. The argument is the name of the new directory.
@@ -120,3 +121,5 @@ function lfs.touch(filepath , atime , mtime) end
 -- Returns true if the operation was successful; in case of error, it returns
 -- nil plus an error string.
 function lfs.unlock(filehandle, start, length) end
+
+return lfs

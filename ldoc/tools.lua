@@ -18,20 +18,22 @@ local lfs = require 'lfs'
 
 -- this constructs an iterator over a list of objects which returns only
 -- those objects where a field has a certain value. It's used to iterate
--- only over functions or tables, etc.
+-- only over functions or tables, etc.  If the list of item has a module
+-- with a context, then use that to pre-sort the fltered items.
 -- (something rather similar exists in LuaDoc)
 function M.type_iterator (list,field,value)
    return function()
-      local i = 1
-      return function()
-         local val = list[i]
-         while val and val[field] ~= value do
-            i = i + 1
-            val = list[i]
-         end
-         i = i + 1
-         if val then return val end
+      local fls = list:filter(function(item)
+         return item[field] == value
+      end)
+      local mod = fls[1] and fls[1].module
+      local ldoc = mod and mod.ldoc
+      if ldoc and ldoc.sort then
+         fls:sort(function(ia,ib)
+            return ia.name < ib.name
+         end)
       end
+      return fls:iter()
    end
 end
 
@@ -151,22 +153,6 @@ function M.split_dotted_name (s)
    end
 end
 
--- expand lists of possibly qualified identifiers
--- given something like {'one , two.2','three.drei.drie)'}
--- it will output {"one","two.2","three.drei.drie"}
-function M.expand_comma_list (ls)
-   local new_ls = List()
-   for s in ls:iter() do
-      s = s:gsub('[^%.:%-%w_]*$','')
-      if s:find ',' then
-         new_ls:extend(List.split(s,'%s*,%s*'))
-      else
-         new_ls:append(s)
-      end
-   end
-   return new_ls
-end
-
 -- grab lines from a line iterator `iter` until the line matches the pattern.
 -- Returns the joined lines and the line, which may be nil if we run out of
 -- lines.
@@ -184,6 +170,19 @@ end
 
 function M.extract_identifier (value)
    return value:match('([%.:%-_%w]+)(.*)$')
+end
+
+function M.identifier_list (ls)
+   local ns = List()
+   if type(ls) == 'string' then ls = List{ns} end
+   for s in ls:iter() do
+      if s:match ',' then
+         ns:extend(List.split(s,'[,%s]+'))
+      else
+         ns:append(s)
+      end
+   end
+   return ns
 end
 
 function M.strip (s)
@@ -285,16 +284,26 @@ local function value_of (tok) return tok[2] end
 -- following the arguments. ldoc will use these in addition to explicit
 -- param tags.
 
-function M.get_parameters (tok,endtoken,delim)
+function M.get_parameters (tok,endtoken,delim,lang)
    tok = M.space_skip_getter(tok)
    local args = List()
    args.comments = {}
-   local ltl = lexer.get_separated_list(tok,endtoken,delim)
+   local ltl,tt = lexer.get_separated_list(tok,endtoken,delim)
 
    if not ltl or not ltl[1] or #ltl[1] == 0 then return args end -- no arguments
 
-   local function strip_comment (text)
-      return text:match("%s*%-%-+%s*(.*)")
+   local strip_comment, extract_arg
+
+   if lang then
+      strip_comment = utils.bind1(lang.trim_comment,lang)
+      extract_arg = utils.bind1(lang.extract_arg,lang)
+   else
+      strip_comment = function(text)
+         return text:match("%s*%-%-+%s*(.*)")
+      end
+      extract_arg = function(tl,idx)
+         return value_of(tl[idx or 1])
+      end
    end
 
    local function set_comment (idx,tok)
@@ -306,6 +315,15 @@ function M.get_parameters (tok,endtoken,delim)
         text = current_comment .. " " .. text
       end
       args.comments[arg] = text
+   end
+
+   local function add_arg (tl,idx)
+      local name, type = extract_arg(tl,idx)
+      args:append(name)
+      if type then
+         if not args.types then args.types = List() end
+         args.types:append(type)
+      end
    end
 
    for i = 1,#ltl do
@@ -324,10 +342,10 @@ function M.get_parameters (tok,endtoken,delim)
                j = j + 1
             end
             if #tl > 1 then
-               args:append(value_of(tl[j]))
+               add_arg(tl,j)
             end
          else
-            args:append(value_of(tl[1]))
+            add_arg(tl,1)
          end
          if i == #ltl and #tl > 1 then
             while j <= #tl and type_of(tl[j]) ~= 'comment' do
@@ -344,7 +362,6 @@ function M.get_parameters (tok,endtoken,delim)
       end
    end
 
-   ----[[
    -- we had argument comments
    -- but the last one may be outside the parens! (Geoff style)
    -- (only try this stunt if it's a function parameter list!)
@@ -353,23 +370,25 @@ function M.get_parameters (tok,endtoken,delim)
       local last_arg = args[n]
       if not args.comments[last_arg] then
          while true do
-            local t = {tok()}
-            if type_of(t) == 'comment' then
-               set_comment(n,t)
+            tt = {tok()}
+            if type_of(tt) == 'comment' then
+               set_comment(n,tt)
             else
                break
             end
          end
       end
    end
-   --]]
-   return args
+   -- return what token we ended on as well - can be token _past_ ')'
+   return args,tt[1],tt[2]
 end
 
--- parse a Lua identifier - contains names separated by . and :.
-function M.get_fun_name (tok,first)
+-- parse a Lua identifier - contains names separated by . and (optionally) :.
+-- Set `colon` to be the secondary separator, '' for none.
+function M.get_fun_name (tok,first,colon)
    local res = {}
    local t,name,sep
+   colon = colon or ':'
    if not first then
       t,name = tnext(tok)
    else
@@ -377,7 +396,7 @@ function M.get_fun_name (tok,first)
    end
    if t ~= 'iden' then return nil end
    t,sep = tnext(tok)
-   while sep == '.' or sep == ':' do
+   while sep == '.' or sep == colon do
       append(res,name)
       append(res,sep)
       t,name = tnext(tok)
@@ -433,23 +452,32 @@ end
 
 function M.process_file_list (list, mask, operation, ...)
    local exclude_list = list.exclude and M.files_from_list(list.exclude, mask)
-   local function process (f,...)
+   local files = List()
+   local function process (f)
       f = M.abspath(f)
       if not exclude_list or exclude_list and exclude_list:index(f) == nil then
-         operation(f, ...)
+         files:append(f)
       end
    end
    for _,f in ipairs(list) do
       if path.isdir(f) then
-         local files = List(dir.getallfiles(f,mask))
-         for f in files:iter() do
-            process(f,...)
+         local dfiles = List(dir.getallfiles(f,mask))
+         for f in dfiles:iter() do
+            process(f)
          end
       elseif path.isfile(f) then
-         process(f,...)
+         process(f)
       else
          quit("file or directory does not exist: "..M.quote(f))
       end
+   end
+
+   if list.sortfn then
+      files:sort(list.sortfn)
+   end
+
+   for f in files:iter() do
+      operation(f,...)
    end
 end
 

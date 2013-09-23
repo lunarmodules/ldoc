@@ -5,6 +5,7 @@
 
 local class = require 'pl.class'
 local utils = require 'pl.utils'
+local List =  require 'pl.List'
 local tools = require 'ldoc.tools'
 local lexer = require 'ldoc.lexer'
 local quit = utils.quit
@@ -74,6 +75,7 @@ function Lua:_init()
    self.start_comment_ = '^%-%-%-+'     -- used for doc comment line start
    self.block_comment = '^%-%-%[=*%[%-+' -- used for block doc comments
    self.end_comment_ = '[^%-]%-%-+\n$' ---- exclude --- this kind of comment ---
+   self.method_call = ':'
    self:finalize()
 end
 
@@ -239,7 +241,8 @@ end
 
 
 -- note a difference here: we scan C/C++ code in full-text mode, not line by line.
--- This is because we can't detect multiline comments in line mode
+-- This is because we can't detect multiline comments in line mode.
+-- Note: this applies to C/C++ code used to generate _Lua_ documentation!
 
 local CC = class(Lang)
 
@@ -247,6 +250,7 @@ function CC:_init()
    self.line_comment = '^//+'
    self.start_comment_ = '^///+'
    self.block_comment = '^/%*%*+'
+   self.method_call = ':'
    self:finalize()
 end
 
@@ -262,4 +266,99 @@ function CC:grab_block_comment(v,tok)
    return 'comment',v:sub(1,-3)
 end
 
-return { lua = Lua(), cc = CC() }
+--- here the argument name is always last, and the type is composed of any tokens before
+function CC:extract_arg (tl,idx)
+   idx = idx or 1
+   local res = List()
+   for i = idx,#tl-1 do
+      res:append(tl[i][2])
+   end
+   local type = res:join ' '
+   return tl[#tl][2], type
+end
+
+function CC:item_follows (t,v,tok)
+   if not self.extra.C then
+      return false
+   end
+   if t == 'iden' or t == 'keyword' then --
+      if v == self.extra.export then -- this is not part of the return type!
+         t,v = tnext(tok)
+      end
+      -- TBD collecting types which are not single tokens (may contain '*')
+      local return_type = v
+      t,v = tnext(tok)
+      if t == 'iden' or t=='keyword' then
+         local name = v
+         t,v = tnext(tok)
+         if t ~= '(' then
+            return_type = return_type .. ' ' .. name
+            name = v
+            t,v = tnext(tok)
+         end
+         print ('got',name,t,v,return_type)
+         return function(tags,tok)
+            if not tags.name then
+               tags:add('name',name)
+            end
+            tags:add('class','function')
+            if t == '(' then
+               tags.formal_args,t,v = tools.get_parameters(tok,')',',',self)
+               if return_type ~= 'void' then
+                  tags.formal_args.return_type = return_type
+               end
+            end
+         end
+      end
+   end
+   return false
+end
+
+local Moon = class(Lua)
+
+function Moon:_init()
+   self.line_comment = '^%-%-+' -- used for stripping
+   self.start_comment_ = '^%s*%-%-%-+'     -- used for doc comment line start
+   self.block_comment = '^%-%-%[=*%[%-+' -- used for block doc comments
+   self.end_comment_ = '[^%-]%-%-+\n$' ---- exclude --- this kind of comment ---
+   self.method_call = '.'
+   self:finalize()
+end
+
+function Moon:item_follows (t,v,tok)
+   if t == '.' then -- enclosed in with statement
+      t,v = tnext(tok)
+   end
+   if t == 'iden' then
+      local name,t,v = tools.get_fun_name(tok,v,'')
+      if name == 'class' then
+         name,t,v = tools.get_fun_name(tok,v,'')
+         -- class!
+         return function(tags,tok)
+            tags:add('class','type')
+            tags:add('name',name)
+         end
+      elseif t == '=' or t == ':' then -- function/method
+         t,v = tnext(tok)
+         return function(tags,tok)
+            if not tags.name then
+               tags:add('name',name)
+            end
+            if t == '(' then
+               tags.formal_args,t,v = tools.get_parameters(tok)
+            else
+               tags.formal_args = List()
+            end
+            tags:add('class','function')
+            if t == '=' then
+               tags.formal_args:insert(1,'self')
+               tags.formal_args.comments = {self=''}
+            end
+         end
+      else
+         return nil
+      end
+   end
+end
+
+return { lua = Lua(), cc = CC(), moon = Moon() }

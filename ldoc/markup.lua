@@ -15,6 +15,7 @@ local backtick_references
 -- inline <references> use same lookup as @see
 local function resolve_inline_references (ldoc, txt, item, plain)
    local res = (txt:gsub('@{([^}]-)}',function (name)
+      if name:match '^\\' then return '@{'..name:sub(2)..'}' end
       local qname,label = utils.splitv(name,'%s*|')
       if not qname then
          qname = name
@@ -45,7 +46,7 @@ local function resolve_inline_references (ldoc, txt, item, plain)
          if ref then
             return ('<a href="%s">%s</a> '):format(ldoc.href(ref),name)
          else
-            return '`'..name..'`'
+            return '<code>'..name..'</code>'
          end
       end)
    end
@@ -233,7 +234,6 @@ local function get_formatter(format)
    end
 end
 
-
 local function text_processor(ldoc)
    return function(txt,item)
       if txt == nil then return '' end
@@ -243,10 +243,17 @@ local function text_processor(ldoc)
    end
 end
 
+local plain_processor
 
 local function markdown_processor(ldoc, formatter)
-   return function (txt,item)
+   return function (txt,item,plain)
       if txt == nil then return '' end
+      if plain then
+         if not plain_processor then
+            plain_processor = text_processor(ldoc)
+         end
+         return plain_processor(txt,item)
+      end
       if utils.is_type(item,doc.File) then
          txt = process_multiline_markdown(ldoc, txt, item)
       else
@@ -257,7 +264,6 @@ local function markdown_processor(ldoc, formatter)
       return (txt:gsub('^%s*<p>(.+)</p>%s*$','%1'))
    end
 end
-
 
 local function get_processor(ldoc, format)
    if format == 'plain' then return text_processor(ldoc) end
@@ -276,25 +282,29 @@ end
 function markup.create (ldoc, format, pretty)
    local processor
    markup.plain = true
+   if format == 'backtick' then
+      ldoc.backtick_references = true
+      format = 'plain'
+   end
    backtick_references = ldoc.backtick_references
    global_context = ldoc.package and ldoc.package .. '.'
    prettify.set_prettifier(pretty)
 
-   markup.process_reference = function(name)
+   markup.process_reference = function(name,istype)
       if local_context == 'none.' and not name:match '%.' then
          return nil,'not found'
       end
       local mod = ldoc.single or ldoc.module or ldoc.modules[1]
-      local ref,err = mod:process_see_reference(name, ldoc.modules)
+      local ref,err = mod:process_see_reference(name, ldoc.modules, istype)
       if ref then return ref end
       if global_context then
          local qname = global_context .. name
-         ref = mod:process_see_reference(qname, ldoc.modules)
+         ref = mod:process_see_reference(qname, ldoc.modules, istype)
          if ref then return ref end
       end
       if local_context then
          local qname = local_context .. name
-         ref = mod:process_see_reference(qname, ldoc.modules)
+         ref = mod:process_see_reference(qname, ldoc.modules, istype)
          if ref then return ref end
       end
       -- note that we'll return the original error!

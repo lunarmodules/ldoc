@@ -18,10 +18,12 @@ local utils = require 'pl.utils'
 local path = require 'pl.path'
 local stringx = require 'pl.stringx'
 local template = require 'pl.template'
+local tablex = require 'pl.tablex'
 local tools = require 'ldoc.tools'
 local markup = require 'ldoc.markup'
 local prettify = require 'ldoc.prettify'
 local doc = require 'ldoc.doc'
+local unpack = utils.unpack
 local html = {}
 
 
@@ -55,6 +57,30 @@ local escape_table = { ["'"] = "&apos;", ["\""] = "&quot;", ["<"] = "&lt;", [">"
 
 function html.generate_output(ldoc, args, project)
    local check_directory, check_file, writefile = tools.check_directory, tools.check_file, tools.writefile
+   local original_ldoc
+
+   local function save_and_set_ldoc (set)
+      if not set then return end
+      if not original_ldoc then
+         original_ldoc = tablex.copy(ldoc)
+      end
+      for s in set:iter() do
+         local var,val = s:match('([^=]+)=(.+)')
+         local num = tonumber(val)
+         if num then val = num
+         elseif val == 'true' then val = true
+         elseif val == 'false' then val = false
+         end
+         print('setting',var,val)
+         ldoc[var] = val
+      end
+   end
+
+   local function restore_ldoc ()
+      if original_ldoc then
+         ldoc = original_ldoc
+      end
+   end
 
    function ldoc.escape(str)
       return (str:gsub("['&<>\"]", escape_table))
@@ -67,6 +93,14 @@ function html.generate_output(ldoc, args, project)
    -- Item descriptions come from combining the summary and description fields
    function ldoc.descript(item)
       return (item.summary or '?')..' '..(item.description or '')
+   end
+
+   function ldoc.module_name (mod)
+      local name = mod.name
+      if mod.type == 'module' then
+         name = name:gsub('^.-%.','')
+      end
+      return name
    end
 
    -- this generates the internal module/function references
@@ -118,8 +152,14 @@ function html.generate_output(ldoc, args, project)
 
    function ldoc.display_name(item)
       local name = item.display_name or item.name
-      if item.type == 'function' or item.type == 'lfunction' then return name..'&nbsp;'..item.args
-      else return name end
+      if item.type == 'function' or item.type == 'lfunction' then
+         if not ldoc.no_space_before_args then
+            name = name..' '
+         end
+         return name..item.args
+      else
+         return name
+      end
    end
 
    function ldoc.no_spaces(s)
@@ -127,10 +167,8 @@ function html.generate_output(ldoc, args, project)
       return (s:gsub('%W','_'))
    end
 
-   function ldoc.titlecase(s)
-      return (s:gsub('(%a)(%a*)',function(f,r)
-         return f:upper()..r
-      end))
+   function ldoc.module_typename(m)
+      return doc.presentation_name(m.type)
    end
 
    function ldoc.is_list (t)
@@ -138,7 +176,7 @@ function html.generate_output(ldoc, args, project)
    end
 
    function ldoc.typename (tp)
-      if not tp or tp == '' then return '' end
+      if not tp or tp == '' or tp:match '^@' then return '' end
       local optional
       -- ?<type> is short for ?nil|<type>
       if tp:match("^%?") and not tp:match '|' then
@@ -151,7 +189,7 @@ function html.generate_output(ldoc, args, project)
       end
       local types = {}
       for name in tp:gmatch("[^|]+") do
-         local ref,err = markup.process_reference(name)
+         local ref,err = markup.process_reference(name,true)
          if ref then
             types[#types+1] = ('<a class="type" href="%s">%s</a>'):format(ldoc.href(ref),ref.label or name)
          else
@@ -186,6 +224,7 @@ function html.generate_output(ldoc, args, project)
    ldoc.pairs = pairs
    ldoc.print = print
 
+   -- Bang out the index.
    -- in single mode there is one module and the 'index' is the
    -- documentation for that module.
    ldoc.module = ldoc.single
@@ -196,27 +235,33 @@ function html.generate_output(ldoc, args, project)
    ldoc.root = true
    if ldoc.module then
       ldoc.module.info = get_module_info(ldoc.module)
+      ldoc.module.ldoc = ldoc
+      save_and_set_ldoc(ldoc.module.tags.set)
    end
    set_charset(ldoc)
    local out,err = template.substitute(module_template,{
       ldoc = ldoc,
       module = ldoc.module,
+      _escape = ldoc.template_escape
     })
    ldoc.root = false
    if not out then quit("template failed: "..err) end
+   restore_ldoc()
 
    check_directory(args.dir) -- make sure output directory is ok
 
    args.dir = args.dir .. path.sep
 
-   check_file(args.dir..css, path.join(args.style,css)) -- has CSS been copied?
+   if css then -- has CSS been copied?
+      check_file(args.dir..css, path.join(args.style,css))
+   end
 
    -- write out the module index
    out = cleanup_whitespaces(out)
    writefile(args.dir..args.output..args.ext,out)
 
    -- in single mode, we exclude any modules since the module has been done;
-   -- this step is then only for putting out any examples or topics
+   -- ext step is then only for putting out any examples or topics
    local mods = List()
    for kind, modules in project() do
       local lkind = kind:lower()
@@ -228,7 +273,9 @@ function html.generate_output(ldoc, args, project)
    -- write out the per-module documentation
    -- note that we reset the internal ordering of the 'kinds' so that
    -- e.g. when reading a topic the other Topics will be listed first.
-   ldoc.css = '../'..css
+   if css then
+      ldoc.css = '../'..css
+   end
    for m in mods:iter() do
       local kind, lkind, modules = unpack(m)
       check_directory(args.dir..lkind)
@@ -236,6 +283,10 @@ function html.generate_output(ldoc, args, project)
       for m in modules() do
          ldoc.module = m
          ldoc.body = m.body
+         m.ldoc = ldoc
+         if m.tags.set then
+            save_and_set_ldoc(m.tags.set)
+         end
          set_charset(ldoc)
          m.info = get_module_info(m)
          if ldoc.body and m.postprocess then
@@ -243,7 +294,8 @@ function html.generate_output(ldoc, args, project)
          end
          out,err = template.substitute(module_template,{
             module=m,
-            ldoc = ldoc
+            ldoc = ldoc,
+            _escape = ldoc.template_escape
          })
          if not out then
             quit('template failed for '..m.name..': '..err)
@@ -251,6 +303,7 @@ function html.generate_output(ldoc, args, project)
             out = cleanup_whitespaces(out)
             writefile(args.dir..lkind..'/'..m.name..args.ext,out)
          end
+         restore_ldoc()
       end
    end
    if not args.quiet then print('output written to '..tools.abspath(args.dir)) end

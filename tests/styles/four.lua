@@ -1,8 +1,8 @@
 ------------
 -- Yet another module.
--- @module four
 -- Description can continue after simple tags, if you
--- like
+-- like - but to keep backwards compatibility, say 'not_luadoc=true'
+-- @module four
 -- @author bob, james
 -- @license MIT
 -- @copyright InfoReich 2013
@@ -11,7 +11,7 @@
 -- Note the the standard tparam aliases, and how the 'opt' and 'optchain'
 -- modifiers may also be used. If the Lua function has varargs, then
 -- you may document an indefinite number of extra arguments!
--- @string name person's name
+-- @tparam ?string|Person name person's name
 -- @int age
 -- @string[opt='gregorian'] calender optional calendar
 -- @int[opt=0] offset optional offset
@@ -27,7 +27,6 @@ end
 function two (one,two,three,four)
 end
 
-
 --- third useless function.
 -- Can always put comments inline, may
 -- be multiple.
@@ -37,6 +36,11 @@ function three ( -- person:
     age  -- int:
         -- not less than zero!
 )
+
+---- function with single optional arg
+-- @param[opt] one
+function four (one)
+end
 
 --- an implicit table.
 -- Again, we can use the comments

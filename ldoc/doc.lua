@@ -21,13 +21,13 @@ local TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE,TAG_FLAG,TAG_MULTI_LINE = 'M','id','S
 --  - 'N' tags which have no associated value, like 'local` (TAG_FLAG)
 --  - 'T' tags which represent a type, like 'function' (TAG_TYPE)
 local known_tags = {
-   param = 'M', see = 'M', usage = 'ML', ['return'] = 'M', field = 'M', author='M';
+   param = 'M', see = 'M', comment = 'M', usage = 'ML', ['return'] = 'M', field = 'M', author='M',set='M';
    class = 'id', name = 'id', pragma = 'id', alias = 'id', within = 'id',
    copyright = 'S', summary = 'S', description = 'S', release = 'S', license = 'S',
    fixme = 'S', todo = 'S', warning = 'S', raise = 'S', charset = 'S',
    ['local'] = 'N', export = 'N', private = 'N', constructor = 'N', static = 'N';
    -- project-level
-   module = 'T', script = 'T', example = 'T', topic = 'T', submodule='T',
+   module = 'T', script = 'T', example = 'T', topic = 'T', submodule='T', classmod='T',
    -- module-level
    ['function'] = 'T', lfunction = 'T', table = 'T', section = 'T', type = 'T',
    annotation = 'T', factory = 'T';
@@ -39,12 +39,18 @@ known_tags._project_level = {
    script = true,
    example = true,
    topic = true,
-   submodule = true;
+   submodule = true,
+   classmod = true,
 }
 
 known_tags._code_types = {
    module = true,
-   script = true
+   script = true,
+   classmod = true,
+}
+
+known_tags._presentation_names = {
+   classmod = 'Class',
 }
 
 known_tags._module_info = {
@@ -99,12 +105,23 @@ function doc.class_tag (tag)
    return tag == 'type' or tag == 'factory'
 end
 
+-- how the type wants to be formally presented; e.g. 'module' becomes 'Module'
+-- but 'classmod' will become 'Class'
+function doc.presentation_name (tag)
+   local name = known_tags._presentation_names[tag]
+   if not name then
+      name = tag:gsub('(%a)(%a*)',function(f,r)
+         return f:upper()..r
+      end)
+   end
+   return name
+end
+
 function doc.module_info_tags ()
    return List.iter(known_tags._module_info)
 end
 
-
--- annotation tags can appear anywhere in the code and may contain of these tags:
+-- annotation tags can appear anywhere in the code and may contain any of these tags:
 known_tags._annotation_tags = {
    fixme = true, todo = true, warning = true
 }
@@ -113,16 +130,19 @@ local acount = 1
 
 function doc.expand_annotation_item (tags, last_item)
    if tags.summary ~= '' then return false end
+   local item_name = last_item and last_item.tags.name or '?'
    for tag, value in pairs(tags) do
       if known_tags._annotation_tags[tag] then
-         tags.class = 'annotation'
-         tags.summary = value
-         local item_name = last_item and last_item.tags.name or '?'
-         tags.name = item_name..'-'..tag..acount
+         tags:add('class','annotation')
+         tags:add('summary',value)
+         tags:add('name',item_name..'-'..tag..acount)
          acount = acount + 1
          return true
+      elseif tag == 'return' then
+         last_item:set_tag(tag,value)
       end
    end
+   return false
 end
 
 -- we process each file, resulting in a File object, which has a list of Item objects.
@@ -177,7 +197,7 @@ local function mod_section_type (this_mod)
    return this_mod and this_mod.section and this_mod.section.type
 end
 
-local function find_module_in_files (name)
+function File:find_module_in_files (name)
    for f in File.list:iter() do
       for m in f.modules:iter() do
          if m.name == name then
@@ -216,7 +236,7 @@ function File:finish()
             -- if name is 'package.mod', then mod_name is 'mod'
             package,mname = split_dotted_name(this_mod.name)
             if self.args.merge then
-               local mod,mf = find_module_in_files(item.name)
+               local mod,mf = self:find_module_in_files(item.name)
                if mod then
                   print('found master module',mf)
                   this_mod = mod
@@ -230,7 +250,7 @@ function File:finish()
          elseif item.type == 'submodule' then
             local mf
             submodule = true
-            this_mod,mf = find_module_in_files(item.name)
+            this_mod,mf = self:find_module_in_files(item.name)
             if this_mod == nil then
                self:error("'"..item.name.."' not found for submodule")
             end
@@ -297,17 +317,22 @@ function File:finish()
 
             -- right, this item was within a section or a 'class'
             local section_description
-            if this_mod.section then
+            local classmod = this_mod.type == 'classmod'
+            if this_mod.section or classmod then
+               local stype
                local this_section = this_mod.section
-               item.section = this_section.display_name
+               if this_section then
+                  item.section = this_section.display_name
+                  stype = this_section.type
+               end
                -- if it was a class, then if the name is unqualified then it becomes
                -- 'Class:foo' (unless flagged as being a constructor, static or not a function)
-               local stype = this_section.type
-               if doc.class_tag(stype) then
+               if doc.class_tag(stype) or classmod then
                   if not item.name:match '[:%.]' then -- not qualified
-                     local class = this_section.name
+                     local class = classmod and this_mod.name or this_section.name
+                     local lang = this_mod.file.lang
                      local static = item.tags.constructor or item.tags.static or item.type ~= 'function'
-                     item.name = class..(not static and ':' or '.')..item.name
+                     item.name = class..(not static and lang.method_call or '.')..item.name
                   end
                   if stype == 'factory'  then
                      if item.tags.private then to_be_removed = true
@@ -319,7 +344,16 @@ function File:finish()
                      end
                   end
                end
-               section_description = this_section.summary..' '..this_section.description
+               if this_section then
+                  section_description = this_section.summary..' '..(this_section.description or '')
+                  this_section.summary = ''
+               elseif item.tags.within then
+                  section_description = item.tags.within
+                  item.section = section_description
+               else
+                  section_description = "Methods"
+                  item.section = item.type
+               end
             elseif item.tags.within then
                section_description = item.tags.within
                item.section = section_description
@@ -373,10 +407,7 @@ function Item:_init(tags,file,line)
    self.tags = {}
    self.formal_args = tags.formal_args
    tags.formal_args = nil
-   local iter = tags.iter
-   if not iter then
-      iter = Map.iter
-   end
+   local iter = tags.iter or Map.iter
    for tag in iter(tags) do
       self:set_tag(tag,tags[tag])
    end
@@ -388,14 +419,36 @@ function Item:add_to_description (rest)
    end
 end
 
+function Item:trailing_warning (kind,tag,rest)
+   if type(rest)=='string' and #rest > 0 then
+      Item.warning(self,kind.." tag: '"..tag..'" has trailing text; use not_luadoc=true if you want description to continue between tags\n'..rest)
+   end
+end
+
+local function is_list (l)
+   return getmetatable(l) == List
+end
+
 function Item:set_tag (tag,value)
    local ttype = known_tags[tag]
+   local args = self.file.args
 
    if ttype == TAG_MULTI or ttype == TAG_MULTI_LINE then -- value is always a List!
-      if getmetatable(value) ~= List then
+      local ovalue = self.tags[tag]
+      if ovalue then -- already defined, must be a list
+         --print(tag,ovalue,value)
+         if is_list(value) then
+            ovalue:extend(value)
+         else
+            ovalue:append(value)
+         end
+         value = ovalue
+      end
+      -- these multiple values are always represented as lists
+      if not is_list(value) then
          value = List{value}
       end
-      if ttype ~= TAG_MULTI_LINE then
+      if ttype ~= TAG_MULTI_LINE and args and args.not_luadoc then
          local last = value[#value]
          if type(last) == 'string' and last:match '\n' then
             local line,rest = last:match('([^\n]+)(.*)')
@@ -417,12 +470,20 @@ function Item:set_tag (tag,value)
       if value == nil then self:error("Tag without value: "..tag) end
       local id, rest = tools.extract_identifier(value)
       self.tags[tag] = id
-      self:add_to_description(rest)
+      if args and args.not_luadoc then
+         self:add_to_description(rest)
+      else
+         self:trailing_warning('id',tag,rest)
+      end
    elseif ttype == TAG_SINGLE then
       self.tags[tag] = value
    elseif ttype == TAG_FLAG then
       self.tags[tag] = true
-      self:add_to_description(value)
+      if args.not_luadoc then
+         self:add_to_description(value)
+      else
+         self:trailing_warning('flag',tag,value)
+      end
    else
       Item.warning(self,"unknown tag: '"..tag.."' "..tostring(ttype))
    end
@@ -435,7 +496,7 @@ function Item.check_tag(tags,tag, value, modifiers)
    if alias then
       if type(alias) == 'string' then
          tag = alias
-      else
+      elseif type(alias) == 'table' then --{ tag, value=, modifiers = }
          local avalue,amod
          tag, avalue, amod = alias[1],alias.value,alias.modifiers
          if avalue then value = avalue..' '..value end
@@ -449,6 +510,8 @@ function Item.check_tag(tags,tag, value, modifiers)
                modifiers[m] = v
             end
          end
+      else -- has to be a function that at least returns tag, value
+         return alias(tags,value,modifiers)
       end
    end
    local ttype = known_tags[tag]
@@ -500,6 +563,13 @@ end
 
 local build_arg_list, split_iden  -- forward declaration
 
+function Item:split_param (line)
+   local name, comment = line:match('%s*([%w_%.:]+)(.*)')
+   if not name then
+      self:error("bad param name format '"..line.."'. Are you missing a parameter name?")
+   end
+   return name, comment
+end
 
 function Item:finish()
    local tags = self.tags
@@ -508,9 +578,9 @@ function Item:finish()
    self.type = read_del(tags,'class')
    self.modifiers = extract_tag_modifiers(tags)
    self.usage = read_del(tags,'usage')
-   -- see tags are multiple, but they may also be comma-separated
+   tags.see = read_del(tags,'see')
    if tags.see then
-      tags.see = tools.expand_comma_list(read_del(tags,'see'))
+      tags.see = tools.identifier_list(tags.see)
    end
    if  doc.project_level(self.type) then
       -- we are a module, so become one!
@@ -548,10 +618,7 @@ function Item:finish()
       local param_names, comments = List(), List()
       if params then
          for line in params:iter() do
-            local name, comment = line:match('%s*([%w_%.:]+)(.*)')
-            if not name then
-               self:error("bad param name format '"..line.."'. Are you missing a parameter name?")
-            end
+            local name, comment = self:split_param(line)
             param_names:append(name)
             comments:append(comment)
          end
@@ -567,16 +634,10 @@ function Item:finish()
       if fargs then
          if #param_names == 0 then
             --docs may be embedded in argument comments; in either case, use formal arg names
-            formal = List()
-            if fargs.return_comment then
-               local retc = self:parse_argument_comment(fargs.return_comment,'return')
-               self.ret = List{retc}
-            end
-            for i, name in ipairs(fargs) do
-               formal:append(name)
-               comments:append(self:parse_argument_comment(fargs.comments[name],self.parameter))
-            end
-         elseif #fargs > 0 then
+            local ret
+            formal,comments,ret = self:parse_formal_arguments(fargs)
+            if ret and not self.ret then self.ret = ret end
+         elseif #fargs > 0 then -- consistency check!
             local varargs = fargs[#fargs] == '...'
             if varargs then table.remove(fargs) end
             local k = 0
@@ -594,14 +655,27 @@ function Item:finish()
                end
             end
             if k < #fargs then
-               for i = k+1,#fargs do
-                  if fargs[i] ~= '...' then
-                     self:warning("undocumented formal argument: "..quote(fargs[i]))
+               for i = k+1,#fargs do if fargs[i] ~= '...' then
+                  self:warning("undocumented formal argument: "..quote(fargs[i]))
+               end end
+            end
+            -- formal arguments may come with types, inferred by the
+            -- appropriate code in ldoc.lang
+            if fargs.types then
+               self.modifiers[field] = List()
+               for t in fargs.types:iter() do
+                  self:add_type(field,t)
+               end
+               if fargs.return_type then
+                  if not self.ret then -- type, but no comment; no worries
+                     self.ret = List{''}
                   end
+                  self.modifiers['return'] = List()
+                  self:add_type('return',fargs.return_type)
                end
             end
-         end
-      end
+         end -- #fargs > 0
+      end -- fargs
 
       -- the comments are associated with each parameter by
       -- adding name-value pairs to the params list (this is
@@ -613,6 +687,9 @@ function Item:finish()
       local names = List()
       self.subparams = {}
       for i,name in ipairs(original_names) do
+         if type(name) ~= 'string' then
+            self:error("declared table cannot have array entries")
+         end
          local pname,field = split_iden(name)
          if field then
             if not fields then
@@ -634,6 +711,13 @@ function Item:finish()
       self.params = params
       self.args = build_arg_list (names,pmods)
    end
+   if self.ret then
+      self:build_return_groups()
+   end
+end
+
+function Item:add_type(field,type)
+   self.modifiers[field]:append {type = type}
 end
 
 -- ldoc allows comments in the formal arg list to be used, if they aren't specified with @param
@@ -644,11 +728,24 @@ function Item:parse_argument_comment (comment,field)
       comment = comment:gsub('^%-+%s*','')
       local type,rest = comment:match '([^:]+):(.*)'
       if type then
-         self.modifiers[field]:append {type = type}
+         self:add_type(field,type)
          comment = rest
       end
    end
    return comment or ''
+end
+
+function Item:parse_formal_arguments (fargs)
+   local formal, comments, ret = List(), List()
+   if fargs.return_comment then
+      local retc = self:parse_argument_comment(fargs.return_comment,'return')
+      ret = List{retc}
+   end
+   for i, name in ipairs(fargs) do
+      formal:append(name)
+      comments:append(self:parse_argument_comment(fargs.comments[name],self.parameter))
+   end
+   return formal, comments, ret
 end
 
 function split_iden (name)
@@ -690,7 +787,7 @@ function build_arg_list (names,pmods)
          end
          opt = m.optchain or m.opt
          if opt then
-            acc(' [')
+            acc('[')
             npending=npending+1
          end
       end
@@ -702,16 +799,26 @@ function build_arg_list (names,pmods)
    return  '('..table.concat(buffer)..')'
 end
 
-function Item:type_of_param(p)
+------ retrieving information about parameters -----
+-- The template leans on these guys heavily....
+
+function Item:param_modifiers (p)
    local mods = self.modifiers[self.parameter]
    if not mods then return '' end
-   local mparam = rawget(mods,p)
+   return rawget(mods,p)
+end
+
+function Item:type_of_param(p)
+   local mparam = self:param_modifiers(p)
    return mparam and mparam.type or ''
 end
 
-function Item:type_of_ret(idx)
-   local rparam = self.modifiers['return'][idx]
-   return rparam and rparam.type or ''
+function Item:default_of_param(p)
+   local m = self:param_modifiers(p)
+   if not m then return nil end
+   local opt = m.optchain or m.opt
+   if opt == true then return nil end
+   return opt
 end
 
 function Item:subparam(p)
@@ -732,6 +839,127 @@ function Item:display_name_of(p)
    end
 end
 
+-------- return values and types -------
+
+function Item:type_of_ret(idx)
+   local rparam = self.modifiers['return'][idx]
+   return rparam and rparam.type or ''
+end
+
+local function integer_keys(t)
+   if type(t) ~= 'table' then return 0 end
+   for k in pairs(t) do
+      local num = tonumber(k)
+      if num then return num end
+   end
+   return 0
+end
+
+function Item:return_type(r)
+   if not r.type then return '' end
+   return r.type, r.ctypes
+end
+
+local struct_return_type = '*'
+
+function Item:build_return_groups()
+   local modifiers = self.modifiers
+   local retmod = modifiers['return']
+   local groups = List()
+   local lastg, group
+   for i,ret in ipairs(self.ret) do
+      local mods = retmod[i]
+      local g = integer_keys(mods)
+      if g ~= lastg then
+         group = List()
+         group.g = g
+         groups:append(group)
+         lastg = g
+      end
+      --require 'pl.pretty'.dump(ret)
+      group:append({text=ret, type = mods.type or '',mods = mods})
+   end
+   -- order by groups to force error groups to the end
+   table.sort(groups,function(g1,g2) return g1.g < g2.g end)
+   self.retgroups = groups
+   --require 'pl.pretty'.dump(groups)
+   -- cool, now see if there are any treturns that have tfields to associate with
+   local fields = self.tags.field
+   if fields then
+      local fcomments = List()
+      for i,f in ipairs(fields) do
+         local name, comment = self:split_param(f)
+         fields[i] = name
+         fcomments[i] = comment
+      end
+      local fmods = modifiers.field
+      for group in groups:iter() do for r in group:iter() do
+         if r.mods and r.mods.type  then
+            local ctypes, T = List(), r.mods.type
+            for i,f in  ipairs(fields) do if fmods[i][T] then
+               ctypes:append {name=f,type=fmods[i].type,comment=fcomments[i]}
+            end end
+            r.ctypes = ctypes
+            --require 'pl.pretty'.dump(ctypes)
+         end
+      end end
+   end
+end
+
+local ecount = 0
+
+-- this alias macro implements @error.
+-- Alias macros need to return the same results as Item:check_tags...
+function doc.error_macro(tags,value,modifiers)
+   local merge_groups = doc.ldoc.merge_error_groups
+   local g = '2' -- our default group id
+   -- Were we given an explicit group modifier?
+   local key = integer_keys(modifiers)
+   if key > 0 then
+      g = tostring(key)
+   else
+      local l = tags:get 'return'
+      if l then -- there were returns already......
+         -- maximum group of _existing_ error return
+         local grp, lastr = 0
+         for r in l:iter() do if type(r) == 'table' then
+            local rg = r.modifiers._err
+            if rg then
+               lastr = r
+               grp = math.max(grp,rg)
+            end
+         end end
+         if grp > 0 then -- cool, create new group
+            if not merge_groups then
+               g = tostring(grp+1)
+            else
+               local mods, text, T = lastr.modifiers
+               local new = function(text)
+                  return mods._collected..' '..text,{type='string',[T]=true}
+               end
+               if not mods._collected then
+                  text = lastr[1]
+                  lastr[1] = merge_groups
+                  T = '@'..ecount
+                  mods.type = T
+                  mods._collected = 1
+                  ecount = ecount + 1
+                  tags:add('field',new(text))
+               else
+                  T = mods.type
+               end
+               mods._collected = mods._collected + 1
+               return 'field',new(value)
+            end
+         end
+      end
+   end
+   tags:add('return','',{[g]=true,type='nil'})
+   -- note that this 'return' is tagged with _err!
+   return 'return', value, {[g]=true,_err=tonumber(g),type='string'}
+end
+
+---------- bothering the user --------------------
 
 function Item:warning(msg)
    local file = self.file and self.file.filename
@@ -783,19 +1011,26 @@ local function reference (s, mod_ref, item_ref)
    return {mod = mod_ref, name = name, label=s}
 end
 
-function Module:process_see_reference (s,modules)
+function Module:process_see_reference (s,modules,istype)
    local mod_ref,fun_ref,name,packmod
    local ref = custom_see_references(s)
    if ref then return ref end
    if not s:match '^[%w_%.%:%-]+$' or not s:match '[%w_]$' then
       return nil, "malformed see reference: '"..s..'"'
    end
+   local function ismod(item)
+      if item == nil then return false end
+      if not istype then return true
+      else
+         return item.type == 'classmod'
+      end
+   end
    -- is this a fully qualified module name?
    local mod_ref = modules.by_name[s]
-   if mod_ref then return reference(s, mod_ref,nil) end
+   if ismod(mod_ref) then return reference(s, mod_ref,nil) end
    -- module reference?
    mod_ref = self:hunt_for_reference(s, modules)
-   if mod_ref then return mod_ref end
+   if ismod(mod_ref) then return mod_ref end
    -- method reference? (These are of form CLASS.NAME)
    fun_ref = self.items.by_name[s]
    if fun_ref then return reference(s,self,fun_ref) end
@@ -824,7 +1059,7 @@ function Module:process_see_reference (s,modules)
       end
    else -- plain jane name; module in this package, function in this module
       mod_ref = modules.by_name[self.package..'.'..s]
-      if mod_ref then return reference(s, mod_ref,nil) end
+      if ismod(mod_ref) then return reference(s, mod_ref,nil) end
       fun_ref = self.items.by_name[s]
       if fun_ref then return reference(s, self,fun_ref)
       else
@@ -901,7 +1136,7 @@ local function dump_tags (tags)
 end
 
 function Module:dump(verbose)
-   if self.type ~= 'module' then return end
+   if not doc.project_level(self.type) then return end
    print '----'
    print(self.type..':',self.name,self.summary)
    if self.description then print(self.description) end

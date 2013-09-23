@@ -119,9 +119,9 @@ THE SOFTWARE.
 
 -- Set up a table for holding local functions to avoid polluting the global namespace
 local M = {}
+local unpack = unpack or table.unpack
 local MT = {__index = _G}
 setmetatable(M, MT)
-setfenv(1, M)
 
 ----------------------------------------------------------------------
 -- Utility functions
@@ -1134,7 +1134,6 @@ end
 -- End of module
 ----------------------------------------------------------------------
 
-setfenv(1, _G)
 M.lock(M)
 
 -- Expose markdown function to the world

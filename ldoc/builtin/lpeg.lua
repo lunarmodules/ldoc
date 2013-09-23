@@ -1,6 +1,7 @@
 --- LPeg PEG pattern matching.
+-- @module lpeg
 
-module 'lpeg'
+local lpeg = {}
 
 ---
 -- The matching function. It attempts to match the given pattern against the
@@ -209,3 +210,5 @@ function lpeg.Ct(patt) end
 -- Any extra values returned by the function become the values produced by the
 -- capture.
 function lpeg.Cmt(patt, function) end
+
+return lpeg

@@ -7,7 +7,7 @@
 --
 -- C/C++ support for Lua extensions is provided.
 --
--- Available from LuaRocks as 'ldoc' and as a [Zip file](http://stevedonovan.github.com/files/ldoc-1.3.9.zip)
+-- Available from LuaRocks as 'ldoc' and as a [Zip file](http://stevedonovan.github.com/files/ldoc-1.4.0.zip)
 --
 -- [Github Page](https://github.com/stevedonovan/ldoc)
 --
@@ -25,6 +25,8 @@ local List = require 'pl.List'
 local stringx = require 'pl.stringx'
 local tablex = require 'pl.tablex'
 
+-- Penlight compatibility
+utils.unpack = utils.unpack or unpack or table.unpack
 
 local append = table.insert
 
@@ -35,8 +37,8 @@ app.require_here()
 
 --- @usage
 local usage = [[
-ldoc, a documentation generator for Lua, vs 1.3.11
-  -d,--dir (default docs) output directory
+ldoc, a documentation generator for Lua, vs 1.4.0
+  -d,--dir (default doc) output directory
   -o,--output  (default 'index') output name
   -v,--verbose          verbose
   -a,--all              show local functions, etc, in docs
@@ -51,6 +53,7 @@ ldoc, a documentation generator for Lua, vs 1.3.11
   -x,--ext (default html) output file extension
   -c,--config (default config.ld) configuration name
   -i,--ignore ignore any 'no doc comment or no module' warnings
+  -X,--not_luadoc break LuaDoc compatibility. Descriptions may continue after tags.
   -D,--define (default none) set a flag to be used in config.ld
   -C,--colon use colon style
   -B,--boilerplate ignore first comment in source files
@@ -63,7 +66,8 @@ ldoc, a documentation generator for Lua, vs 1.3.11
   <file> (string) source file or directory containing source
 
   `ldoc .` reads options from an `config.ld` file in same directory;
-  `ldoc -c path/to/myconfig.ld .` reads options from `path/to/myconfig.ld`
+  `ldoc -c path/to/myconfig.ld <file>` reads options from `path/to/myconfig.ld`
+  and processes <file> if 'file' was not defined in the ld file.
 ]]
 local args = lapp(usage)
 local lfs = require 'lfs'
@@ -103,6 +107,7 @@ end
 
 ProjectMap:add_kind('module','Modules')
 ProjectMap:add_kind('script','Scripts')
+ProjectMap:add_kind('classmod','Classes')
 ProjectMap:add_kind('topic','Topics')
 ProjectMap:add_kind('example','Examples')
 
@@ -116,7 +121,8 @@ local file_types = {
    ['.cpp'] = cc,
    ['.cxx'] = cc,
    ['.C'] = cc,
-   ['.mm'] = cc
+   ['.mm'] = cc,
+   ['.moon'] = lang.moon,
 }
 
 ------- ldoc external API ------------
@@ -124,6 +130,8 @@ local file_types = {
 -- the ldoc table represents the API available in `config.ld`.
 local ldoc = { charset = 'UTF-8' }
 local add_language_extension
+-- hacky way for doc module to be passed options...
+doc.ldoc = ldoc
 
 local function override (field)
    if ldoc[field] ~= nil then args[field] = ldoc[field] end
@@ -144,6 +152,8 @@ function ldoc.tparam_alias (name,type)
    type = type or name
    ldoc.alias(name,{'param',modifiers={type=type}})
 end
+
+ldoc.alias ('error',doc.error_macro)
 
 ldoc.tparam_alias 'string'
 ldoc.tparam_alias 'number'
@@ -174,19 +184,21 @@ function ldoc.new_type (tag, header, project_level,subfield)
 end
 
 function ldoc.manual_url (url)
-    global.set_manual_url(url)
+   global.set_manual_url(url)
 end
 
 function ldoc.custom_see_handler(pat, handler)
-    doc.add_custom_see_handler(pat, handler)
+   doc.add_custom_see_handler(pat, handler)
 end
 
 local ldoc_contents = {
    'alias','add_language_extension','new_type','add_section', 'tparam_alias',
    'file','project','title','package','format','output','dir','ext', 'topics',
-   'one','style','template','description','examples', 'pretty', 'charset',
-   'readme','all','manual_url', 'ignore', 'colon','boilerplate','merge', 'wrap',
+   'one','style','template','description','examples', 'pretty', 'charset', 'plain',
+   'readme','all','manual_url', 'ignore', 'colon', 'sort', 'module_file','vars',
+   'boilerplate','merge', 'wrap', 'not_luadoc', 'template_escape','merge_error_groups',
    'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
+   'no_space_before_args','parse_extra',
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
@@ -278,7 +290,6 @@ if args.file == '.' then
    elseif type(args.file) == 'table' then
       for i,f in ipairs(args.file) do
          args.file[i] = abspath(f)
-         print(args.file[i])
       end
    else
       args.file = abspath(args.file)
@@ -343,7 +354,8 @@ local function process_file (f, flist)
    local ext = path.extension(f)
    local ftype = file_types[ext]
    if ftype then
-      if args.verbose then print(path.basename(f)) end
+      if args.verbose then print(f) end
+      ftype.extra = ldoc.parse_extra or {}
       local F,err = parse.file(f,ftype,args)
       if err then
          if F then
@@ -361,9 +373,31 @@ setup_package_base()
 
 override 'colon'
 override 'merge'
+override 'not_luadoc'
+override 'module_file'
+
+if ldoc.merge_error_groups == nil then
+   ldoc.merge_error_groups = 'Error Message'
+end
+
+-- ldoc.module_file establishes a partial ordering where the
+-- master module files are processed first.
+local function reorder_module_file ()
+   if args.module_file then
+      local mf = {}
+      for mname, f in pairs(args.module_file) do
+         local fullpath = abspath(f)
+         mf[fullpath] = true
+      end
+      return function(x,y)
+         return mf[x] and not mf[y]
+      end
+   end
+end
 
 if type(args.file) == 'table' then
    -- this can only be set from config file so we can assume it's already read
+   args.file.sortfn = reorder_module_file()
    process_file_list(args.file,'*.*',process_file, file_list)
    if #file_list == 0 then quit "no source files specified" end
 elseif path.isdir(args.file) then
@@ -380,9 +414,13 @@ elseif path.isdir(args.file) then
          end
       end
    end
+   -- process files, optionally in order that respects master module files
+   local sortfn = reorder_module_file()
+   if sortfn then files:sort(sortfn) end
    for f in files:iter() do
       process_file(f, file_list)
    end
+
    if #file_list == 0 then
       quit(quote(args.file).." contained no source files")
    end
@@ -442,7 +480,8 @@ if type(ldoc.examples) == 'table' then
       })
       -- wrap prettify for this example so it knows which file to blame
       -- if there's a problem
-      item.postprocess = function(code) return prettify.lua(f,code,0,true) end
+      local ext = path.extension(f):sub(2)
+      item.postprocess = function(code) return prettify.lua(ext,f,code,0,true) end
    end)
 end
 
@@ -506,6 +545,7 @@ end)
 
 ldoc.single = modcount == 1 and first_module or nil
 
+--do return end
 
 -------- three ways to dump the object graph after processing -----
 
@@ -516,8 +556,12 @@ if args.module then
    if args.module == true then
       file_list[1]:dump(args.verbose)
    else
-      local fun = module_list[1].items.by_name[args.module]
-      if not fun then quit(quote(args.module).." is not part of "..quote(args.file)) end
+      local M,name = module_list[1], args.module
+      local fun = M.items.by_name[name]
+      if not fun then
+         fun = M.items.by_name[M.mod_name..':'..name]
+      end
+      if not fun then quit(quote(name).." is not part of "..quote(args.file)) end
       fun:dump(true)
    end
    return
@@ -548,15 +592,47 @@ if args.filter ~= 'none' then
    os.exit()
 end
 
+-- can specify format, output, dir and ext in config.ld
+override 'output'
+override 'dir'
+override 'ext'
+override 'one'
+override 'boilerplate'
+
+-- handling styling and templates --
 ldoc.css, ldoc.templ = 'ldoc.css','ldoc.ltp'
+
+-- special case: user wants to generate a .md file from a .lua file
+if args.ext == 'md' then
+   if #module_list ~= 1 then
+      quit("can currently only generate Markdown output from one module only")
+   end
+   if ldoc.template == '!' then
+      ldoc.template = '!md'
+   end
+   args.output = module_list[1].name
+   args.dir = '.'
+   ldoc.template_escape = '>'
+   ldoc.style = false
+   args.ext = '.md'
+end
+
+local function match_bang (s)
+   if type(s) ~= 'string' then return end
+   return s:match '^!(.*)'
+end
 
 local function style_dir (sname)
    local style = ldoc[sname]
    local dir
+   if style==false and sname == 'style' then
+      args.style = false
+      ldoc.css = false
+   end
    if style then
       if style == true then
          dir = config_dir
-      elseif type(style) == 'string' and path.isdir(style) then
+      elseif type(style) == 'string' and (path.isdir(style) or match_bang(style)) then
          dir = style
       else
          quit(quote(tostring(style)).." is not a directory")
@@ -564,7 +640,6 @@ local function style_dir (sname)
       args[sname] = dir
    end
 end
-
 
 -- the directories for template and stylesheet can be specified
 -- either by command-line '--template','--style' arguments or by 'template and
@@ -576,36 +651,42 @@ end
 style_dir 'style'
 style_dir 'template'
 
--- can specify format, output, dir and ext in config.ld
-override 'output'
-override 'dir'
-override 'ext'
-override 'one'
-override 'boilerplate'
-
 if not args.ext:find '^%.' then
    args.ext = '.'..args.ext
 end
 
 if args.one then
-   ldoc.css = 'ldoc_one.css'
+   ldoc.style = '!one'
 end
 
-if args.style == '!' or args.template == '!' then
+local builtin_style, builtin_template = match_bang(args.style),match_bang(args.template)
+if builtin_style or builtin_template then
    -- '!' here means 'use built-in templates'
    local tmpdir = path.join(path.is_windows and os.getenv('TMP') or '/tmp','ldoc')
    if not path.isdir(tmpdir) then
       lfs.mkdir(tmpdir)
    end
    local function tmpwrite (name)
-      utils.writefile(path.join(tmpdir,name),require('ldoc.html.'..name:gsub('%.','_')))
+      local ok,text = pcall(require,'ldoc.html.'..name:gsub('%.','_'))
+      if not ok then
+         quit("cannot find builtin template "..name..": "..text)
+      end
+      if not utils.writefile(path.join(tmpdir,name),text) then
+         quit("cannot write to temp directory "..tmpdir)
+      end
    end
-   if args.style == '!' then
-      tmpwrite(ldoc.templ)
+   if builtin_style then
+      if builtin_style ~= '' then
+         ldoc.css = 'ldoc_'..builtin_style..'.css'
+      end
+      tmpwrite(ldoc.css)
       args.style = tmpdir
    end
-   if args.template == '!' then
-      tmpwrite(ldoc.css)
+   if builtin_template then
+      if builtin_template ~= '' then
+         ldoc.templ = 'ldoc_'..builtin_template..'.ltp'
+      end
+      tmpwrite(ldoc.templ)
       args.template = tmpdir
    end
 end

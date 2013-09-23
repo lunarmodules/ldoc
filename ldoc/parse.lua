@@ -1,5 +1,6 @@
 -- parsing code for doc comments
 
+local utils = require 'pl.utils'
 local List = require 'pl.List'
 local Map = require 'pl.Map'
 local stringio = require 'pl.stringio'
@@ -7,6 +8,7 @@ local lexer = require 'ldoc.lexer'
 local tools = require 'ldoc.tools'
 local doc = require 'ldoc.doc'
 local Item,File = doc.Item,doc.File
+local unpack = utils.unpack
 
 -- This functionality is only needed for UML support.
 -- If this does not load it will only trigger a failure
@@ -85,18 +87,49 @@ local function parse_colon_tags (text)
    return preamble,tag_items
 end
 
--- Tags are stored as an ordered map
+-- Tags are stored as an ordered multi map from strings to strings
+-- If the same key is used, then the value becomes a list
 local Tags = {}
 Tags.__index = Tags
 
-function Tags.new (t)
+function Tags.new (t,name)
+   local class
+   if name then
+      class = t
+      t = {}
+   end
    t._order = List()
-   return setmetatable(t,Tags)
+   local tags = setmetatable(t,Tags)
+   if name then
+      tags:add('class',class)
+      tags:add('name',name)
+   end
+   return tags
 end
 
-function Tags:add (tag,value)
+function Tags:add (tag,value,modifiers)
+   if modifiers then -- how modifiers are encoded
+      value = {value,modifiers=modifiers}
+   end
+   local ovalue = self:get(tag)
+   if ovalue then
+      ovalue:append(value)
+      value = ovalue
+   end
    rawset(self,tag,value)
-   self._order:append(tag)
+   if not ovalue then
+      self._order:append(tag)
+   end
+end
+
+function Tags:get (tag)
+   local ovalue = rawget(self,tag)
+   if ovalue then -- previous value?
+      if getmetatable(ovalue) ~= List then
+         ovalue = List{ovalue}
+      end
+      return ovalue
+   end
 end
 
 function Tags:iter ()
@@ -387,16 +420,7 @@ local function extract_tags (s,args)
          value = strip(value)
       end
 
-      if modifiers then value = { value, modifiers=modifiers } end
-      local old_value = tags[tag]
-
-      if not old_value then -- first element
-         tags:add(tag,value)
-      elseif type(old_value)=='table' and old_value.append then -- append to existing list
-         old_value :append (value)
-      else -- upgrade string->list
-         tags:add(tag,List{old_value, value})
-      end
+      tags:add(tag,value,modifiers)
    end
    return tags --Map(tags)
 end
@@ -422,15 +446,15 @@ local function parse_file(fname, lang, package, args)
    local current_item, module_item
 
    F.args = args
-
+   F.lang = lang
    F.base = package
 
    local tok,f = lang.lexer(fname)
    if not tok then return nil end
 
-    local function lineno ()
+   local function lineno ()
       return tok:lineno()
-    end
+   end
 
    local function filename () return fname end
 
@@ -497,6 +521,9 @@ local function parse_file(fname, lang, package, args)
 
          if lang:empty_comment(v)  then -- ignore rest of empty start comments
             t,v = tok()
+            if t == 'space' and not v:match '\n' then
+               t,v = tok()
+            end
          end
 
          while t and t == 'comment' do
@@ -611,6 +638,11 @@ local function parse_file(fname, lang, package, args)
                if doc.project_level(tags.class) then
                   if module_item then
                      F:error("Module already declared!")
+                  end
+                  if tags.class == 'classmod' then
+                     tags = tags.new('section','methods')
+                     tags:add('summary','Methods')
+                     F:new_item(tags,line)
                   end
                   module_item = current_item
                end

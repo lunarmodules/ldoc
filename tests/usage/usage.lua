@@ -70,13 +70,12 @@ end
 
 --[[-----------------
 @table Vector.Opts
-Options table format for `Vector.options`
+Options table format for `Vector:options`
 
-    autoconvert:  try to convert strings to numbers
+ * `autoconvert`:  try to convert strings to numbers
+ * `adder`: function used to perform addition and subtraction
+ * `multiplier`: function used to perform multiplication and division
 
-    adder: function used to perform addition and subtraction
-
-    multiplier: function used to perform multiplication and division
 @usage
     v = Vector {{1},{2}}
     v:options {adder = function(x,y) return {x[1]+y[1]} end}

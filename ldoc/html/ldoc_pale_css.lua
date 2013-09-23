@@ -1,5 +1,4 @@
-return [==[
-/* BEGIN RESET
+return [[/* BEGIN RESET
 
 Copyright (c) 2010, Yahoo! Inc. All rights reserved.
 Code licensed under the BSD License:
@@ -29,7 +28,7 @@ del,ins {
     text-decoration: none;
 }
 li {
-    list-style: disc;
+    list-style: bullet;
     margin-left: 20px;
 }
 caption,th {
@@ -125,8 +124,8 @@ pre.example {
 }
 
 pre {
-    background-color: rgb(245, 245, 245);
-    border: 1px solid silver;
+    background-color: rgb(245,245,255); // rgb(245, 245, 245);
+    border: 1px solid #cccccc; //silver;
     padding: 10px;
     margin: 10px 0 10px 0;
     overflow: auto;
@@ -154,25 +153,25 @@ table.index td { text-align: left; vertical-align: top; }
 }
 
 #main {
-    background-color: #f0f0f0;
-    border-left: 2px solid #cccccc;
+    background-color:#FFFFFF; // #f0f0f0;
+    //border-left: 2px solid #cccccc;
 }
 
 #navigation {
     float: left;
-    width: 18em;
+    width: 14em;
     vertical-align: top;
-    background-color: #f0f0f0;
+    background-color:#FFFFFF; // #f0f0f0;
     overflow: visible;
 }
 
 #navigation h2 {
-    background-color:#e7e7e7;
+    background-color:#FFFFFF;//:#e7e7e7;
     font-size:1.1em;
     color:#000000;
     text-align: left;
     padding:0.2em;
-    border-top:1px solid #dddddd;
+    //border-top:1px solid #dddddd;
     border-bottom:1px solid #dddddd;
 }
 
@@ -194,11 +193,11 @@ table.index td { text-align: left; vertical-align: top; }
 }
 
 #content {
-    margin-left: 18em;
+    margin-left: 14em;
     padding: 1em;
     width: 700px;
     border-left: 2px solid #cccccc;
-    border-right: 2px solid #cccccc;
+   // border-right: 2px solid #cccccc;
     background-color: #ffffff;
 }
 
@@ -253,9 +252,8 @@ table.module_list td {
     border-style: solid;
     border-color: #cccccc;
 }
-table.module_list td.name { background-color: #f0f0f0; min-width: 200px; }
+table.module_list td.name { background-color: #f0f0f0; ; min-width: 200px; }
 table.module_list td.summary { width: 100%; }
-
 
 table.function_list {
     border-width: 1px;
@@ -269,17 +267,17 @@ table.function_list td {
     border-style: solid;
     border-color: #cccccc;
 }
-table.function_list td.name { background-color: #f0f0f0; min-width: 200px; }
+table.function_list td.name { background-color: #f6f6ff; ; min-width: 200px; }
 table.function_list td.summary { width: 100%; }
-
-ul.nowrap {
-    overflow:auto;
-    white-space:nowrap;
-}
 
 dl.table dt, dl.function dt {border-top: 1px solid #ccc; padding-top: 1em;}
 dl.table dd, dl.function dd {padding-bottom: 1em; margin: 10px 0 0 20px;}
 dl.table h3, dl.function h3 {font-size: .95em;}
+
+ul.nowrap {
+    overflow:auto;
+    whitespace:nowrap;
+}
 
 /* stop sublists from having initial vertical space */
 ul ul { margin-top: 0px; }
@@ -301,6 +299,4 @@ pre .preprocessor, pre .prepro { color: #a33243; }
 pre .global { color: #800080; }
 pre .prompt { color: #558817; }
 pre .url { color: #272fc2; text-decoration: underline; }
-]==]
-
-
+]]
