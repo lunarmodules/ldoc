@@ -1,0 +1,101 @@
+#!/usr/bin/env lua
+-------------------------------------------------------------------------------
+--- Test multiple simple UML diagrams in one comment                       <br>
+---
+--- @startuml
+--- a->b:test request
+--- a<-b:test response
+--- @enduml
+---
+--- <BR>
+---
+--- @startuml
+--- a2->b2:test 2 request
+--- a2<-b2:test 2 response
+--- @enduml
+---                                                                        <br>
+--- ----------------------------                                           <br>
+---  onEvent API:                                                          <br>
+--- ----------------------------                                           <br>
+---  { "event" : EVENT_NAME, [EVENT_SPECIFIC_DATA] }                       <br>
+---                                                                        <br>
+---  EVENT_NAME:                                                           <br>
+---                                                                        <br>
+---  <b>eos.........end of stream</b>                                      <br>
+---                 reason : info about the EOS                            <br><br>
+---
+--- @copyright   2012 Company LLC
+--- @license     Company LLC Proprietary
+---
+--- @module Lua_Binding
+--- @alias g_dbMethods
+-------------------------------------------------------------------------------
+
+----------------------------------------------------------------
+--- Test_SeqDiagramUseCase1
+---
+--- Test the sequence diagram use case
+--- Nothing, then Nav Starts/Stops.                         <br>
+---                                                         <br>
+---
+--- @startuml{"cacheFile":".cachedFile.png","forceEmbed":true,"fileType":"png"}
+--- a1->b1:test request
+--- a1<-b1:test response
+--- @enduml
+---
+---<br>
+---
+--- @embed{"./test.gif"}
+--- <BR>
+--- @embed{"./test.gif"}
+---
+---
+----------------------------------------------------------------
+local function Test_SeqDiagramUseCase1()
+end
+
+----------------------------------------------------------------
+--- Test_SeqDiagramUseCase2
+---
+--- Test the sequence diagram use case
+--- Nothing, then Nav Starts/Stops.                         <br>
+---                                                         <br>
+--- <br><br><b><u>ABOVE:</u></b><br>
+--- @startuml{"showSyntax":"above"}
+--- a1->b1:test request
+--- a1<-b1:test response
+--- @enduml
+---
+--- <br><br><b><u>BELOW:</u></b><br>
+--- @startuml{"showSyntax":"below"}
+--- a1->b1:test request
+--- a1<-b1:test response
+--- @enduml
+---
+--- <br><br><b><u>LEFT:</u></b><br>
+--- @startuml{"showSyntax":"left"}
+--- a1->b1:test request
+--- a1<-b1:test response
+--- @enduml
+---
+--- <br><br><b><u>RIGHT:</u></b><br>
+--- @startuml{"showSyntax":"right"}
+--- a1->b1:test request
+--- a1<-b1:test response
+--- @enduml
+---
+--- <br><br><b><u>NONE:</u></b><br>
+--- @startuml{"showSyntax":"none"}
+--- a1->b1:test request
+--- a1<-b1:test response
+--- @enduml
+---
+--- <br><br><b><u>not defined:</u></b><br>
+--- @startuml
+--- a1->b1:test request
+--- a1<-b1:test response
+--- @enduml
+---
+----------------------------------------------------------------
+local function Test_SeqDiagramUseCase2()
+end

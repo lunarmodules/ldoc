@@ -10,6 +10,21 @@ local doc = require 'ldoc.doc'
 local Item,File = doc.Item,doc.File
 local unpack = utils.unpack
 
+-- This functionality is only needed for UML support.
+-- If this does not load it will only trigger a failure
+-- if the UML syntax was detected.
+local bOk, http   = pcall( require, "socket.http")
+local mime        = nil
+if bOk == false then
+   http = nil
+else
+   bOk, mime   = pcall( require, "mime")
+   if bOk == false then
+      mime = nil
+   end
+end
+
+
 ------ Parsing the Source --------------
 -- This uses the lexer from PL, but it should be possible to use Peter Odding's
 -- excellent Lpeg based lexer instead.
@@ -121,6 +136,258 @@ function Tags:iter ()
    return self._order:iter()
 end
 
+-- Used to preprocess the tag text prior to extracting
+-- tags.  This allows us to replace tags with other text.
+-- For example, we embed images into the document.
+local function preprocess_tag_strings( s )
+
+   local function create_embedded_image( filename, fileType )
+
+      local html = ""
+
+      if mime == nil then
+         local errStr = "LDoc error, Lua socket/mime module needed for UML"
+         -- Just log the error in the doc
+         html = "<b><u>"..errStr.."</u></b>"
+         print(errStr)
+         return html
+      end
+
+      if fileType == nil then
+         fileType = "png"
+      end
+
+      -- Now open the new image file and embed it
+      -- into the text as an HTML image
+      local fp = io.open( filename, "rb" )
+      if fp then
+
+         -- This could be more efficient instead of
+         -- reading all since the definitions are
+         -- typically small this will work for now
+         local img = fp:read("*all")
+         fp:close()
+
+         html = string.format( '<img src="data:image/%s;base64,%s" />', fileType, mime.b64( img ) )
+      else
+         local errStr = string.format("LDoc error opening %s image file: %q", fileType, filename)
+         -- Just log the error in the doc
+         html = "<br><br><b><u>"..errStr.."</u></b><br><br>"
+         print(errStr)
+      end
+
+      return html
+   end
+
+   local function create_embedded_syntax( filename, syntaxStyle )
+
+      local html = ""
+
+      -- Now open the new syntax file and create an HTML version
+      local fp = io.open( filename, "rb" )
+      if fp then
+
+         -- This could be more efficient instead of
+         -- reading all since the definitions are
+         -- typically small this will work for now
+         local uml = fp:read("*all")
+         fp:close()
+
+         -- The '@' will trigger an error for unknown tag,
+         -- so just remove them, it will still be understood
+         uml = string.gsub(uml, "@startuml", "")
+         uml = string.gsub(uml, "@enduml", "")
+
+         uml = string.gsub(uml, "&", "&amp;")
+         uml = string.gsub(uml, "<", "&lt;")
+         uml = string.gsub(uml, ">", "&gt;")
+         uml = string.gsub(uml, ">", "&gt;")
+
+         -- TODO: Needs work because the style needs to be cleared
+         if syntaxStyle == "left" then
+            html = string.format( '<pre alt="" style="float: left; margin-right: 5px;">\n%s\n</pre>',  uml)
+         elseif syntaxStyle == "right" then
+            html = string.format( '<pre alt="" style="float: right; margin-right: 5px;">\n%s\n</pre>',  uml)
+         else
+            html = string.format( '<pre>\n%s\n</pre>',  uml)
+         end
+
+      else
+         local errStr = string.format("LDoc error opening UML file: %q", filename)
+         -- Just log the error in the doc
+         html = "<br><br><b><u>"..errStr.."</u></b><br><br>"
+         print(errStr)
+      end
+
+      return html
+   end
+
+   ----------------------------------------------------------
+   -- Embedded UML
+   ------------------
+   local epos
+   local execPath = "plantuml %s"
+   local spos     = string.find(s, "@startuml")
+   if spos then
+      _, epos = string.find(s, "@enduml", spos+1)
+   end
+
+   while spos and epos do
+
+      local uml_filename = os.tmpname()
+      local img_filename = uml_filename
+      local sUml         = string.sub(s,spos,epos) -- UML definition text
+
+      -- Grab the text before and after the UML definition
+      local preStr        = string.sub(s, 1, spos-1)
+      local postStr       = string.sub(s, epos+1)
+      local fileType      = "png"
+      local showSyntax    = "none"
+      local fp            = io.open( uml_filename, "w" )
+      local html          = ""
+      local cacheFileName = nil
+      local sEmbedImage   = "true"
+
+      --Add support for optional formatting in a json format
+      if string.sub( sUml, 10,10 ) == "{" then
+         local sFmt = string.match( sUml, ".*{(.*)}" )
+
+         -- Remove the formatter
+         sUml = string.gsub( sUml, ".*}", "@startuml" )
+
+         -- To avoid adding the dependency of JSON we will
+         -- parse what we need.
+
+         -- "exec":"path"
+         -- This allows you to alter the UML generation engine and path for execution
+         -- Path should have a %s for filename placement.
+         execPath = string.match(sFmt, '.-"exec"%s-:%s-"(.*)".-') or execPath
+
+         -- "removeTags":true
+         -- if true, the @startuml and @enduml are removed, this
+         -- makes it possible to support other UML parsers.
+         sRemoveTags = string.match(sFmt, '.-"removeTags"%s-:%s-(%a*).-')
+         if sRemoveTags == "true" then
+            sUml = string.gsub( sUml, "^%s*@startuml", "" )
+            sUml = string.gsub( sUml, "@enduml%s*$", "" )
+         end
+
+         -- "fileType":"gif"
+         -- This defines a different file type that is generated by
+         -- the UML parsers.
+         fileType = string.match(sFmt, '.-"fileType"%s-:%s-"(.-)".-') or fileType
+
+         -- "cacheFile":"path"
+         -- specify where to save the image.  This will NOT embed the image
+         -- but will save the file to this path/filename.
+         cacheFileName = string.match(sFmt, '.-"cacheFile"%s-:%s-"(.-)".-')
+         if cacheFileName then
+            -- by default we will not embed when image is cached
+            -- use "forceEmbed" to override this option
+            sEmbedImage = "false"
+         end
+
+         -- "showSyntax":"left"|"right"|"above"|"below"|"none"[default]
+         -- By using this option you can specify that you also want the
+         -- syntax to be shown: "left"|"right"|"above"|"below".  "none"
+         -- is the same as not specifying this option.
+         showSyntax = string.match(sFmt, '.-"showSyntax"%s-:%s-"(.-)".-') or showSyntax
+
+         -- "forceEmbed":true
+         -- if true, this will still embed the image even if the "cacheFile"
+         -- option is enabled.  This makes it possible to cache AND embed
+         -- the images.
+         sEmbedImage = string.match(sFmt, '.-"forceEmbed"%s-:%s-(%a*).-') or sEmbedImage
+
+      end
+
+      if fp then
+         -- write the UML text to a file
+         fp:write( sUml )
+         fp:close()
+
+         -- create the diagram, overwrites the existing file
+         -- This will generate a PNG filename
+         os.execute( string.format(execPath, uml_filename ) )
+
+         -- filename will now be the output name from the previous plantuml excecution
+         img_filename = string.format("%s.%s", uml_filename, (fileType or "png"))
+
+         if cacheFileName then
+
+            -- Save the image to a specific location which we
+            -- do not remove, nor embed in the HTML
+            os.rename( img_filename, cacheFileName)
+
+            if sEmbedImage == "true" then
+               -- create the embedded text for the image
+               html = create_embedded_image( cacheFileName, fileType )
+            end
+
+         elseif sEmbedImage == "true" then
+            -- create the embedded text for the image
+            html = create_embedded_image( img_filename, fileType )
+
+            os.remove( img_filename ) -- this is the PNG from plantUml
+
+         else
+            os.remove( img_filename ) -- this is the PNG from plantUml
+         end
+
+         if showSyntax and showSyntax ~= "none" then
+
+            local umlSyntax = create_embedded_syntax( uml_filename, showSyntax )
+
+            if showSyntax == "above" then
+               html = umlSyntax.."<br>"..html
+            elseif showSyntax == "below" then
+               html = html.."<br>"..umlSyntax
+            else
+               html = html..umlSyntax
+            end
+
+         end
+
+         os.remove( uml_filename ) -- this is the UML
+
+      else
+         local errStr = "LDoc error creating UML temp file"
+         -- Just log the error in the doc
+         html = "<br><br><b><u>"..errStr.."</u></b><br><br>"
+         print(errStr)
+      end
+
+      s = preStr..html..postStr
+
+      spos = string.find(s, "@startuml", #preStr+#html+1)
+      if spos then
+         _, epos = string.find(s, "@enduml",spos+1)
+      end
+
+   end -- embed UML
+
+   ----------------------------------------------------------
+   -- Embedded Image
+   ------------------
+   local filename = string.match(s, '@embed{"(.-)"}')
+   while filename do
+
+      local fileType = string.match(filename, "%.(.*)$")
+
+      -- create the embedded text for the image
+      html = create_embedded_image( filename, fileType )
+
+      -- Replace the first occurance
+      s = string.gsub(s, "@embed{.-}", html, 1)
+
+      filename = string.match(s, '@embed{"(.-)"}')
+
+   end -- embedded image
+
+   return s
+
+end -- preprocess_tag_strings
+
 -- This takes the collected comment block, and uses the docstyle to
 -- extract tags and values.  Assume that the summary ends in a period or a question
 -- mark, and everything else in the preamble is the description.
@@ -132,6 +399,7 @@ local function extract_tags (s,args)
    if args.colon then --and s:match ':%s' and not s:match '@%a' then
       preamble,tag_items = parse_colon_tags(s)
    else
+      s = preprocess_tag_strings( s )
       preamble,tag_items = parse_at_tags(s)
    end
    local strip = tools.strip
