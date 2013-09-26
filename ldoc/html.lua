@@ -190,9 +190,14 @@ function html.generate_output(ldoc, args, project)
 
       local types = {}
       for name in tp:gmatch("[^|]+") do
-         local ref,err = markup.process_reference(name,true)
+         --local sym, rest = name:match('(%S+)%s*([%*%&])')
+         local sym = name:match '([%w%.%:]+)'
+         local ref,err = markup.process_reference(sym,true)
          if ref then
-            types[#types+1] = ('<a class="type" href="%s">%s</a>'):format(ldoc.href(ref),ref.label or name)
+            if ref.label and sym == name then
+               name = ref.label
+            end
+            types[#types+1] = ('<a class="type" href="%s">%s</a>'):format(ldoc.href(ref),name)
          else
             types[#types+1] = '<span class="type">'..name..'</span>'
          end

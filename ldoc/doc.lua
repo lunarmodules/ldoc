@@ -663,22 +663,22 @@ function Item:finish()
                   self:warning("undocumented formal argument: "..quote(fargs[i]))
                end end
             end
-            -- formal arguments may come with types, inferred by the
-            -- appropriate code in ldoc.lang
-            if fargs.types then
-               self.modifiers[field] = List()
-               for t in fargs.types:iter() do
-                  self:add_type(field,t)
-               end
-               if fargs.return_type then
-                  if not self.ret then -- type, but no comment; no worries
-                     self.ret = List{''}
-                  end
-                  self.modifiers['return'] = List()
-                  self:add_type('return',fargs.return_type)
-               end
-            end
          end -- #fargs > 0
+         -- formal arguments may come with types, inferred by the
+         -- appropriate code in ldoc.lang
+         if fargs.types then
+            self.modifiers[field] = List()
+            for t in fargs.types:iter() do
+               self:add_type(field,t)
+            end
+            if fargs.return_type then
+               if not self.ret then -- type, but no comment; no worries
+                  self.ret = List{''}
+               end
+               self.modifiers['return'] = List()
+               self:add_type('return',fargs.return_type)
+            end
+         end
       end -- fargs
 
       -- the comments are associated with each parameter by

@@ -262,7 +262,7 @@ function CC.lexer(f)
 end
 
 function CC:grab_block_comment(v,tok)
-   v = v:gsub(self.block_comment,'')
+   v = v:gsub(self.block_comment,''):gsub('\n%s*%*','\n')
    return 'comment',v:sub(1,-3)
 end
 
@@ -296,7 +296,7 @@ function CC:item_follows (t,v,tok)
             name = v
             t,v = tnext(tok)
          end
-         print ('got',name,t,v,return_type)
+         --print ('got',name,t,v,return_type)
          return function(tags,tok)
             if not tags.name then
                tags:add('name',name)
