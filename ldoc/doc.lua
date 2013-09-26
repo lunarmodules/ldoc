@@ -462,7 +462,11 @@ function Item:set_tag (tag,value)
       if type(value) == 'table' then
          if value.append then -- it was a List!
             -- such tags are _not_ multiple, e.g. name
-            self:error("'"..tag.."' cannot have multiple values")
+            if tag == 'class' and value:contains 'example' then
+               self:error("cannot use 'example' tag for functions or tables. Use 'usage'")
+            else
+               self:error("'"..tag.."' cannot have multiple values; "..tostring(value))
+            end
          end
          value = value[1]
          modifiers = value.modifiers
@@ -877,7 +881,10 @@ function Item:build_return_groups()
          lastg = g
       end
       --require 'pl.pretty'.dump(ret)
-      group:append({text=ret, type = mods.type or '',mods = mods})
+      if not mods then
+         self:error(quote(self.name)..' had no return?')
+      end
+      group:append({text=ret, type = mods and (mods.type or '') or '',mods = mods})
    end
    -- order by groups to force error groups to the end
    table.sort(groups,function(g1,g2) return g1.g < g2.g end)

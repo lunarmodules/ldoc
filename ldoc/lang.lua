@@ -74,7 +74,7 @@ function Lua:_init()
    self.line_comment = '^%-%-+' -- used for stripping
    self.start_comment_ = '^%-%-%-+'     -- used for doc comment line start
    self.block_comment = '^%-%-%[=*%[%-+' -- used for block doc comments
-   self.end_comment_ = '[^%-]%-%-+\n$' ---- exclude --- this kind of comment ---
+   self.end_comment_ = '[^%-]%-%-+[^-]*\n$' ---- exclude --- this kind of comment ---
    self.method_call = ':'
    self:finalize()
 end

@@ -187,6 +187,7 @@ function html.generate_output(ldoc, args, project)
          optional = true
          tp = tp2
       end
+
       local types = {}
       for name in tp:gmatch("[^|]+") do
          local ref,err = markup.process_reference(name,true)
