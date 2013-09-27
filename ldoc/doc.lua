@@ -1019,6 +1019,7 @@ local function reference (s, mod_ref, item_ref)
 end
 
 function Module:process_see_reference (s,modules,istype)
+   if s == nil then return nil end
    local mod_ref,fun_ref,name,packmod
    local ref = custom_see_references(s)
    if ref then return ref end

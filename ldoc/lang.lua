@@ -285,28 +285,26 @@ function CC:item_follows (t,v,tok)
       if v == self.extra.export then -- this is not part of the return type!
          t,v = tnext(tok)
       end
-      -- TBD collecting types which are not single tokens (may contain '*')
-      local return_type = v
+      -- types may have multiple tokens: example, const char *bonzo(...)
+      local return_type, name = v 
       t,v = tnext(tok)
-      if t == 'iden' or t=='keyword' then
-         local name = v
+      name = v     
+      t,v = tnext(tok)
+      while t ~= '(' do         
+         return_type = return_type .. ' ' .. name
+         name = v
          t,v = tnext(tok)
-         if t ~= '(' then
-            return_type = return_type .. ' ' .. name
-            name = v
-            t,v = tnext(tok)
+      end
+      --print ('got',name,t,v,return_type)
+      return function(tags,tok)
+         if not tags.name then
+            tags:add('name',name)
          end
-         --print ('got',name,t,v,return_type)
-         return function(tags,tok)
-            if not tags.name then
-               tags:add('name',name)
-            end
-            tags:add('class','function')
-            if t == '(' then
-               tags.formal_args,t,v = tools.get_parameters(tok,')',',',self)
-               if return_type ~= 'void' then
-                  tags.formal_args.return_type = return_type
-               end
+         tags:add('class','function')
+         if t == '(' then
+            tags.formal_args,t,v = tools.get_parameters(tok,')',',',self)
+            if return_type ~= 'void' then
+               tags.formal_args.return_type = return_type
             end
          end
       end

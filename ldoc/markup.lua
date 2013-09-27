@@ -57,7 +57,7 @@ end
 -- they can appear in the contents list as a ToC.
 function markup.add_sections(F, txt)
    local sections, L, first = {}, 1, true
-   local title_pat_end, title_pat = '[^#]%s*(.+)'
+   local title_pat 
    for line in stringx.lines(txt) do
       if first then
          local level,header = line:match '^(#+)%s*(.+)'
@@ -66,7 +66,8 @@ function markup.add_sections(F, txt)
          else
             level = '##'
          end
-         title_pat = '^'..level..title_pat_end
+         title_pat = '^'..level..'([^#]%s*.+)'
+         title_pat = stringx.lstrip(title_pat)
          first = false
       end
       local title = line:match (title_pat)

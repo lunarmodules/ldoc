@@ -190,7 +190,6 @@ function html.generate_output(ldoc, args, project)
 
       local types = {}
       for name in tp:gmatch("[^|]+") do
-         --local sym, rest = name:match('(%S+)%s*([%*%&])')
          local sym = name:match '([%w%.%:]+)'
          local ref,err = markup.process_reference(sym,true)
          if ref then
