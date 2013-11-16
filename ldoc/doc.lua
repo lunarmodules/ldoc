@@ -264,7 +264,7 @@ function File:finish()
          if not submodule then
             this_mod.package = package
             this_mod.mod_name = mname
-            this_mod.kinds = ModuleMap() -- the iterator over the module contents
+            this_mod.kinds = doc.ModuleMap() -- the iterator over the module contents
             self.modules:append(this_mod)
          end
       elseif doc.section_tag(item.type) then

@@ -82,8 +82,8 @@ local Item,File,Module = doc.Item,doc.File,doc.Module
 local quit = utils.quit
 
 
-class.ModuleMap(KindMap)
-local ModuleMap = ModuleMap
+local ModuleMap = class(KindMap)
+doc.ModuleMap = ModuleMap
 
 function ModuleMap:_init ()
    self.klass = ModuleMap
@@ -97,7 +97,7 @@ ModuleMap:add_kind('lfunction','Local Functions','Parameters')
 ModuleMap:add_kind('annotation','Issues')
 
 
-class.ProjectMap(KindMap)
+local ProjectMap = class(KindMap)
 ProjectMap.project_level = true
 
 function ProjectMap:_init ()
