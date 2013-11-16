@@ -155,7 +155,10 @@ return [==[
     $(M(ldoc.descript(item),item))
 
 #  if show_parms and item.params and #item.params > 0 then
-    <h3>$(module.kinds:type_of(item).subnames):</h3>
+#    local subnames = module.kinds:type_of(item).subnames
+#    if subnames then
+    <h3>$(subnames):</h3>
+#    end
     <ul>
 #   for parm in iter(item.params) do
 #     local param,sublist = item:subparam(parm)
@@ -172,6 +175,9 @@ return [==[
         $(M(item.params[p],item))
 #       if def then
          (<em>default</em> $(def))
+#       end
+#       if item:readonly(p) then
+          <em>readonly</em>
 #       end
         </li>
 #     end

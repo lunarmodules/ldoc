@@ -288,6 +288,9 @@ function File:finish()
          -- add the item to the module's item list
          if this_mod then
             -- new-style modules will have qualified names like 'mod.foo'
+            if item.name == nil then
+               self:error("item's name is nil")
+            end
             local mod,fname = split_dotted_name(item.name)
             -- warning for inferred unqualified names in new style modules
             -- (retired until we handle methods like Set:unset() properly)
@@ -421,7 +424,7 @@ end
 
 function Item:trailing_warning (kind,tag,rest)
    if type(rest)=='string' and #rest > 0 then
-      Item.warning(self,kind.." tag: '"..tag..'" has trailing text; use not_luadoc=true if you want description to continue between tags\n'..rest)
+      Item.warning(self,kind.." tag: '"..tag..'" has trailing text ; use not_luadoc=true if you want description to continue between tags\n"'..rest..'"')
    end
 end
 
@@ -823,6 +826,12 @@ function Item:default_of_param(p)
    local opt = m.optchain or m.opt
    if opt == true then return nil end
    return opt
+end
+
+function Item:readonly(p)
+   local m = self:param_modifiers(p)
+   if not m then return nil end
+   return m.readonly
 end
 
 function Item:subparam(p)

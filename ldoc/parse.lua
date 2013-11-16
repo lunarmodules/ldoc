@@ -364,6 +364,17 @@ local function parse_file(fname, lang, package, args)
             if is_local or tags['local'] then
                tags:add('local',true)
             end
+            -- support for standalone fields/properties of classes/modules
+            if (tags.field or tags.param) and not tags.class then
+               -- the hack is to take a subfield and pull out its name,
+               -- (see Tag:add above) but let the subfield itself go through
+               -- with any modifiers.
+               local fp = tags.field or tags.param
+               if type(fp) == 'table' then fp = fp[1] end
+               fp = tools.extract_identifier(fp)
+               tags:add('name',fp)
+               tags:add('class','field')
+            end
             if tags.name then
                current_item = F:new_item(tags,line)
                current_item.inferred = item_follows ~= nil
