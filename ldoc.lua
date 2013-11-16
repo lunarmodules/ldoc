@@ -198,7 +198,7 @@ local ldoc_contents = {
    'readme','all','manual_url', 'ignore', 'colon', 'sort', 'module_file','vars',
    'boilerplate','merge', 'wrap', 'not_luadoc', 'template_escape','merge_error_groups',
    'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
-   'no_space_before_args','parse_extra',
+   'no_space_before_args','parse_extra','no_lua_ref',
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
@@ -375,6 +375,11 @@ override 'colon'
 override 'merge'
 override 'not_luadoc'
 override 'module_file'
+
+-- LDoc is doing plain ole C, don't want random Lua references!
+if ldoc.parse_extra and ldoc.parse_extra.C then
+   ldoc.no_lua_ref = true
+end
 
 if ldoc.merge_error_groups == nil then
    ldoc.merge_error_groups = 'Error Message'

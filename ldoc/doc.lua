@@ -1035,6 +1035,9 @@ function Module:process_see_reference (s,modules,istype)
    if not s:match '^[%w_%.%:%-]+$' or not s:match '[%w_]$' then
       return nil, "malformed see reference: '"..s..'"'
    end
+
+   -- `istype` means that we are looking up strictly in a _type_ context, so then only
+   -- allow `classmod` module references.
    local function ismod(item)
       if item == nil then return false end
       if not istype then return true
@@ -1042,6 +1045,16 @@ function Module:process_see_reference (s,modules,istype)
          return item.type == 'classmod'
       end
    end
+
+   -- it is _entirely_ possible that someone does not want auto references for standard Lua libraries!
+   local lua_manual_ref
+   local ldoc = tools.item_ldoc(self)
+   if ldoc and ldoc.no_lua_ref then
+      lua_manual_ref = function(s) return false end
+   else
+      lua_manual_ref = global.lua_manual_ref
+   end
+
    -- is this a fully qualified module name?
    local mod_ref = modules.by_name[s]
    if ismod(mod_ref) then return reference(s, mod_ref,nil) end
@@ -1058,7 +1071,7 @@ function Module:process_see_reference (s,modules,istype)
       if not mod_ref then
          mod_ref = self:hunt_for_reference(packmod, modules)
          if not mod_ref then
-            local ref = global.lua_manual_ref(s)
+            local ref = lua_manual_ref(s)
             if ref then return ref end
             return nil,"module not found: "..packmod
          end
@@ -1080,7 +1093,7 @@ function Module:process_see_reference (s,modules,istype)
       fun_ref = self.items.by_name[s]
       if fun_ref then return reference(s, self,fun_ref)
       else
-         local ref = global.lua_manual_ref (s)
+         local ref = lua_manual_ref (s)
          if ref then return ref end
          return nil, "function not found: "..s.." in this module"
       end

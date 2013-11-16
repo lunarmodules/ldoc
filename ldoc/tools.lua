@@ -16,6 +16,13 @@ local lexer = require 'ldoc.lexer'
 local quit = utils.quit
 local lfs = require 'lfs'
 
+-- at rendering time, can access the ldoc table from any module item,
+-- or the item itself if it's a module
+function M.item_ldoc (item)
+   local mod = item and (item.module or item)
+   return mod and mod.ldoc
+end
+
 -- this constructs an iterator over a list of objects which returns only
 -- those objects where a field has a certain value. It's used to iterate
 -- only over functions or tables, etc.  If the list of item has a module
@@ -26,8 +33,7 @@ function M.type_iterator (list,field,value)
       local fls = list:filter(function(item)
          return item[field] == value
       end)
-      local mod = fls[1] and fls[1].module
-      local ldoc = mod and mod.ldoc
+      local ldoc = M.item_ldoc(fls[1])
       if ldoc and ldoc.sort then
          fls:sort(function(ia,ib)
             return ia.name < ib.name
