@@ -83,13 +83,10 @@ return [==[
 
 <div id="content">
 
-#if module then
-<h1>$(ldoc.module_typename(module)) <code>$(module.name)</code></h1>
-# end
-
 # if ldoc.body then -- verbatim HTML as contents; 'non-code' entries
     $(ldoc.body)
 # elseif module then -- module documentation
+<h1>$(ldoc.module_typename(module)) <code>$(module.name)</code></h1>
 <p>$(M(module.summary,module))</p>
 <p>$(M(module.description,module))</p>
 #   if module.usage then

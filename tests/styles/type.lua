@@ -7,14 +7,22 @@
 -- @type Bonzo
 
 ----
--- make a new Bonzo
+-- make a new Bonzo.
+-- @see Bonzo:dog
 -- @string s name of Bonzo
 function Bonzo.new(s)
 end
 
 -----
 -- get a string representation.
-function Bonzo.__tostring()
+-- works with `tostring`
+function Bonzo:__tostring()
+end
+
+----
+-- Another method.
+function Bonzo:dog ()
+
 end
 
 ----

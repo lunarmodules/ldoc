@@ -1009,13 +1009,13 @@ end
 local err = io.stderr
 
 local function custom_see_references (s)
-    for pat, action in pairs(see_reference_handlers) do
-        if s:match(pat) then
-            local label, href = action(s:match(pat))
-            if not label then print('custom rule failed',s,pat,href) end
-            return {href = href, label = label}
-        end
-    end
+   for pat, action in pairs(see_reference_handlers) do
+      if s:match(pat) then
+         local label, href = action(s:match(pat))
+         if not label then print('custom rule failed',s,pat,href) end
+         return {href = href, label = label}
+      end
+   end
 end
 
 local function reference (s, mod_ref, item_ref)
@@ -1025,6 +1025,19 @@ local function reference (s, mod_ref, item_ref)
       name = 'Class_'..name
    end
    return {mod = mod_ref, name = name, label=s}
+end
+
+function Module:lookup_class_item (packmod, s)
+   local section = "Class_"..packmod
+   if self.sections.by_name[section] then
+      for item in self.items:iter() do
+         --print('item',item.name,item.section)
+         if item.section == section and s == item.name then
+            return reference(s,self,item)
+         end
+      end
+   end
+   return nil
 end
 
 function Module:process_see_reference (s,modules,istype)
@@ -1071,7 +1084,9 @@ function Module:process_see_reference (s,modules,istype)
       if not mod_ref then
          mod_ref = self:hunt_for_reference(packmod, modules)
          if not mod_ref then
-            local ref = lua_manual_ref(s)
+            local ref = self:lookup_class_item(packmod,s)
+            if ref then return ref end
+            ref = lua_manual_ref(s)
             if ref then return ref end
             return nil,"module not found: "..packmod
          end
@@ -1091,7 +1106,7 @@ function Module:process_see_reference (s,modules,istype)
       mod_ref = modules.by_name[self.package..'.'..s]
       if ismod(mod_ref) then return reference(s, mod_ref,nil) end
       fun_ref = self.items.by_name[s]
-      if fun_ref then return reference(s, self,fun_ref)
+      if fun_ref then return reference(s,self,fun_ref)
       else
          local ref = lua_manual_ref (s)
          if ref then return ref end
