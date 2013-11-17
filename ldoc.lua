@@ -198,7 +198,7 @@ local ldoc_contents = {
    'readme','all','manual_url', 'ignore', 'colon', 'sort', 'module_file','vars',
    'boilerplate','merge', 'wrap', 'not_luadoc', 'template_escape','merge_error_groups',
    'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
-   'no_space_before_args','parse_extra','no_lua_ref',
+   'no_space_before_args','parse_extra','no_lua_ref','sort_modules',
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
@@ -544,9 +544,11 @@ if not args.all and not ldoc.all then
    end
 end
 
-table.sort(module_list,function(m1,m2)
-   return m1.name < m2.name
-end)
+if ldoc.sort_modules then
+   table.sort(module_list,function(m1,m2)
+      return m1.name < m2.name
+   end)
+end
 
 ldoc.single = modcount == 1 and first_module or nil
 

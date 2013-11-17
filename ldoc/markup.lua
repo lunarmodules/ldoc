@@ -57,7 +57,8 @@ end
 -- they can appear in the contents list as a ToC.
 function markup.add_sections(F, txt)
    local sections, L, first = {}, 1, true
-   local title_pat 
+   local title_pat
+   local lstrip = stringx.lstrip
    for line in stringx.lines(txt) do
       if first then
          local level,header = line:match '^(#+)%s*(.+)'
@@ -67,14 +68,14 @@ function markup.add_sections(F, txt)
             level = '##'
          end
          title_pat = '^'..level..'([^#]%s*.+)'
-         title_pat = stringx.lstrip(title_pat)
+         title_pat = lstrip(title_pat)
          first = false
       end
       local title = line:match (title_pat)
       if title then
          -- Markdown does allow this pattern
          title = title:gsub('%s*#+$','')
-         sections[L] = F:add_document_section(title)
+         sections[L] = F:add_document_section(lstrip(title))
       end
       L = L + 1
    end
