@@ -97,8 +97,14 @@ function html.generate_output(ldoc, args, project)
 
    function ldoc.module_name (mod)
       local name = mod.name
-      if mod.type == 'module' then
+      if mod.type == 'module' then -- leave out package (also for 'classmod'??)
          name = name:gsub('^.-%.','')
+      elseif mod.type == 'topic' then
+         if mod.display_name then
+            name = mod.display_name
+         else -- leave out md extension
+            name = name:gsub('%..*$','')
+         end
       end
       return name
    end

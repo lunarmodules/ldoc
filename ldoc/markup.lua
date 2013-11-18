@@ -70,10 +70,11 @@ function markup.add_sections(F, txt)
          title_pat = '^'..level..'([^#]%s*.+)'
          title_pat = lstrip(title_pat)
          first = false
+         F.display_name = header
       end
       local title = line:match (title_pat)
       if title then
-         -- Markdown does allow this pattern
+         -- Markdown allows trailing '#'...
          title = title:gsub('%s*#+$','')
          sections[L] = F:add_document_section(lstrip(title))
       end

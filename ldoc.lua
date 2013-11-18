@@ -198,7 +198,7 @@ local ldoc_contents = {
    'readme','all','manual_url', 'ignore', 'colon', 'sort', 'module_file','vars',
    'boilerplate','merge', 'wrap', 'not_luadoc', 'template_escape','merge_error_groups',
    'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
-   'no_space_before_args','parse_extra','no_lua_ref','sort_modules',
+   'no_space_before_args','parse_extra','no_lua_ref','sort_modules','use_markdown_titles',
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
@@ -508,6 +508,9 @@ if type(ldoc.readme) == 'table' then
       -- headers in the readme, which are attached to the File. So
       -- we pass the File to the postprocesser, which will insert the section markers
       -- and resolve inline @ references.
+      if ldoc.use_markdown_titles then
+         item.display_name = F.display_name
+      end
       item.postprocess = function(txt) return ldoc.markup(txt,F) end
    end)
 end

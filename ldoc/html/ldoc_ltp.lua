@@ -61,12 +61,11 @@ return [==[
 # end
 # end
 # -------- contents of project ----------
-# -- if not ldoc.no_summary then
 # local this_mod = module and module.name
 # for kind, mods, type in ldoc.kinds() do
 #  if not ldoc.kinds_allowed or ldoc.kinds_allowed[type] then
 <h2>$(kind)</h2>
-<ul class="nowrap">
+<ul class="$(kind=='Topics' and '' or 'nowrap'">
 #  for mod in mods() do local name = ldoc.module_name(mod)
 #   if mod.name == this_mod then
   <li><strong>$(name)</strong></li>
@@ -75,7 +74,6 @@ return [==[
 #   end
 #  end
 # end
-# -- end
 </ul>
 # end
 
