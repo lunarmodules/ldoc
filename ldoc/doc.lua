@@ -176,6 +176,7 @@ function File:export_item (name)
    for item in self.items:iter() do
       local tags = item.tags
       if tags.name == name then
+         tags.export = true
          if tags['local'] then
             tags['local'] = nil
          end
@@ -647,6 +648,13 @@ function Item:finish()
          elseif #fargs > 0 then -- consistency check!
             local varargs = fargs[#fargs] == '...'
             if varargs then table.remove(fargs) end
+            if tags.export then
+               if fargs[1] == 'self' then
+                  table.remove(fargs,1)
+               else
+                  tags.static = true
+               end
+            end
             local k = 0
             for _,pname in ipairs(param_names) do
                local _,field = split_iden(pname)
