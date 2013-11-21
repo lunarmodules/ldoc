@@ -1114,6 +1114,16 @@ function Module:process_see_reference (s,modules,istype)
       mod_ref = modules.by_name[self.package..'.'..s]
       if ismod(mod_ref) then return reference(s, mod_ref,nil) end
       fun_ref = self.items.by_name[s]
+      -- did not get an exact match, so try to match by the unqualified fun name
+      if not fun_ref then
+         local patt = '[.:]'..s..'$'
+         for qname,ref in pairs(self.items.by_name) do
+            if qname:match(patt) then
+               fun_ref = ref
+               break
+            end
+         end
+      end
       if fun_ref then return reference(s,self,fun_ref)
       else
          local ref = lua_manual_ref (s)
