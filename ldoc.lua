@@ -52,6 +52,7 @@ ldoc, a documentation generator for Lua, vs 1.4.0
   -b,--package  (default .) top-level package basename (needed for module(...))
   -x,--ext (default html) output file extension
   -c,--config (default config.ld) configuration name
+  -u,--unqualified     don't show package name in sidebar links
   -i,--ignore ignore any 'no doc comment or no module' warnings
   -X,--not_luadoc break LuaDoc compatibility. Descriptions may continue after tags.
   -D,--define (default none) set a flag to be used in config.ld
@@ -199,6 +200,7 @@ local ldoc_contents = {
    'boilerplate','merge', 'wrap', 'not_luadoc', 'template_escape','merge_error_groups',
    'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
    'no_space_before_args','parse_extra','no_lua_ref','sort_modules','use_markdown_titles',
+   'unqualified',
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
