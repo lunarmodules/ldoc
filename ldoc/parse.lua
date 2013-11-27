@@ -382,11 +382,6 @@ local function parse_file(fname, lang, package, args)
                   if module_item then
                      F:error("Module already declared!")
                   end
-                  if tags.class == 'classmod' then
-                     tags = tags.new('section','methods')
-                     tags:add('summary','Methods')
-                     F:new_item(tags,line)
-                  end
                   module_item = current_item
                end
             end

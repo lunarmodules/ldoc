@@ -208,6 +208,13 @@ function File:find_module_in_files (name)
    end
 end
 
+local function init_within_section (mod,name)
+   mod.kinds:add_kind(name, name)
+   mod.enclosing_section = mod.section
+   mod.section = nil
+   return name
+end
+
 function File:finish()
    local this_mod
    local items = self.items
@@ -282,7 +289,11 @@ function File:finish()
                display_name = summary
             end
             item.display_name = display_name
-            add_section(item)
+--~             add_section(item)
+            this_mod.section = item
+            this_mod.kinds:add_kind(display_name,display_name..' ',nil,item)
+            this_mod.sections:append(item)
+            this_mod.sections.by_name[display_name:gsub('%A','_')] = item
          end
       else
          local to_be_removed
@@ -308,15 +319,11 @@ function File:finish()
                item.name = fname
             end
 
-            local enclosing_section
             if tagged_inside then
                item.tags.within = tagged_inside
             end
             if item.tags.within then
-               local name = item.tags.within
-               this_mod.kinds:add_kind(name, name)
-               enclosing_section = this_mod.section
-               this_mod.section = nil
+               init_within_section(this_mod,item.tags.within)
             end
 
             -- right, this item was within a section or a 'class'
@@ -332,11 +339,23 @@ function File:finish()
                -- if it was a class, then if the name is unqualified then it becomes
                -- 'Class:foo' (unless flagged as being a constructor, static or not a function)
                if doc.class_tag(stype) or classmod then
-                  if not item.name:match '[:%.]' then -- not qualified
+                  if not item.name:match '[:%.]' then -- not qualified name!
+                     -- a class is either a @type section or a @classmod module. Is this a _method_?
                      local class = classmod and this_mod.name or this_section.name
-                     local lang = this_mod.file.lang
                      local static = item.tags.constructor or item.tags.static or item.type ~= 'function'
-                     item.name = class..(not static and lang.method_call or '.')..item.name
+                     if classmod then -- methods and metamethods go into their own special sections...
+                        local inferred_section
+                        if item.name:match '^__' then
+                           inferred_section = 'Metamethods'
+                        elseif not static then
+                           inferred_section = 'Methods'
+                        end
+                        if inferred_section then print('name',item.name,inferred_section)
+                           item.tags.within = init_within_section(this_mod,inferred_section)
+                        end
+                     end
+                     -- Whether to use '.' or the language's version of ':' (e.g. \ for Moonscript)
+                     item.name = class..(not static and this_mod.file.lang.method_call or '.')..item.name
                   end
                   if stype == 'factory'  then
                      if item.tags.private then to_be_removed = true
@@ -355,14 +374,16 @@ function File:finish()
                   section_description = item.tags.within
                   item.section = section_description
                else
-                  section_description = "Methods"
+                  if item.type == 'function' or item.type == 'lfunction' then
+                     section_description = "Methods"
+                  end
                   item.section = item.type
                end
-            elseif item.tags.within then
+            elseif item.tags.within then -- ad-hoc section...
                section_description = item.tags.within
                item.section = section_description
             else -- otherwise, just goes into the default sections (Functions,Tables,etc)
-               item.section = item.type
+               item.section = item.type;
             end
 
             item.module = this_mod
@@ -370,11 +391,15 @@ function File:finish()
                local these_items = this_mod.items
                these_items.by_name[item.name] = item
                these_items:append(item)
+--~                print(item.name,section_description,item.type)
                this_mod.kinds:add(item,these_items,section_description)
             end
 
             -- restore current section after a 'within'
-            if enclosing_section then this_mod.section = enclosing_section end
+            if this_mod.enclosing_section then
+               this_mod.section = this_mod.enclosing_section
+               this_mod.enclosing_section = nil
+            end
 
          else
             -- must be a free-standing function (sometimes a problem...)

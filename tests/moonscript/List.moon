@@ -23,7 +23,6 @@ class List
     len: => #@ls
 
     --- string representation
-    -- @within Metamethods
     __tostring: => '['..(concat @ls,',')..']'
 
     --- return idx of first occurence of `item`
@@ -54,7 +53,6 @@ class List
         self
 
     --- concatenate two lists, giving a new list
-    -- @within Metamethods
     __concat: (l1,l2) -> l1\copy!\extend l2
 
     --- an iterator over all items
