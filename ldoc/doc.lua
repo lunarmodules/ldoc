@@ -219,13 +219,6 @@ function File:finish()
    local this_mod
    local items = self.items
    local tagged_inside
-   local function add_section (item, display_name)
-      display_name = display_name or item.display_name
-      this_mod.section = item
-      this_mod.kinds:add_kind(display_name,display_name..' ',nil,item)
-      this_mod.sections:append(item)
-      this_mod.sections.by_name[display_name:gsub('%A','_')] = item
-   end
    for item in items:iter() do
       if mod_section_type(this_mod) == 'factory' and item.tags then
          local klass = '@{'..this_mod.section.name..'}'
@@ -289,7 +282,6 @@ function File:finish()
                display_name = summary
             end
             item.display_name = display_name
---~             add_section(item)
             this_mod.section = item
             this_mod.kinds:add_kind(display_name,display_name..' ',nil,item)
             this_mod.sections:append(item)
@@ -343,14 +335,15 @@ function File:finish()
                      -- a class is either a @type section or a @classmod module. Is this a _method_?
                      local class = classmod and this_mod.name or this_section.name
                      local static = item.tags.constructor or item.tags.static or item.type ~= 'function'
-                     if classmod then -- methods and metamethods go into their own special sections...
+                     -- methods and metamethods go into their own special sections...
+                     if classmod and item.type == 'function' then
                         local inferred_section
                         if item.name:match '^__' then
                            inferred_section = 'Metamethods'
                         elseif not static then
                            inferred_section = 'Methods'
                         end
-                        if inferred_section then print('name',item.name,inferred_section)
+                        if inferred_section then
                            item.tags.within = init_within_section(this_mod,inferred_section)
                         end
                      end
@@ -391,7 +384,6 @@ function File:finish()
                local these_items = this_mod.items
                these_items.by_name[item.name] = item
                these_items:append(item)
---~                print(item.name,section_description,item.type)
                this_mod.kinds:add(item,these_items,section_description)
             end
 
@@ -1124,7 +1116,7 @@ function Module:process_see_reference (s,modules,istype)
             return nil,"module not found: "..packmod
          end
       end
-      fun_ref = mod_ref.items.by_name[name]
+      fun_ref = mod_ref:get_fun_ref(name)
       if fun_ref then
          return reference(s,mod_ref,fun_ref)
       else
@@ -1138,17 +1130,7 @@ function Module:process_see_reference (s,modules,istype)
    else -- plain jane name; module in this package, function in this module
       mod_ref = modules.by_name[self.package..'.'..s]
       if ismod(mod_ref) then return reference(s, mod_ref,nil) end
-      fun_ref = self.items.by_name[s]
-      -- did not get an exact match, so try to match by the unqualified fun name
-      if not fun_ref then
-         local patt = '[.:]'..s..'$'
-         for qname,ref in pairs(self.items.by_name) do
-            if qname:match(patt) then
-               fun_ref = ref
-               break
-            end
-         end
-      end
+      fun_ref = self:get_fun_ref(s)
       if fun_ref then return reference(s,self,fun_ref)
       else
          local ref = lua_manual_ref (s)
@@ -1157,6 +1139,22 @@ function Module:process_see_reference (s,modules,istype)
       end
    end
 end
+
+function Module:get_fun_ref(s)
+   local fun_ref = self.items.by_name[s]
+   -- did not get an exact match, so try to match by the unqualified fun name
+   if not fun_ref then
+      local patt = '[.:]'..s..'$'
+      for qname,ref in pairs(self.items.by_name) do
+         if qname:match(patt) then
+            fun_ref = ref
+            break
+         end
+      end
+   end
+   return fun_ref
+end
+
 
 -- resolving @see references. A word may be either a function in this module,
 -- or a module in this package. A MOD.NAME reference is within this package.

@@ -137,7 +137,6 @@ function KindMap.add_kind (klass,tag,kind,subnames,item)
    end
 end
 
-
 ----- some useful utility functions ------
 
 function M.module_basepath()
@@ -151,12 +150,19 @@ function M.module_basepath()
 end
 
 -- split a qualified name into the module part and the name part,
--- e.g 'pl.utils.split' becomes 'pl.utils' and 'split'
+-- e.g 'pl.utils.split' becomes 'pl.utils' and 'split'. Also
+-- must understand colon notation!
 function M.split_dotted_name (s)
-   local s1,s2 = path.splitext(s)
-   if s2=='' then return nil
-   else  return s1,s2:sub(2)
+   local s1,s2 = s:match '^(.+)[%.:](.+)$'
+   if s1 then -- we can split
+      return s1,s2
+   else
+      return nil
    end
+--~    local s1,s2 = path.splitext(s)
+--~    if s2=='' then return nil
+--~    else  return s1,s2:sub(2)
+--~    end
 end
 
 -- grab lines from a line iterator `iter` until the line matches the pattern.
