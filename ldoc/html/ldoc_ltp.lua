@@ -148,6 +148,21 @@ return [==[
     </dt>
     <dd>
     $(M(ldoc.descript(item),item))
+    
+#   if ldoc.custom_tags then
+#    for custom in iter(ldoc.custom_tags) do
+#     local tag = item.tags[custom[1]]
+#     if tag then
+#      local li,il = use_li(tag)
+    <h3>$(custom.title or custom[1]):</h3>
+    <ul>
+#      for value in iter(tag) do
+         $(li)$(custom.format and custom.format(value) or M(value))$(il)
+#      end -- for
+#     end -- if tag
+    </ul>
+#    end -- iter tags
+#   end
 
 #  if show_parms and item.params and #item.params > 0 then
 #    local subnames = module.kinds:type_of(item).subnames

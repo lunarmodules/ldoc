@@ -193,7 +193,7 @@ function ldoc.custom_see_handler(pat, handler)
 end
 
 local ldoc_contents = {
-   'alias','add_language_extension','new_type','add_section', 'tparam_alias',
+   'alias','add_language_extension','custom_tags','new_type','add_section', 'tparam_alias',
    'file','project','title','package','format','output','dir','ext', 'topics',
    'one','style','template','description','examples', 'pretty', 'charset', 'plain',
    'readme','all','manual_url', 'ignore', 'colon', 'sort', 'module_file','vars',
@@ -306,6 +306,16 @@ else
    -- with user-provided file
    args.file = abspath(args.file)
 end
+
+if type(ldoc.custom_tags) == 'table' then -- custom tags
+  for i, custom in ipairs(ldoc.custom_tags) do
+    if type(custom) == 'string' then
+      custom = {custom}
+      ldoc.custom_tags[i] = custom
+    end
+    doc.add_tag(custom[1], 'ML')
+  end
+end -- custom tags
 
 local source_dir = args.file
 if type(source_dir) == 'table' then
