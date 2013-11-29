@@ -791,21 +791,30 @@ function split_iden (name)
 end
 
 function build_arg_list (names,pmods)
+   -- if plain_params option is set, return a simple parameter list.
+   if doc.ldoc.plain_params then
+      return '(' .. table.concat(names, ', ') .. ')'
+   end
    -- build up the string representation of the argument list,
    -- using any opt and optchain modifiers if present.
    -- For instance, '(a [, b])' if b is marked as optional
    -- with @param[opt] b
    local buffer, npending = { }, 0
    local function acc(x) table.insert(buffer, x) end
+   local function get_opt(m)
+      return m and (m.opt or m.type and not not m.type:match '^%?')
+   end
    -- a number of trailing [opt]s can be safely converted to [opt],[optchain],...
    if pmods then
       local m = pmods[#names]
-      if m and m.opt then
-         m.optchain = m.opt
+      local opt = get_opt(m)
+      if opt then
+         m.optchain = opt
          for i = #names-1,1,-1 do
             m = pmods[i]
-            if not m or not m.opt then break end
-            m.optchain = m.opt
+            opt = get_opt(m)
+            if not opt then break end
+            m.optchain = opt
          end
       end
    end
@@ -817,7 +826,7 @@ function build_arg_list (names,pmods)
             acc ((']'):rep(npending))
             npending=0
          end
-         opt = m.optchain or m.opt
+         opt = m.optchain or get_opt(m)
          if opt then
             acc('[')
             npending=npending+1

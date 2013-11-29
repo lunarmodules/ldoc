@@ -177,7 +177,9 @@ return [==[
         <ul>
 #     end
 #     for p in iter(param) do
-#        local name,tp,def = item:display_name_of(p), ldoc.typename(item:type_of_param(p)), item:default_of_param(p)
+#        local name = item:display_name_of(p)
+#        local tp = ldoc.typename(item:type_of_param(p), item:param_modifiers(p))
+#        local def = item:default_of_param(p)
         <li><span class="parameter">$(name)</span>
 #       if tp ~= '' then
             <span class="types">$(tp)</span>
