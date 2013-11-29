@@ -181,8 +181,10 @@ function html.generate_output(ldoc, args, project)
       return type(t) == 'table' and t.append
    end
 
-   function ldoc.typename (tp)
-      if not tp or tp == '' or tp:match '^@' then return '' end
+   function ldoc.typename (tp, pmods)
+      if not tp or tp == '' or tp:match '^@' then
+         return pmods and pmods.opt and 'optional' or ''
+      end
       local optional
       -- ?<type> is short for ?nil|<type>
       if tp:match("^%?") and not tp:match '|' then
@@ -194,6 +196,9 @@ function html.generate_output(ldoc, args, project)
          tp = tp2
       end
 
+      if pmods and pmods.opt then
+         optional = true
+      end
       local types = {}
       for name in tp:gmatch("[^|]+") do
          local sym = name:match '([%w%.%:]+)'

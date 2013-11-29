@@ -61,6 +61,7 @@ ldoc, a documentation generator for Lua, vs 1.4.0
   -M,--merge allow module merging
   -S,--simple no return or params, no summary
   -O,--one one-column output layout
+  -P,--plain_params    don't show brackets or default values in param lists
   --dump                debug output dump
   --filter (default none) filter output as Lua data (e.g pl.pretty.dump)
   --tags (default none) show all references to given tags, comma-separated
@@ -200,7 +201,7 @@ local ldoc_contents = {
    'boilerplate','merge', 'wrap', 'not_luadoc', 'template_escape','merge_error_groups',
    'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
    'no_space_before_args','parse_extra','no_lua_ref','sort_modules','use_markdown_titles',
-   'unqualified',
+   'plain_params', 'unqualified',
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
@@ -316,6 +317,9 @@ if type(ldoc.custom_tags) == 'table' then -- custom tags
     doc.add_tag(custom[1], 'ML')
   end
 end -- custom tags
+
+override 'plain_params'
+ldoc.plain_params = args.plain_params
 
 local source_dir = args.file
 if type(source_dir) == 'table' then
