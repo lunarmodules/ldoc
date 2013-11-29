@@ -1110,6 +1110,7 @@ when using Markdown. When explicit will expand non-references in backticks into 
 'file:///D:/dev/lua/projects/lua-5.1.4/doc/manual.html'
   - `no_summary` suppress the Contents summary
   - `custom_see_handler` function that filters see-references
+  - `custom_tags` a table of custom tags; see below.
   - `not_luadoc` set to `true` if the docs break LuaDoc compatibility
   - `no_space_before_args` set to `true` if you do not want a space between a function's name and its arguments.
   - `template_escape` overrides the usual '#' used for Lua code in templates. This needs to be changed if the output format is Markdown, for instance.
@@ -1128,6 +1129,27 @@ that means `@tparam Object`.
   - `custom_see_handler(pattern,handler)`. If a reference matches `pattern`, then the
 extracted values will be passed to `handler`. It is expected to return link text
 and a suitable URI. (This match will happen before default processing.)
+
+## Custom Tags
+
+LDoc can be configured to recognize custom user-defined tags with the `custom_tags`
+configuration file setting. Any custom tags will appear just after the item description,
+in the order they appear in the `custom_tags` table. 
+
+To define custom tags:
+
+    custom_tags = { 'sometag', 'anothertag' }
+
+To define custom tags with custom titles and formatting: 
+
+    custom_tags = { 
+      {'sometag', title = 'Some tag', format = function(value)
+          return '<pre>' .. value .. '</pre>'
+        end }, 
+      {'anothertag', title = 'Another tag', format = function(value)
+          return '<var>' .. value .. '</var>'
+        end }, 
+    }
 
 ## Annotations and Searching for Tags
 
