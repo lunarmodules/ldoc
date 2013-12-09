@@ -156,7 +156,7 @@ function html.generate_output(ldoc, args, project)
       if #ls > 1 then return '<li>','</li>' else return '','' end
    end
 
-   function ldoc.display_name(item)
+   function ldoc.default_display_name(item)
       local name = item.display_name or item.name
       if item.type == 'function' or item.type == 'lfunction' then
          if not ldoc.no_space_before_args then
@@ -165,6 +165,14 @@ function html.generate_output(ldoc, args, project)
          return name..item.args
       else
          return name
+      end
+   end
+
+   function ldoc.display_name(item)
+      if ldoc.custom_display_name_handler then
+        return ldoc.custom_display_name_handler(item, ldoc.default_display_name)
+      else
+        return ldoc.default_display_name(item)
       end
    end
 
