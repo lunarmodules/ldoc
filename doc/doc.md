@@ -1110,6 +1110,20 @@ when using Markdown. When explicit will expand non-references in backticks into 
 'file:///D:/dev/lua/projects/lua-5.1.4/doc/manual.html'
   - `no_summary` suppress the Contents summary
   - `custom_see_handler` function that filters see-references
+  - `custom_display_name_handler` function that formats an item's name. The arguments are the item
+and the default function used to format the name. For example, to show an icon or label beside any
+function tagged with a certain tag:
+      -- define a @callback tag:
+      custom_tags = { { 'callback', hidden = true } }
+
+      -- show a label beside functions tagged with @callback.
+      custom_display_name_handler = function(item, default_handler)
+        if item.type == 'function' and item.tags.callback then
+          return item.name .. ' [callback]'
+        end
+        return default_handler(item)
+      end
+      
   - `not_luadoc` set to `true` if the docs break LuaDoc compatibility
   - `no_space_before_args` set to `true` if you do not want a space between a function's name and its arguments.
   - `template_escape` overrides the usual '#' used for Lua code in templates. This needs to be changed if the output format is Markdown, for instance.
