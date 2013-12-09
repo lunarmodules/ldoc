@@ -148,11 +148,11 @@ return [==[
     </dt>
     <dd>
     $(M(ldoc.descript(item),item))
-    
+
 #   if ldoc.custom_tags then
 #    for custom in iter(ldoc.custom_tags) do
 #     local tag = item.tags[custom[1]]
-#     if tag then
+#     if tag and not custom.hidden then
 #      local li,il = use_li(tag)
     <h3>$(custom.title or custom[1]):</h3>
     <ul>
