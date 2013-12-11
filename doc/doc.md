@@ -328,13 +328,13 @@ online references to the Linux manpages. So in `config.ld` we have:
 
     local upat = "http://www.kernel.org/doc/man-pages/online/pages/man%s/%s.%s.html"
 
-    custom_see_handler('^(%a+)%((%d)%)$',function(name,section)
+    custom_see_handler('^([%w_]+)%((%d)%)$',function(name,section)
         local url = upat:format(section,name,section)
         local name = name .. '(' ..section..')'
         return name, url
     end)
 
-'^(%a+)%((%d)%)$' both matches the pattern and extracts the name and its section. Then it's
+'^([%w_]+)%((%d)%)$' both matches the pattern and extracts the name and its section. Then it's
 a simple matter of building up the appropriate URL.  The function is expected to
 return _link text_ and _link source_ and the patterns are checked before LDoc tries to resolve
 project references. So it is best to make them match as exactly as possible.
