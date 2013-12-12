@@ -89,7 +89,7 @@ function prettify.code (lang,fname,code,initial_lineno,pre)
          external = true
       })
       if not pre then
-         code = code:gsub("^<pre*.->(.*)</pre>$", '%1')
+         code = code:gsub("^<pre.->(.-)%s*</pre>$", '%1')
       end
       return code
    end
