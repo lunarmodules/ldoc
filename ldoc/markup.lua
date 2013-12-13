@@ -90,8 +90,8 @@ local function indent_line (line)
    return indent,line
 end
 
-local function non_blank (line)
-   return line:find '%S'
+local function blank (line)
+   return not line:find '%S'
 end
 
 local global_context, local_context
@@ -119,6 +119,8 @@ local function process_multiline_markdown(ldoc, txt, F)
       code = concat(code,'\n')
       if code ~= '' then
          local err
+         -- If we omit the following '\n', a '--' (or '//') comment on the
+         -- last line won't be recognized.
          code, err = prettify.code(lang,filename,code..'\n',L,false)
          append(res,'<pre>')
          append(res, code)
@@ -156,7 +158,7 @@ local function process_multiline_markdown(ldoc, txt, F)
       if indent >= 4 then -- indented code block
          local code = {}
          local plain
-         while indent >= 4 or not non_blank(line) do
+         while indent >= 4 or blank(line) do
             if not start_indent then
                start_indent = indent
                if line:match '^%s*@plain%s*$' then
@@ -165,7 +167,7 @@ local function process_multiline_markdown(ldoc, txt, F)
                end
             end
             if not plain then
-               append(code,line:sub(start_indent))
+               append(code,line:sub(start_indent + 1))
             else
                append(res,line)
             end
@@ -174,7 +176,9 @@ local function process_multiline_markdown(ldoc, txt, F)
             indent, line = indent_line(line)
          end
          start_indent = nil
-         if #code > 1 then table.remove(code) end
+         while #code > 1 and blank(code[#code]) do  -- trim blank lines.
+           table.remove(code)
+         end
          pretty_code (code,'lua')
       else
          local section = F.sections[L]
