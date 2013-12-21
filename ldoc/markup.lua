@@ -23,7 +23,7 @@ local function resolve_inline_references (ldoc, txt, item, plain)
       local ref,err = markup.process_reference(qname)
       if not ref then
          err = err .. ' ' .. qname
-         if item then item:warning(err)
+         if item and item.warning then item:warning(err)
          else
            io.stderr:write('nofile error: ',err,'\n')
          end

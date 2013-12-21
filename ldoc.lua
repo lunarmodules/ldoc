@@ -135,7 +135,7 @@ local add_language_extension
 doc.ldoc = ldoc
 
 local function override (field)
-   if ldoc[field] ~= nil then args[field] = ldoc[field] end
+   if args[field] == nil and ldoc[field] ~= nil then args[field] = ldoc[field] end
 end
 
 -- aliases to existing tags can be defined. E.g. just 'p' for 'param'
