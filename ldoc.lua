@@ -387,6 +387,7 @@ override 'colon'
 override 'merge'
 override 'not_luadoc'
 override 'module_file'
+override 'boilerplate'
 
 -- LDoc is doing plain ole C, don't want random Lua references!
 if ldoc.parse_extra and ldoc.parse_extra.C then
@@ -619,7 +620,6 @@ override 'output'
 override 'dir'
 override 'ext'
 override 'one'
-override 'boilerplate'
 
 -- handling styling and templates --
 ldoc.css, ldoc.templ = 'ldoc.css','ldoc.ltp'
