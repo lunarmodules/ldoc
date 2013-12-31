@@ -59,8 +59,8 @@ All doc comments start with a summary sentence, that ends with a period or a que
 An optional description may follow. Normally the summary sentence will appear in the module
 contents.
 
-After this descriptive text, there will typically be _tags_. These follow the convention
-established by Javadoc and widely used in tools for other languages.
+After this descriptive text, there will typically be _tags_ which are introduced with an @.
+These follow the convention established by Javadoc and widely used in tools for other languages.
 
     --- foo explodes text.
     -- It is a specialized splitting operation on a string.
