@@ -33,7 +33,10 @@ end-users to build your documentation using this simple command.
 
 ## Commenting Conventions
 
-LDoc follows the conventions established by Javadoc and later by LuaDoc.
+LDoc follows the conventions established by Javadoc and later by LuaDoc to document the
+modules, functions, types (=classes) and so forth of your API.
+
+### Doc comments
 
 Only 'doc comments' are parsed; these can be started with at least 3 hyphens, or by a empty
 comment line with at least 3 hypens:
@@ -56,12 +59,49 @@ Any module or script must start with a doc comment; any other files are ignored 
 warning issued. The only exception is if the module starts with an explicit `module`
 statement.
 
+
+### Tags
+
 All doc comments start with a summary sentence, that ends with a period or a question mark.
 An optional description may follow. Normally the summary sentence will appear in the module
 contents.
 
 After this descriptive text, there will typically be _tags_. These follow the convention
 established by Javadoc and widely used in tools for other languages.
+
+    --- Some doc comment
+    -- @tag1 parameters for first tag
+    -- @tag2 parameters for the second tag
+
+The order of tags is not important, but as always, consistency is useful.
+
+The first important tag to know is the module tag:
+
+#### Modules: naming and describing your API module
+
+The first thing in your API module should be a name and a description.
+This is how a module is commonly done in Lua 5.2 with a @module tag at the top
+which introduces the name:
+
+    --- a test module
+    -- @module test
+
+    local test = {}
+
+    function test.my_module_function_1()
+        ...
+    end
+
+    ...
+
+    return test
+
+This sets up a module named 'test' with the description 'a test module'.
+
+#### Functions
+
+The next thing to describe are the functions your module has.
+This is a simple example of a documented function:
 
     --- foo explodes text.
     -- It is a specialized splitting operation on a string.
@@ -71,16 +111,35 @@ established by Javadoc and widely used in tools for other languages.
     ....
     end
 
-There are also 'tparam' and 'treturn' which let you [specify a type](#Tag_Modifiers):
+You can also give the function name itself as an explicit tag,
+which is especially useful when documenting a Lua api exported by C code:
+    /// A C function which is exported to Lua with another name,
+    // because the ways of C can be mysterious!
+    // @function our_nice_function
+    int _some_function_for_lua(lua_State* l) {
+        ....
+    }
 
-    -- @tparam string text the string
+The tags basically add all the detail that cannot be derived from the source code
+automatically.
+
+#### Function parameters and return values
+
+Common tags are the 'param' tag which takes a parameter name followed by a parameter
+description separated by a space, and the 'return' tag which is simply followed by
+a description for a return value:
+
+    -- @param name_of_parameter the description of this parameter as verbose text
+    -- @return the description of the return value
+
+If you want to [specify a type](#Tag_Modifiers) for a parameter or a return value,
+there are also 'tparam' and 'treturn':
+
+    -- @tparam string text this parameter is named 'text' and has the fixed type 'string'
     -- @treturn {string,...} a table of substrings
 
 There may be multiple 'param' tags, which should document each formal parameter of the
 function. For Lua, there can also be multiple 'return' tags
-
-    --- solvers for common equations.
-    module("solvers", package.seeall)
 
     --- solve a quadratic equation.
     -- @param a first coeff
@@ -100,68 +159,9 @@ function. For Lua, there can also be multiple 'return' tags
     end
 
     ...
+Of course there is also the 'module' tag which you have already seen.
 
-This is the common module style used in Lua 5.1, but it's increasingly common to see less
-'magic' ways of creating modules in Lua. Since `module` is deprecated in Lua 5.2, any
-future-proof documentation tool needs to handle these styles gracefully:
-
-    --- a test module
-    -- @module test
-
-    local test = {}
-
-    --- first test.
-    function test.one()
-    ...
-    end
-
-    ...
-
-    return test
-
-Here the name of the module is explicitly given using the 'module' tag. If you leave this
-out, then LDoc will infer the name of the module from the name of the file and its relative
-location in the filesystem; this logic is also used for the `module(...)` idiom. (How this
-works and when you need to provide extra information is discussed later.)
-
-It is common to use a local name for a module when declaring its contents. In this case the
-'alias' tag can tell LDoc that these functions do belong to the module:
-
-    --- another test.
-    -- @module test2
-    -- @alias M
-
-    local M = {}
-
-    -- first test.
-    function M.one()
-    ..
-    end
-
-    return M
-
-`M` and `_M` are used commonly enough that LDoc will recognize them as aliases
-automatically, but 'alias' allows you to use any identifier.
-
-LDoc tries to deduce the function name and the formal parameter names from examining the
-code after the doc comment. It also recognizes the 'unsugared' way of defining functions as
-explicit assignment to a variable:
-
-    --- second test.
-    M.two = function(...) ... end
-
-Apart from exported functions, a module usually contains local functions. By default, LDoc
-does not include these in the documentation, but they can be enabled using the `--all` flag.
-They can be documented just like 'public' functions:
-
-    --- it's clear that boo is local from context.
-    local function boo(...) .. end
-
-    local foo
-
-    --- we need to give a hint here for foo
-    -- @local here
-    function foo(...) .. end
+#### Tables and constant values (fields)
 
 Modules can of course export tables and other values. The classic way to document a table
 looks like this:
@@ -195,16 +195,85 @@ Another kind of module-level type is 'field', such as follows:
 
 That is, a module may contain exported functions, local functions, tables and fields.
 
+#### Explicitly specifying a function or fields
 When the code analysis would lead to the wrong type, you can always be explicit.
 
-    --- module contents.
+    --- module contents with explicitly documented field _CONTENTS.
     -- @field _CONTENTS
     M._CONTENTS = {constants=true,one=true,...}
 
-The order of tags is not important, but as always, consistency is useful.  Tags like 'param'
-and 'return' can be specified multiple times, whereas a type tag like 'function' can only
-occur once in a comment. The basic rule is that a single doc comment can only document one
-entity.
+    --- an explicitly named function.
+    -- @function my_function
+    function my_function()
+        ...
+    end
+As mentioned before, this is often especially useful in C where things
+may look different in the C code than they will in the final Lua api which
+you want to document.
+
+### Doing modules the Lua 5.1 way
+
+As an alternative to using the 'module' tag as described before, you
+can still start your modules the Lua 5.1 way:
+
+    --- solvers for common equations.
+    module("solvers", package.seeall)
+
+However, the 'module' function is deprecated in Lua 5.2 and it is increasingly
+common to see less 'magic' ways of creating modules, as seen in the description
+of the 'module' tag previously with the explicitely returned module table.
+
+#### Repeating tags
+
+Tags like 'param' and 'return' can be specified multiple times, whereas a type
+tag like 'function' can only occur once in a comment.
+
+The basic rule is that a single doc comment can only document one entity.
+
+### Local module name
+
+It is common to use a local name for a module when declaring its contents. In this case the
+'alias' tag can tell LDoc that these functions do belong to the module:
+
+    --- another test.
+    -- @module test2
+    -- @alias M
+
+    local M = {}
+
+    -- first test.
+    function M.one()
+    ..
+    end
+
+    return M
+
+`M` and `_M` are used commonly enough that LDoc will recognize them as aliases
+automatically, but 'alias' allows you to use any identifier.
+
+LDoc tries to deduce the function name and the formal parameter names from examining the
+code after the doc comment. It also recognizes the 'unsugared' way of defining functions as
+explicit assignment to a variable:
+
+    --- second test.
+    M.two = function(...) ... end
+
+### Local functions
+
+Apart from exported functions, a module usually contains local functions. By default, LDoc
+does not include these in the documentation, but they can be enabled using the `--all` flag.
+They can be documented just like 'public' functions:
+
+    --- it's clear that boo is local from context.
+    local function boo(...) .. end
+
+    local foo
+
+    --- we need to give a hint here for foo
+    -- @local here
+    function foo(...) .. end
+
+### Alternative way of specifying tags
 
 Since 1.3, LDoc allows the use of _colons_ instead of @.
 
@@ -220,6 +289,8 @@ However, you must either use the `--colon` flag or set `colon=true` in your `con
 In this style, types may be used directly if prefixed with '!' or '?' (for type-or-nil)
 
 (see @{colon.lua}, rendered [here](http://stevedonovan.github.io/ldoc/examples/colon))
+
+### Which files are processed
 
 By default, LDoc will process any file ending in '.lua' or '.luadoc' in a specified
 directory; you may point it to a single file as well. A 'project' usually consists of many
