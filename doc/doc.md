@@ -59,7 +59,7 @@ warning issued. The only exception is if the module starts with an explicit `mod
 statement.
 
 
-### Summary and tags of a doc comment
+### Tags
 
 All doc comments start with a summary sentence, that ends with a period or a question mark.
 An optional description may follow. Normally the summary sentence will appear in the module
@@ -68,9 +68,15 @@ contents.
 After this descriptive text, there will typically be _tags_. These follow the convention
 established by Javadoc and widely used in tools for other languages.
 
+--- Some doc comment
+-- @tag1 parameters for first tag
+-- @tag2 parameters for the second tag
+
+The order of tags is not important, but as always, consistency is useful.
+
 The first important tag to know is the module tag:
 
-### The module tag, naming and describing your API module
+#### The module tag, naming and describing your API module
 
 The first thing in your API module should be a name and a description.
 This is how a module is commonly done in Lua 5.2 with a @module tag at the top
@@ -91,7 +97,7 @@ which introduces the name:
 
 This sets up a module named 'test' with the description 'a test module'.
 
-### Describing functions with tags:
+#### Describing functions with tags:
 
 The next thing to describe are the functions your module has.
 This is a simple example of a documented function:
@@ -107,7 +113,7 @@ This is a simple example of a documented function:
 The tags basically add all the detail that cannot be derived from the source code
 automatically.
 
-### Most common tags
+#### Most common tags: param, return, tparam, treturn
 
 Common tags are the 'param' tag which takes a parameter name followed by a parameter
 description separated by a space, and the 'return' tag which is simply followed by
@@ -145,6 +151,55 @@ function. For Lua, there can also be multiple 'return' tags
     ...
 Of course there is also the 'module' tag which you have already seen.
 
+#### Describing tables and constants: field, table
+
+Modules can of course export tables and other values. The classic way to document a table
+looks like this:
+
+    --- a useful table of constants
+    -- @field alpha first correction
+    -- @field beta second correction
+    -- @field gamma fudge factor
+    -- @table constants
+
+Here the kind of item is made explicit by the 'table' tag; tables have 'fields' in the same
+way as functions have parameters.
+
+This can get tedious, so LDoc will attempt to extract table documentation from code:
+
+    --- a useful table of constants
+    M.constants = {
+        alpha = 0.23, -- first correction
+        beta = 0.443, -- second correction
+        gamma = 0.01  -- fudge factor
+    }
+
+The rule followed here is `NAME = <table-constructor>`. If LDoc can't work out the name and
+type from the following code, then a warning will be issued, pointing to the file and
+location.
+
+Another kind of module-level type is 'field', such as follows:
+
+    --- module version.
+    M._VERSION = '0.5'
+
+That is, a module may contain exported functions, local functions, tables and fields.
+
+#### Explicitly specifying a function or fields
+When the code analysis would lead to the wrong type, you can always be explicit.
+
+    --- module contents with explicitly documented field _CONTENTS.
+    -- @field _CONTENTS
+    M._CONTENTS = {constants=true,one=true,...}
+
+    --- an explicitly named function.
+    -- @function my_function
+    function my_function()
+        ...
+    end
+
+### Doing modules the Lua 5.1 way
+
 As an alternative to using the 'module' tag as described before, you
 can still start your modules the Lua 5.1 way:
 
@@ -154,6 +209,13 @@ can still start your modules the Lua 5.1 way:
 However, the 'module' function is deprecated in Lua 5.2 and it is increasingly
 common to see less 'magic' ways of creating modules, as seen in the description
 of the 'module' tag previously with the explicitely returned module table.
+
+#### Repeating tags
+
+Tags like 'param' and 'return' can be specified multiple times, whereas a type
+tag like 'function' can only occur once in a comment.
+
+The basic rule is that a single doc comment can only document one entity.
 
 ### Local module name
 
@@ -197,51 +259,6 @@ They can be documented just like 'public' functions:
     --- we need to give a hint here for foo
     -- @local here
     function foo(...) .. end
-
-### Tables and other constant values
-
-Modules can of course export tables and other values. The classic way to document a table
-looks like this:
-
-    --- a useful table of constants
-    -- @field alpha first correction
-    -- @field beta second correction
-    -- @field gamma fudge factor
-    -- @table constants
-
-Here the kind of item is made explicit by the 'table' tag; tables have 'fields' in the same
-way as functions have parameters.
-
-This can get tedious, so LDoc will attempt to extract table documentation from code:
-
-    --- a useful table of constants
-    M.constants = {
-        alpha = 0.23, -- first correction
-        beta = 0.443, -- second correction
-        gamma = 0.01  -- fudge factor
-    }
-
-The rule followed here is `NAME = <table-constructor>`. If LDoc can't work out the name and
-type from the following code, then a warning will be issued, pointing to the file and
-location.
-
-Another kind of module-level type is 'field', such as follows:
-
-    --- module version.
-    M._VERSION = '0.5'
-
-That is, a module may contain exported functions, local functions, tables and fields.
-
-When the code analysis would lead to the wrong type, you can always be explicit.
-
-    --- module contents.
-    -- @field _CONTENTS
-    M._CONTENTS = {constants=true,one=true,...}
-
-The order of tags is not important, but as always, consistency is useful.  Tags like 'param'
-and 'return' can be specified multiple times, whereas a type tag like 'function' can only
-occur once in a comment. The basic rule is that a single doc comment can only document one
-entity.
 
 ### Alternative way of specifying tags
 
