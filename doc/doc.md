@@ -68,9 +68,9 @@ contents.
 After this descriptive text, there will typically be _tags_. These follow the convention
 established by Javadoc and widely used in tools for other languages.
 
---- Some doc comment
--- @tag1 parameters for first tag
--- @tag2 parameters for the second tag
+    --- Some doc comment
+    -- @tag1 parameters for first tag
+    -- @tag2 parameters for the second tag
 
 The order of tags is not important, but as always, consistency is useful.
 
