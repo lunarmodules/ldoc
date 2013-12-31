@@ -97,7 +97,7 @@ which introduces the name:
 
 This sets up a module named 'test' with the description 'a test module'.
 
-#### Functions:
+#### Functions
 
 The next thing to describe are the functions your module has.
 This is a simple example of a documented function:
