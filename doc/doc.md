@@ -4,12 +4,13 @@
 
 ## Introduction
 
-LDoc is a second-generation documentation tool that can be used as a replacement for
-[LuaDoc](http://keplerproject.github.com/luadoc/). It arose out of my need to document my
-own projects and only depends on the [Penlight](https://github.com/stevedonovan/Penlight)
-libraries.
+LDoc is a software documentation tool which automatically generates API documentation
+out of source code comments (doc comments). It is mainly targeted at Lua and documenting
+Lua APIs, but it can also parse C with according doc comments for documenting Lua modules
+implemented in C.
 
-It is mostly compatible with LuaDoc, except that certain workarounds are no longer needed.
+It is mostly compatible with [LuaDoc](http://keplerproject.github.com/luadoc/),
+except that certain workarounds are no longer needed.
 For instance, it is not so married to the idea that Lua modules should be defined using the
 `module` function; this is not only a matter of taste since this has been deprecated in Lua
 5.2.
