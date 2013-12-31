@@ -76,7 +76,7 @@ The order of tags is not important, but as always, consistency is useful.
 
 The first important tag to know is the module tag:
 
-#### The module tag, naming and describing your API module
+#### Modules: naming and describing your API module
 
 The first thing in your API module should be a name and a description.
 This is how a module is commonly done in Lua 5.2 with a @module tag at the top
@@ -97,7 +97,7 @@ which introduces the name:
 
 This sets up a module named 'test' with the description 'a test module'.
 
-#### Describing functions with tags:
+#### Functions:
 
 The next thing to describe are the functions your module has.
 This is a simple example of a documented function:
@@ -110,10 +110,19 @@ This is a simple example of a documented function:
     ....
     end
 
+You can also give the function name itself as an explicit tag,
+which is especially useful when documenting a Lua api exported by C code:
+    /// A C function which is exported to Lua with another name,
+    // because the ways of C can be mysterious!
+    // @function our_nice_function
+    int _some_function_for_lua(lua_State* l) {
+        ....
+    }
+
 The tags basically add all the detail that cannot be derived from the source code
 automatically.
 
-#### Most common tags: param, return, tparam, treturn
+#### Function parameters and return values
 
 Common tags are the 'param' tag which takes a parameter name followed by a parameter
 description separated by a space, and the 'return' tag which is simply followed by
@@ -151,7 +160,7 @@ function. For Lua, there can also be multiple 'return' tags
     ...
 Of course there is also the 'module' tag which you have already seen.
 
-#### Describing tables and constants: field, table
+#### Tables and constant values (fields)
 
 Modules can of course export tables and other values. The classic way to document a table
 looks like this:
@@ -197,6 +206,9 @@ When the code analysis would lead to the wrong type, you can always be explicit.
     function my_function()
         ...
     end
+As mentioned before, this is often especially useful in C where things
+may look different in the C code than they will in the final Lua api which
+you want to document.
 
 ### Doing modules the Lua 5.1 way
 
