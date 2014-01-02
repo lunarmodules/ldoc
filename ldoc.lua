@@ -553,12 +553,7 @@ for mod in module_list:iter() do
    project:add(mod,module_list)
 end
 
--- the default is not to show local functions in the documentation.
-if not args.all and not ldoc.all then
-   for mod in module_list:iter() do
-      mod:mask_locals()
-   end
-end
+override 'all'
 
 if ldoc.sort_modules then
    table.sort(module_list,function(m1,m2)

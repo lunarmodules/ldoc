@@ -26,6 +26,15 @@ function Bonzo:dog ()
 end
 
 ----
+-- Private method.
+-- You need -a flag or 'all=true' to see these
+-- @local
+function Bonzo:cat ()
+
+end
+
+
+----
 -- A subtable with fields.
 -- @table Details
 -- @string[readonly] name

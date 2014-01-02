@@ -230,7 +230,10 @@ function File:finish()
          end
       end
       item:finish()
-      if doc.project_level(item.type) then
+      -- the default is not to show local functions in the documentation.
+      if not self.args.all and (item.type=='lfunction' or (item.tags and item.tags['local'])) then
+         -- don't add to the module --
+      elseif doc.project_level(item.type) then
          this_mod = item
          local package,mname,submodule
          if item.type == 'module' then
@@ -1185,14 +1188,6 @@ function Module:resolve_references(modules)
    for f in found:iter() do
       f[1].tags.see:remove_value(f[2])
    end
-end
-
--- suppress the display of local functions and annotations.
--- This is just a placeholder hack until we have a more general scheme
--- for indicating 'private' content of a module.
-function Module:mask_locals ()
-   self.kinds['Local Functions'] = nil
-   self.kinds['Annotations'] = nil
 end
 
 function Item:dump_tags (taglist)
