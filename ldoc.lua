@@ -134,8 +134,10 @@ local add_language_extension
 -- hacky way for doc module to be passed options...
 doc.ldoc = ldoc
 
-local function override (field)
-   if args[field] == nil and ldoc[field] ~= nil then args[field] = ldoc[field] end
+-- if the corresponding argument was the default, then any ldoc field overrides
+local function override (field,defval)
+   defval = defval or false
+   if args[field] == defval and ldoc[field] ~= nil then args[field] = ldoc[field] end
 end
 
 -- aliases to existing tags can be defined. E.g. just 'p' for 'param'
@@ -336,6 +338,8 @@ source_dir = source_dir:gsub('[/\\]%.$','')
 --  * 'NAME' explicitly give the base module package name
 --
 
+override ('package','.')
+
 local function setup_package_base()
    if ldoc.package then args.package = ldoc.package end
    if args.package == '.' then
@@ -460,7 +464,7 @@ end
 
 -- create the function that renders text (descriptions and summaries)
 -- (this also will initialize the code prettifier used)
-override 'format'
+override ('format','plain')
 override 'pretty'
 ldoc.markup = markup.create(ldoc, args.format,args.pretty)
 
@@ -611,9 +615,9 @@ if args.filter ~= 'none' then
 end
 
 -- can specify format, output, dir and ext in config.ld
-override 'output'
-override 'dir'
-override 'ext'
+override ('output','index')
+override ('dir','doc')
+override ('ext','html')
 override 'one'
 
 -- handling styling and templates --

@@ -219,6 +219,7 @@ function File:finish()
    local this_mod
    local items = self.items
    local tagged_inside
+   self.args = self.args or {}
    for item in items:iter() do
       if mod_section_type(this_mod) == 'factory' and item.tags then
          local klass = '@{'..this_mod.section.name..'}'
@@ -277,18 +278,21 @@ function File:finish()
             this_mod.section = nil
          else
             local summary = item.summary:gsub('%.$','')
+            local lookup_name
             if doc.class_tag(item.type) then
                display_name = 'Class '..item.name
+               lookup_name = item.name
                item.module = this_mod
                this_mod.items.by_name[item.name] = item
             else
                display_name = summary
+               lookup_name = summary
             end
             item.display_name = display_name
             this_mod.section = item
             this_mod.kinds:add_kind(display_name,display_name..' ',nil,item)
             this_mod.sections:append(item)
-            this_mod.sections.by_name[display_name:gsub('%A','_')] = item
+            this_mod.sections.by_name[lookup_name:gsub('%A','_')] = item
          end
       else
          local to_be_removed
@@ -1049,20 +1053,21 @@ end
 local function reference (s, mod_ref, item_ref)
    local name = item_ref and item_ref.name or ''
    -- this is deeply hacky; classes have 'Class ' prepended.
-   if item_ref and doc.class_tag(item_ref.type) then
-      name = 'Class_'..name
-   end
+--~    if item_ref and doc.class_tag(item_ref.type) then
+--~       name = 'Class_'..name
+--~    end
    return {mod = mod_ref, name = name, label=s}
 end
 
 function Module:lookup_class_item (packmod, s)
-   local section = "Class_"..packmod
-   if self.sections.by_name[section] then
-      for item in self.items:iter() do
-         --print('item',item.name,item.section)
-         if item.section == section and s == item.name then
-            return reference(s,self,item)
-         end
+   local klass = packmod --"Class_"..packmod
+   local qs = klass..':'..s
+   local klass_section = self.sections.by_name[klass]
+   if not klass_section then return nil end -- no such class
+   for item in self.items:iter() do
+      --print('item',qs,item.name)
+      if s == item.name or qs == item.name then
+         return reference(s,self,item)
       end
    end
    return nil
@@ -1114,6 +1119,12 @@ function Module:process_see_reference (s,modules,istype)
          if not mod_ref then
             local ref = self:lookup_class_item(packmod,s)
             if ref then return ref end
+            local mod, klass = split_dotted_name(packmod)
+            mod_ref = modules.by_name[mod]
+            if mod_ref then
+               ref = mod_ref:lookup_class_item(klass,name)
+               if ref then return ref end
+            end
             ref = lua_manual_ref(s)
             if ref then return ref end
             return nil,"module not found: "..packmod
