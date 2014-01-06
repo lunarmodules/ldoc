@@ -129,8 +129,8 @@ known_tags._annotation_tags = {
 local acount = 1
 
 function doc.expand_annotation_item (tags, last_item)
-   if tags.summary ~= '' then return false end
-   local item_name = last_item and last_item.tags.name or '?'
+   if tags.summary ~= '' or last_item == nil then return false end
+   local item_name = last_item.tags.name
    for tag, value in pairs(tags) do
       if known_tags._annotation_tags[tag] then
          tags:add('class','annotation')
