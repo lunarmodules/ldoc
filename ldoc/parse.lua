@@ -214,6 +214,8 @@ local function parse_file(fname, lang, package, args)
    local t,v = tnext(tok)
    -- with some coding styles first comment is standard boilerplate; option to ignore this.
    if args.boilerplate and t == 'comment' then
+      -- hack to deal with boilerplate inside Lua block comments
+      if v:match '%s*%-%-%[%[' then lang:grab_block_comment(v,tok) end
       t,v = tnext(tok)
    end
    if t == '#' then -- skip Lua shebang line, if present

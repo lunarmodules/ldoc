@@ -87,6 +87,7 @@ end
 
 function Lua:grab_block_comment(v,tok)
    local equals = v:match('^%-%-%[(=*)%[')
+   if not equals then return v end
    v = v:gsub(self.block_comment,'')
    return tools.grab_block_comment(v,tok,'%]'..equals..'%]')
 end
@@ -286,11 +287,11 @@ function CC:item_follows (t,v,tok)
          t,v = tnext(tok)
       end
       -- types may have multiple tokens: example, const char *bonzo(...)
-      local return_type, name = v 
+      local return_type, name = v
       t,v = tnext(tok)
-      name = v     
+      name = v
       t,v = tnext(tok)
-      while t ~= '(' do         
+      while t ~= '(' do
          return_type = return_type .. ' ' .. name
          name = v
          t,v = tnext(tok)
