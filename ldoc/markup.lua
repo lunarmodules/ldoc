@@ -44,6 +44,9 @@ local function resolve_inline_references (ldoc, txt, item, plain)
       res  = res:gsub('`([^`]+)`',function(name)
          local ref,err = markup.process_reference(name)
          if ref then
+            if not plain and name then
+               name = name:gsub('_', '\\_')
+            end
             return ('<a href="%s">%s</a> '):format(ldoc.href(ref),name)
          else
             return '<code>'..name..'</code>'
