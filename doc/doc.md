@@ -223,7 +223,7 @@ However, the 'module' function is deprecated in Lua 5.2 and it is increasingly
 common to see less 'magic' ways of creating modules, as seen in the description
 of the 'module' tag previously with the explicitely returned module table.
 
-#### Repeating tags
+### Repeating tags
 
 Tags like 'param' and 'return' can be specified multiple times, whereas a type
 tag like 'function' can only occur once in a comment.
