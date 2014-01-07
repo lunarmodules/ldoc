@@ -19,6 +19,7 @@ local path = require 'pl.path'
 local stringx = require 'pl.stringx'
 local template = require 'pl.template'
 local tablex = require 'pl.tablex'
+local OrderedMap = require 'pl.orderedMap'
 local tools = require 'ldoc.tools'
 local markup = require 'ldoc.markup'
 local prettify = require 'ldoc.prettify'
@@ -39,16 +40,16 @@ local function cleanup_whitespaces(text)
 end
 
 local function get_module_info(m)
-   local info = {}
+   local info = OrderedMap()
    for tag in doc.module_info_tags() do
       local val = m.tags[tag]
       if type(val)=='table' then
          val = table.concat(val,',')
       end
       tag = stringx.title(tag)
-      info[tag] = val
+      info:set(tag,val)
    end
-   if next(info) then
+   if #info:keys() > 0 then
       return info
    end
 end
