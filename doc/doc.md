@@ -59,6 +59,9 @@ Any module or script must start with a doc comment; any other files are ignored 
 warning issued. The only exception is if the module starts with an explicit `module`
 statement.
 
+If your coding standards require a boilerplate copyright notice, then the `-B` flag or
+`boilerplate=true` will make LDoc ignore the first comment of each module.
+
 
 ### Tags
 
@@ -80,7 +83,7 @@ The first important tag to know is the module tag:
 #### Modules: naming and describing your API module
 
 The first thing in your API module should be a name and a description.
-This is how a module is commonly done in Lua 5.2 with a @module tag at the top
+This is how a module is commonly done in Lua 5.2 with a **@module** tag at the top
 which introduces the name:
 
     --- a test module
@@ -113,6 +116,7 @@ This is a simple example of a documented function:
 
 You can also give the function name itself as an explicit tag,
 which is especially useful when documenting a Lua api exported by C code:
+
     /// A C function which is exported to Lua with another name,
     // because the ways of C can be mysterious!
     // @function our_nice_function
@@ -196,6 +200,7 @@ Another kind of module-level type is 'field', such as follows:
 That is, a module may contain exported functions, local functions, tables and fields.
 
 #### Explicitly specifying a function or fields
+
 When the code analysis would lead to the wrong type, you can always be explicit.
 
     --- module contents with explicitly documented field _CONTENTS.
@@ -207,6 +212,7 @@ When the code analysis would lead to the wrong type, you can always be explicit.
     function my_function()
         ...
     end
+
 As mentioned before, this is often especially useful in C where things
 may look different in the C code than they will in the final Lua api which
 you want to document.
@@ -305,8 +311,8 @@ LDoc has a two-layer hierarchy; underneath the project, there are modules, scrip
 (containing code) and examples and 'topics' (containing documentation). These then contain
 items like functions, tables, sections, and so forth.
 
-If you want to document scripts, then use `@script` instead of `@module`. New with 1.4 is
-`@classmod` which is a module which exports a single class.
+If you want to document scripts, then use **@script** instead of **@module**. New with 1.4 is
+**@classmod** which is a module which exports a single class.
 
 
 ## See References
@@ -328,9 +334,9 @@ Here it's assumed that 'split' is a function defined in the same module. If you 
 to a function in another module, then the reference has to be qualified.
 
 References to methods use a colon: `myclass:method`; this is for instance how you would
-refer to members of a `@type` section.
+refer to members of a **@type** section.
 
-The example at `tests/complex` shows how @see references are interpreted:
+The example at `tests/complex` shows how **@see** references are interpreted:
 
     complex.util.parse
     complex.convert.basic
@@ -351,7 +357,7 @@ Lua standard function or table, and links to the online Lua manual. So reference
 'table.concat' are handled sensibly.
 
 References may be made inline using the `@{\ref}` syntax. This may appear anywhere in the
-text, and is more flexible than `@see`. In particular, it provides one way to document the
+text, and is more flexible than **@see**. In particular, it provides one way to document the
 type of a parameter or return value when that type has a particular structure:
 
     ------
@@ -406,7 +412,7 @@ online references to the Linux manpages. So in `config.ld` we have:
         return name, url
     end)
 
-'^([%w_]+)%((%d)%)$' both matches the pattern and extracts the name and its section. Then it's
+`^([%w_]+)%((%d)%)$` both matches the pattern and extracts the name and its section. Then it's
 a simple matter of building up the appropriate URL.  The function is expected to
 return _link text_ and _link source_ and the patterns are checked before LDoc tries to resolve
 project references. So it is best to make them match as exactly as possible.
@@ -417,7 +423,7 @@ LDoc requires you to have a module doc comment. If your code style requires
 license blocks that might look like doc comments, then set `boilerplate=true` in your
 configuration and they will be skipped.
 
-This comment does not have to have an explicit `@module` tag and LDoc continues to
+This comment does not have to have an explicit **@module** tag and LDoc continues to
 respect the use of `module()`.
 
 There are three types of 'modules' (i.e. 'project-level'); `module`, a library
@@ -428,23 +434,23 @@ There are some tags which are only useful in module comments: `author`,`copyrigh
 `license` and `release`. These are presented in a special **Info** section in the
 default HTML output.
 
-The `@usage` tag has a somewhat different presentation when used in modules; the text
+The **@usage** tag has a somewhat different presentation when used in modules; the text
 is presented formatted as-is in a code font. If you look at the script `ldoc` in
 this documentation, you can see how the command-line usage is shown. Since coding
 is all about avoiding repetition and the out-of-sync issues that arise,
-the `@usage` tag can appear later in the module, before a long string. For instance,
+the **@usage** tag can appear later in the module, before a long string. For instance,
 the main script of LDoc is [ldoc.lua](https://github.com/stevedonovan/LDoc/blob/master/ldoc.lua)
 and you will see that the usage tag appears on line 36 before the usage string
 presented as help.
 
-`@export` is another module tag that is usually 'detached'. It is for supporting
+**@export** is another module tag that is usually 'detached'. It is for supporting
 modules that wish to explicitly export their functions @{three.lua|at the end}.
 In that example, both `question` and `answer` are local and therefore private to
 the module, but `answer` has been explicitly exported. (If you invoke LDoc with
 the `-a` flag on this file, you will see the documentation for the unexported
 function as well.)
 
-`@set` is a powerful tag which assigns a configuration variable to a value _just for this module_.
+**@set** is a powerful tag which assigns a configuration variable to a value _just for this module_.
 Saying `@set no_summary=true` in a module comment will temporarily disable summary generation when
 the template is expanded. Generally configuration variables that effect template expansion
 are modifiable in this way.  For instance, if you wish that the contents of a particular module
@@ -458,7 +464,7 @@ types in a module: 'Functions', 'Tables' and 'Fields' (There is another default 
 sections can be added; the first mechanism is when you @{Adding_new_Tags|define a new type}
 (say 'macro'). Then a new section ('Macros') is created to contain these types.
 
-There is also a way to declare ad-hoc sections using the `@section` tag.
+There is also a way to declare ad-hoc sections using the **@section** tag.
 The need occurs when a module has a lot of functions that need to be put into logical
 sections.
 
@@ -507,7 +513,7 @@ with the LuaDoc `class` tag.)
 
 A section continues until the next section is found, `@section end`, or end of file.
 
-You can put items into an implicit section using the @within tag. This allows you to put
+You can put items into an implicit section using the **@within tag**. This allows you to put
 adjacent functions in different sections, so that you are not forced to order your code
 in a particular way.
 
@@ -518,7 +524,7 @@ and the advantage that methods can be put into sections.
 Sometimes a module may logically span several files, which can easily happen with large
 There will be a master module with name
 'foo' and other files which when required add functions to that module. If these files have
-a @submodule tag, their contents will be placed in the master module documentation. However,
+a **@submodule** tag, their contents will be placed in the master module documentation. However,
 a current limitation is that the master module must be processed before the submodules.
 
 See the `tests/submodule` example for how this works in practice.
@@ -679,8 +685,8 @@ See @{mylib.c} for the full example.
 
 1.4 introduces basic support for [Moonscript](http://moonscript.org). Moonscript module
 conventions are just the same as Lua, except for an explicit class construct.
-@{list.moon} shows how `@classmod` can declare modules that export one class, with metamethods
-put explicitly into a separate section.
+@{list.moon} shows how **@classmod** can declare modules that export one class, with metamethods
+and methods put implicitly into a separate section.
 
 ## Basic Usage
 
@@ -915,7 +921,7 @@ can suppress the contents summary with `no_summary`.
 
 A basic customization is to override the default UTF-8 encoding using `charset`. For instance,
 Brazillian software would find it useful to put `charset='ISO-8859-1'` in `config.ld`, or use
-the @charset tag for individual files.
+the **@charset** tag for individual files.
 
 Setting `no_return_or_parms` to `true` will suppress the display of 'param' and 'return'
 tags. This may appeal to programmers who dislike the traditional @tag soup xDoc style and
@@ -957,7 +963,7 @@ and writer-generated documentation using different tools, and having to match th
 
 LDoc allows for source examples to be included in the documentation. For example, see the
 online documentation for [winapi](http://stevedonovan.github.com/winapi/api.html). The
-function `utf8_expand` has a `@see` reference to 'testu.lua' and following that link gives
+function `utf8_expand` has a **@see** reference to 'testu.lua' and following that link gives
 you a pretty-printed version of the code.
 
 The line in the `config.ld` that enables this is:
@@ -1048,7 +1054,7 @@ There is a useful function for creating new tags that can be used in `config.ld`
 
     tparam_alias('string','string')
 
-That is, "@string" will now have the same meaning as "@tparam string"; this also applies
+That is, **@string** will now have the same meaning as "@tparam string"; this also applies
 to the optional type syntax "?|T1|T2".
 
 From 1.3, the following standard type aliases are predefined:
@@ -1079,8 +1085,8 @@ defined as a tag plus a set of modifiers.  So `tparam` is defined as:
 
     alias('tparam',{'param',modifiers={type="$1"}})
 
-As an extension, you're allowed to use '@param' tags in table definitions. This makes it
-possible to use type alias like '@string' to describe fields, since they will expand to
+As an extension, you're allowed to use **@param** tags in table definitions. This makes it
+possible to use type aliases like **@string** to describe fields, since they will expand to
 'param'.
 
 Another modifier understood by LDoc is `opt`. For instance,
@@ -1113,7 +1119,7 @@ then LDoc can present this as the default value for this optional argument.
 (See @{four.lua}, rendered [here](http://stevedonovan.github.io/ldoc/examples/four))
 
 An experimental feature in 1.4 allows different 'return groups' to be defined. There may be
-multiple `@return` tags, and the meaning of this is well-defined, since Lua functions may
+multiple **@return** tags, and the meaning of this is well-defined, since Lua functions may
 return multiple values.  However, being a dynamic language it may return a single value if
 successful and two values (`nil`,an error message) if there is an error. This is in fact the
 convention for returning 'normal' errors (like 'file not found') as opposed to parameter errors
@@ -1133,7 +1139,7 @@ as a group:
 This is the first function in @{multiple.lua}, and the [output](http://stevedonovan.github.io/ldoc/examples/multiple)
 shows how return groups are presented, with an **Or** between the groups.
 
-This is rather clumsy, and so there is a shortcut, the `@error` tag which achieves the same result,
+This is rather clumsy, and so there is a shortcut, the **@error** tag which achieves the same result,
 with helpful type information.
 
 Currently the `type`,`opt` and `<digit>` modifiers are the only ones known and used by LDoc when generating HTML
@@ -1162,7 +1168,7 @@ of files and directories.
 template. In `config.ld` they may also be `true`, meaning use the same directory as the
 configuration file.
   - `merge` allow documentation from different files to be merged into modules without
-explicit @submodule tag
+explicit **@submodule** tag
 
 _These only appear in the configuration file:_
 
@@ -1171,7 +1177,7 @@ _These only appear in the configuration file:_
   - `examples` a directory or file: can be a table
   - `readme` or `topics` readme files (to be processed with Markdown)
   - `pretty` code prettify 'lua' (default) or 'lxsh'
-  - `charset` use if you want to override the UTF-8 default (also @charset in files)
+  - `charset` use if you want to override the UTF-8 default (also **@charset** in files)
   - `sort` set if you want all items in alphabetical order
   - `no_return_or_parms` don't show parameters or return values in output
   - `backtick_references` whether references in backticks will be resolved. Happens by default
@@ -1195,7 +1201,7 @@ function tagged with a certain tag:
         end
         return default_handler(item)
       end
-      
+
   - `not_luadoc` set to `true` if the docs break LuaDoc compatibility
   - `no_space_before_args` set to `true` if you do not want a space between a function's name and its arguments.
   - `template_escape` overrides the usual '#' used for Lua code in templates. This needs to be changed if the output format is Markdown, for instance.
@@ -1328,7 +1334,7 @@ The basic data structure is straightforward: it is an array of 'modules' (projec
 entities, including scripts) which each contain an `item` array (functions, tables and so
 forth).
 
-For instance, to find all functions which don't have a @return tag:
+For instance, to find all functions which don't have a **@return** tag:
 
     return {
        filter = function (t)
@@ -1342,8 +1348,8 @@ For instance, to find all functions which don't have a @return tag:
        end
     }
 
-The internal naming is not always so consistent; `ret` corresponds to @return, and `params`
-corresponds to @param.  `item.params` is an array of the function parameters, in order; it
+The internal naming is not always so consistent; `ret` corresponds to **@return**, and `params`
+corresponds to **@param**.  `item.params` is an array of the function parameters, in order; it
 is also a map from these names to the individual descriptions of the parameters.
 
 `item.modifiers` is a table where the keys are the tags and the values are arrays of
