@@ -11,7 +11,7 @@ with LuaDoc) and depends on Penlight itself.(This allowed me to _not_ write a lo
 The [API documentation](http://stevedonovan.github.com/Penlight/api/index.html) of Penlight
 is an example of a project using plain LuaDoc markup processed using LDoc.
 
-LDoc is intended to be compatible with [LuaDoc](http://luadoc.luaforge.net/manual.html) and
+LDoc is intended to be compatible with [LuaDoc](http://keplerproject.github.io/luadoc/) and
 thus follows the pattern set by the various *Doc tools:
 
     --- Summary ends with a period.
