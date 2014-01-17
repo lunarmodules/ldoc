@@ -91,13 +91,6 @@ function ModuleMap:_init ()
    self.fieldname = 'section'
 end
 
-ModuleMap:add_kind('function','Functions','Parameters')
-ModuleMap:add_kind('table','Tables','Fields')
-ModuleMap:add_kind('field','Fields')
-ModuleMap:add_kind('lfunction','Local Functions','Parameters')
-ModuleMap:add_kind('annotation','Issues')
-
-
 local ProjectMap = class(KindMap)
 ProjectMap.project_level = true
 
@@ -106,11 +99,7 @@ function ProjectMap:_init ()
    self.fieldname = 'type'
 end
 
-ProjectMap:add_kind('module','Modules')
-ProjectMap:add_kind('script','Scripts')
-ProjectMap:add_kind('classmod','Classes')
-ProjectMap:add_kind('topic','Topics')
-ProjectMap:add_kind('example','Examples')
+
 
 local lua, cc = lang.lua, lang.cc
 
@@ -125,11 +114,43 @@ local file_types = {
    ['.mm'] = cc,
    ['.moon'] = lang.moon,
 }
-
 ------- ldoc external API ------------
 
 -- the ldoc table represents the API available in `config.ld`.
 local ldoc = { charset = 'UTF-8' }
+
+local kind_names
+
+local function lookup (itype,igroup,isubgroup)
+   local kn = kind_names[itype]
+   if kn then
+      if type(kn) == 'string' then
+         igroup = kn
+      else
+         igroup = kn[1]
+         isubgroup = kn[2]
+      end
+   end
+   return itype, igroup, isubgroup
+end
+
+local function setup_kinds ()
+   kind_names = ldoc.kind_names or {}
+
+   ModuleMap:add_kind(lookup('function','Functions','Parameters'))
+   ModuleMap:add_kind(lookup('table','Tables','Fields'))
+   ModuleMap:add_kind(lookup('field','Fields'))
+   ModuleMap:add_kind(lookup('lfunction','Local Functions','Parameters'))
+   ModuleMap:add_kind(lookup('annotation','Issues'))
+
+   ProjectMap:add_kind(lookup('module','Modules'))
+   ProjectMap:add_kind(lookup('script','Scripts'))
+   ProjectMap:add_kind(lookup('classmod','Classes'))
+   ProjectMap:add_kind(lookup('topic','Topics'))
+   ProjectMap:add_kind(lookup('example','Examples'))
+end
+
+
 local add_language_extension
 -- hacky way for doc module to be passed options...
 doc.ldoc = ldoc
@@ -202,7 +223,7 @@ local ldoc_contents = {
    'boilerplate','merge', 'wrap', 'not_luadoc', 'template_escape','merge_error_groups',
    'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
    'no_space_before_args','parse_extra','no_lua_ref','sort_modules','use_markdown_titles',
-   'unqualified', 'custom_display_name_handler',
+   'unqualified', 'custom_display_name_handler', 'kind_names',
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
@@ -393,6 +414,8 @@ override 'not_luadoc'
 override 'module_file'
 override 'boilerplate'
 
+setup_kinds()
+
 -- LDoc is doing plain ole C, don't want random Lua references!
 if ldoc.parse_extra and ldoc.parse_extra.C then
    ldoc.no_lua_ref = true
@@ -461,6 +484,7 @@ elseif path.isfile(args.file) then
 else
    quit ("file or directory does not exist: "..quote(args.file))
 end
+
 
 -- create the function that renders text (descriptions and summaries)
 -- (this also will initialize the code prettifier used)
