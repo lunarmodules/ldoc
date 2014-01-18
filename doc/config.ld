@@ -7,6 +7,7 @@ file='../ldoc.lua'
 dir='../out'
 readme='doc.md'
 style='!pale'
+kind_names={topic='Manual',script='Programs'}
 examples = {
     '../tests/styles/colon.lua',
     '../tests/styles/four.lua',

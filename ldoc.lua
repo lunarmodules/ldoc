@@ -119,10 +119,11 @@ local file_types = {
 -- the ldoc table represents the API available in `config.ld`.
 local ldoc = { charset = 'UTF-8' }
 
-local kind_names
+local known_types, kind_names = {}
 
 local function lookup (itype,igroup,isubgroup)
    local kn = kind_names[itype]
+   known_types[itype] = true
    if kn then
       if type(kn) == 'string' then
          igroup = kn
@@ -148,6 +149,12 @@ local function setup_kinds ()
    ProjectMap:add_kind(lookup('classmod','Classes'))
    ProjectMap:add_kind(lookup('topic','Topics'))
    ProjectMap:add_kind(lookup('example','Examples'))
+
+   for k in pairs(kind_names) do
+      if not known_types[k] then
+         quit("unknown item type "..tools.quote(k).." in kind_names")
+      end
+   end
 end
 
 
