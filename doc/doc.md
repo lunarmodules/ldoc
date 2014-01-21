@@ -34,7 +34,7 @@ end-users to build your documentation using this simple command.
 ## Commenting Conventions
 
 LDoc follows the conventions established by Javadoc and later by LuaDoc to document the
-modules, functions, types (=classes) and so forth of your API.
+modules, functions, tables and types ("classes") of your API.
 
 ### Doc comments
 
@@ -62,6 +62,9 @@ statement.
 If your coding standards require a boilerplate copyright notice, then the `-B` flag or
 `boilerplate=true` will make LDoc ignore the first comment of each module.
 
+Common commenting patterns like '---- (text) -----' are exempted, since they are often used
+for programmer-facing documentation.
+
 
 ### Tags
 
@@ -77,6 +80,29 @@ These follow the convention established by Javadoc and widely used in tools for 
     -- @tag2 parameters for the second tag
 
 The order of tags is not important, but as always, consistency is useful.
+
+Here are all the tags known to LDoc:
+
+  * **@module**  A Lua module containing functions and tables, which may be inside sections
+  * **@classmod** Like **@module** but describing a class
+  * **@submodule** A file containing definitions that you wish to put into the named _master_ module
+  * **@script**  A Lua program
+  * **@author** (multiple), **copyright**, **@license**, **@release** only used for _project-level_ tags like **@module**
+  * **@function**, **@lfunction**. Functions inside a module
+  * **@param**  formal arguments of a function (multiple)
+  * **@return** returned values of a function (multiple)
+  * **@raise** unhandled error thrown by this function
+  * **@local** explicitly marks a function as not being exported (unless `--all`)
+  * **@see** reference other documented items
+  * **@usage** give an example of a function's use. (Has a somewhat different meaning when used
+   with **@module**)
+  * **@table** a Lua table
+  * **@field** a named member of a table
+  * **@section** starting a named section for grouping functions or tables together
+  * **@type** a section which describes a class
+  * **@within** puts the function or table into an implicit section
+  * **@fixme**, **@todo** and **@warning** are _annotations_, which are doc comments that
+  occur inside a function body.
 
 The first important tag to know is the module tag:
 
@@ -317,7 +343,7 @@ If you want to document scripts, then use **@script** instead of **@module**. Ne
 
 ## See References
 
-The tag 'see' is used to reference other parts of the documentation, and 'usage' can provide
+**@see** is used to reference other parts of the documentation, and **@usage** can provide
 examples of use; there can be multiple such tags:
 
     ---------
@@ -513,7 +539,7 @@ with the LuaDoc `class` tag.)
 
 A section continues until the next section is found, `@section end`, or end of file.
 
-You can put items into an implicit section using the **@within tag**. This allows you to put
+You can put items into an implicit section using **@within**. This allows you to put
 adjacent functions in different sections, so that you are not forced to order your code
 in a particular way.
 
@@ -876,24 +902,25 @@ module that uses extended LDoc features.
 
 The _navigation section_ down the left has several parts:
 
-  - The project name ('project' in the config)
-  - A project description ('description')
-  - ''Contents'' of the current page
-  - ''Modules'' listing all the modules in this project
+  - The project name (`project` in the config)
+  - A project description (`description`)
+  - **Contents** of the current page
+  - **Modules** listing all the modules in this project
 
 Note that `description` will be passed through Markdown, if it has been specified for the
 project. This gives you an opportunity to make lists of links, etc; any '##' headers will be
 formatted like the other top-level items on the navigation bar.
 
-'Contents' is automatically generated. It will contain any explicit sections, if they have
-been used. Otherwise you will get the usual categories: 'Functions', 'Tables' and 'Fields'.
+**Contents** is automatically generated. It will contain any explicit sections
+as well as the usual categories: 'Functions', 'Tables' and 'Fields'.  For a documentation page,
+the subtitles become the sections shown here.
 
-'Modules' will appear for any project providing Lua libraries; there may also be a 'Scripts'
+**Modules** will appear for any project providing Lua libraries; there may also be a 'Scripts'
 section if the project contains Lua scripts. For example,
 [LuaMacro](http://stevedonovan.github.com/LuaMacro/docs/api.html) has a driver script `luam`
 in this section. The
 [builtin](http://stevedonovan.github.com/LuaMacro/docs/modules/macro.builtin.html) module
-only defines macros, which are defined as a _custom tag type_.
+only defines macros, which are defined as a _custom tag type[?]_.
 
 The _content section_ on the right shows:
 
@@ -1028,13 +1055,13 @@ Remember that the default is for references in backticks to be resolved; unlike 
 references, it is not an error if the reference cannot be found.
 
 The _sections_ of a document (the second-level headings) are also references. This
-particular section can be refered to as `@{\doc.md.Resolving_References_in_Documents}` - the
+particular section you are reading can be refered to as `@{\doc.md.Readme_files}` - the
 rule is that any non-alphabetic character is replaced by an underscore.
 
 Any indented blocks are assumed to be Lua, unless their first line is `@plain`. New
 with 1.4 is github-markdown-style fenced code blocks, which start with three backticks
 optionally followed by a language. The code continues until another three backticks
-is found: the language can be `c`,'cpp' or `cxx` for C/C++, anything else is Lua.
+is found: the language can be `c`, `cpp` or `cxx` for C/C++, anything else is Lua.
 
 ## Tag Modifiers
 

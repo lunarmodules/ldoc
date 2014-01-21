@@ -20,7 +20,17 @@ local function resolve_inline_references (ldoc, txt, item, plain)
       if not qname then
          qname = name
       end
-      local ref,err = markup.process_reference(qname)
+      local ref, err
+      local custom_ref, refname = utils.splitv(qname,':')
+      if custom_ref and ldoc.custom_references then
+         custom_ref = ldoc.custom_references[custom_ref]
+         if custom_ref then
+            ref,err = custom_ref(refname)
+         end
+      end
+      if not ref then
+         ref,err = markup.process_reference(qname)
+      end
       if not ref then
          err = err .. ' ' .. qname
          if item and item.warning then item:warning(err)
