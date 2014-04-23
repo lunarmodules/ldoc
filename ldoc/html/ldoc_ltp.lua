@@ -173,7 +173,7 @@ return [==[
 #   for parm in iter(item.params) do
 #     local param,sublist = item:subparam(parm)
 #     if sublist then
-        <li><span class="parameter">$(sublist)</span>$(M(item.params[sublist],item))
+        <li><span class="parameter">$(sublist)</span>$(M(item.params.map[sublist],item))
         <ul>
 #     end
 #     for p in iter(param) do
@@ -182,7 +182,7 @@ return [==[
 #       if tp ~= '' then
             <span class="types">$(tp)</span>
 #       end
-        $(M(item.params[p],item))
+        $(M(item.params.map[p],item))
 #       if def then
          (<em>default</em> $(def))
 #       end

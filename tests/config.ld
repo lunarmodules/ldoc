@@ -1,4 +1,5 @@
 format='markdown'
 project = 'Basic Example'
 file = {'types.lua','classes.lua'}
-topics = {'one.md','two.md'}
+use_markdown_titles=true
+topics = {'one 1.md','two.md'}

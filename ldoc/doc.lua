@@ -725,6 +725,8 @@ function Item:finish()
       local original_names = formal and formal or param_names
       local names = List()
       self.subparams = {}
+      params.map = {}
+
       for i,name in ipairs(original_names) do
          if type(name) ~= 'string' then
             self:error("declared table cannot have array entries")
@@ -742,7 +744,7 @@ function Item:finish()
             fields = nil
          end
 
-         params[name] = comments[i]
+         params.map[name] = comments[i]
          if pmods then
             pmods[name] = pmods[i]
          end
@@ -1264,7 +1266,7 @@ function Item:dump(verbose)
       if #self.params > 0 then
          print 'parameters:'
          for _,p in ipairs(self.params) do
-            print('',p,self.params[p])
+            print('',p,self.params.map[p])
          end
       end
       if self.ret and #self.ret > 0 then
