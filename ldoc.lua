@@ -447,13 +447,22 @@ local function reorder_module_file ()
    end
 end
 
+-- process files, optionally in order that respects master module files
+local function process_all_files(files)
+   local sortfn = reorder_module_file()
+   local files = tools.expand_file_list(files,'*.*')
+   if sortfn then files:sort(sortfn) end
+   for f in files:iter() do
+      process_file(f, file_list)
+   end
+   if #file_list == 0 then quit "no source files found" end
+end
+
 if type(args.file) == 'table' then
-   -- this can only be set from config file so we can assume it's already read
-   args.file.sortfn = reorder_module_file()
-   process_file_list(args.file,'*.*',process_file, file_list)
-   if #file_list == 0 then quit "no source files specified" end
+   -- this can only be set from config file so we can assume config is already read
+   process_all_files(args.file)   
+   
 elseif path.isdir(args.file) then
-   local files = List(dir.getallfiles(args.file,'*.*'))
    -- use any configuration file we find, if not already specified
    if not config_dir then
       local config_files = files:filter(function(f)
@@ -466,16 +475,9 @@ elseif path.isdir(args.file) then
          end
       end
    end
-   -- process files, optionally in order that respects master module files
-   local sortfn = reorder_module_file()
-   if sortfn then files:sort(sortfn) end
-   for f in files:iter() do
-      process_file(f, file_list)
-   end
-
-   if #file_list == 0 then
-      quit(quote(args.file).." contained no source files")
-   end
+   
+   process_all_files({args.file})
+   
 elseif path.isfile(args.file) then
    -- a single file may be accompanied by a config.ld in the same dir
    if not config_dir then
