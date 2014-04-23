@@ -73,6 +73,16 @@ else
    globals.set_manual_url 'http://www.lua.org/manual/5.1/manual.html'
 end
 
+local file_methods = {
+    close = true,
+    flush = true,
+    lines = true,
+    read = true,
+    seek = true,
+    setvbuf = true,
+    write = true,
+}
+
 -- external libs tracked by LDoc using LDoc style
 local xlibs = {
    lfs='lfs.html', lpeg='lpeg.html',
@@ -90,7 +100,13 @@ local function function_ref (name,tbl)
          return nil
       end
    end
-   if tables[tbl] then -- function inside standard Lua table
+   if tbl == 'file' then -- special case: file objects!
+      if not file_methods[name] then
+        return nil
+      end
+      name = 'file:'..name
+      href = fun_ref..name
+   elseif tables[tbl] then -- function inside standard Lua table
       local t = rawget(_G,tbl) -- do a quick sanity check
       if not rawget(t,name) then
          return nil

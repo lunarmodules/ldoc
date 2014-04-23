@@ -16,6 +16,7 @@
 -- @string[opt='gregorian'] calender optional calendar
 -- @int[opt=0] offset optional offset
 -- @treturn string
+-- @see file:write
 function one (name,age,...)
 end
 
