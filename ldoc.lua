@@ -465,6 +465,7 @@ if type(args.file) == 'table' then
 elseif path.isdir(args.file) then
    -- use any configuration file we find, if not already specified
    if not config_dir then
+      local files = List(dir.getallfiles(args.file,'*.*'))
       local config_files = files:filter(function(f)
          return path.basename(f) == args.config
       end)
