@@ -132,7 +132,7 @@ return [==[
 # for kind, items in module.kinds() do
 #   local kitem = module.kinds:get_item(kind)
     <h2><a name="$(no_spaces(kind))"></a>$(kind)</h2>
-#--    $(M(module.kinds:get_section_description(kind),nil))
+    $(M(module.kinds:get_section_description(kind),nil))
 #   if kitem then
         $(M(ldoc.descript(kitem),kitem))
 #       if kitem.usage then

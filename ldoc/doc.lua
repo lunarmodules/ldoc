@@ -371,8 +371,7 @@ function File:finish()
                   section_description = this_section.summary..' '..(this_section.description or '')
                   this_section.summary = ''
                elseif item.tags.within then
-                  section_description = item.tags.within
-                  item.section = section_description
+                  item.section = item.tags.within
                else
                   if item.type == 'function' or item.type == 'lfunction' then
                      section_description = "Methods"
@@ -380,8 +379,7 @@ function File:finish()
                   item.section = item.type
                end
             elseif item.tags.within then -- ad-hoc section...
-               section_description = item.tags.within
-               item.section = section_description
+					item.section = item.tags.within
             else -- otherwise, just goes into the default sections (Functions,Tables,etc)
                item.section = item.type;
             end

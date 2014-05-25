@@ -3,7 +3,7 @@
 -- @module type
 
 ----
--- Our class.
+-- Our class. Any function or table in this section belongs to `Bonzo`
 -- @type Bonzo
 
 ----
