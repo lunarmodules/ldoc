@@ -768,7 +768,7 @@ line. This is useful if you have some defaults you wish to apply to all of your 
 and descriptions; you can also use the `-f` flag. This requires a markdown processor.
 LDoc knows how to use:
 
-   - [markdown.lua](http://www.frykholm.se/files/markdown.lua) a pure Lua processor by
+  - [markdown.lua](http://www.frykholm.se/files/markdown.lua) a pure Lua processor by
 Niklas Frykholm. For convenience, LDoc comes with a copy of markdown.lua.
   - [lua-discount](http://asbradbury.org/projects/lua-discount/), a faster alternative
 (installed with `luarocks install lua-discount`).  lua-discount uses the C
