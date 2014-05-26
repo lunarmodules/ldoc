@@ -139,7 +139,7 @@ table.index td { text-align: left; vertical-align: top; }
 #container {
     margin-left: 1em;
     margin-right: 1em;
-    background-color: #f0f0f0;
+    background-color: #ffffff;
 }
 
 #product {
@@ -162,6 +162,7 @@ table.index td { text-align: left; vertical-align: top; }
     width: 14em;
     vertical-align: top;
     background-color:#FFFFFF; // #f0f0f0;
+    border-right: 2px solid #cccccc;
     overflow: visible;
 }
 
