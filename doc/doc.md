@@ -784,7 +784,7 @@ for larger documents.
 
 Even with the default of 'plain' some minimal processing takes place, in particular empty lines
 are treated as line breaks. If the 'backticks' formatter is used, then it's equivalent to
-using 'process_backticks=true` in `config.ld` and backticks will be
+using `process_backticks=true` in `config.ld` and backticks will be
 expanded into documentation links like `@{\ref}` and converted into `<code>ref</code>`
 otherwise.
 
