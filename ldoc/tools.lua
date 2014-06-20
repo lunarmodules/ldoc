@@ -109,6 +109,7 @@ function KindMap:add (item,items,description)
    local group = item[self.fieldname] -- which wd be item's type or section
    local kname = self.klass.types_by_tag[group] -- the kind name
    if not self[kname] then
+    -- print(kname,group,self.fieldname)
       self[kname] = M.type_iterator (items,self.fieldname,group)
       self.klass.descriptions[kname] = description
    end

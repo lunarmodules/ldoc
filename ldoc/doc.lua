@@ -1142,6 +1142,13 @@ function Module:process_see_reference (s,modules,istype)
          end
       end
    else -- plain jane name; module in this package, function in this module
+      if ldoc.global_lookup then
+        for m in modules:iter() do
+            fun_ref = m:get_fun_ref(s)
+            if fun_ref then return reference(s,m,fun_ref) end
+        end
+        return nil,"function: "..s.." not found globally"
+      end
       mod_ref = modules.by_name[self.package..'.'..s]
       if ismod(mod_ref) then return reference(s, mod_ref,nil) end
       fun_ref = self:get_fun_ref(s)
