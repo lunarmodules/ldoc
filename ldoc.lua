@@ -108,6 +108,7 @@ local file_types = {
    ['.ldoc'] = lua,
    ['.luadoc'] = lua,
    ['.c'] = cc,
+   ['.h'] = cc,
    ['.cpp'] = cc,
    ['.cxx'] = cc,
    ['.C'] = cc,
@@ -231,6 +232,7 @@ local ldoc_contents = {
    'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
    'no_space_before_args','parse_extra','no_lua_ref','sort_modules','use_markdown_titles',
    'unqualified', 'custom_display_name_handler', 'kind_names', 'custom_references',
+   'dont_escape_underscore','global_lookup',
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
@@ -530,14 +532,18 @@ end
 if type(ldoc.examples) == 'table' then
    local prettify = require 'ldoc.prettify'
 
-   process_file_list (ldoc.examples, '*.lua', function(f)
-      local item = add_special_project_entity(f,{
-         class = 'example',
-      })
-      -- wrap prettify for this example so it knows which file to blame
-      -- if there's a problem
-      local ext = path.extension(f):sub(2)
-      item.postprocess = function(code) return prettify.lua(ext,f,code,0,true) end
+   process_file_list (ldoc.examples, '*.*', function(f)
+      local ext = path.extension(f)
+      local ftype = file_types[ext]
+      if ftype then
+         local item = add_special_project_entity(f,{
+            class = 'example',
+         })
+         -- wrap prettify for this example so it knows which file to blame
+         -- if there's a problem
+         local lang = ext:sub(2)
+         item.postprocess = function(code) return prettify.lua(lang,f,code,0,true) end
+      end
    end)
 end
 
