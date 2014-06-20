@@ -189,6 +189,11 @@ function html.generate_output(ldoc, args, project)
    function ldoc.is_list (t)
       return type(t) == 'table' and t.append
    end
+   
+   function ldoc.strip_header (s)
+      if not s then return s end
+      return s:gsub('^%s*#+%s+','')
+   end
 
    function ldoc.typename (tp)
       if not tp or tp == '' or tp:match '^@' then return '' end

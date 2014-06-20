@@ -271,7 +271,7 @@ return [==[
 # for m in mods() do
 	<tr>
 		<td class="name"  $(nowrap)><a href="$(no_spaces(kind))/$(m.name).html">$(m.name)</a></td>
-		<td class="summary">$(M(m.summary,m))</td>
+		<td class="summary">$(M(ldoc.strip_header(m.summary),m))</td>
 	</tr>
 #  end -- for modules
 </table>
