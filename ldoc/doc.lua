@@ -1100,6 +1100,11 @@ function Module:process_see_reference (s,modules,istype)
    else
       lua_manual_ref = global.lua_manual_ref
    end
+   -- pure C projects use global lookup (no namespaces)
+   if ldoc.global_lookup == nil then
+      local using_c = ldoc.parse_extra and ldoc.parse_extra.C
+      ldoc.global_lookup = using_c or false
+   end
 
    -- is this a fully qualified module name?
    local mod_ref = modules.by_name[s]
