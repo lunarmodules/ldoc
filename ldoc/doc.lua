@@ -287,6 +287,7 @@ function File:finish()
             else
                display_name = summary
                lookup_name = summary
+               item.summary = ''
             end
             item.display_name = display_name
             this_mod.section = item
@@ -368,8 +369,8 @@ function File:finish()
                   end
                end
                if this_section then
-                  section_description = this_section.summary..' '..(this_section.description or '')
-                  this_section.summary = ''
+                  --section_description = this_section.summary..' '..(this_section.description or '')
+                  --this_section.summary = ''
                elseif item.tags.within then
                   item.section = item.tags.within
                else
