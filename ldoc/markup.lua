@@ -243,16 +243,19 @@ local formatters =
 
 
 local function get_formatter(format)
+   local used_format = format
    local formatter = (formatters[format] or generic_formatter)(format)
-   if formatter then return formatter end
-
-   for name, f in pairs(formatters) do
-      formatter = f(name)
-      if formatter then
-         print('format: '..format..' not found, using '..name)
-         return formatter
-      end
-   end
+   if not formatter then -- try another equivalent processor
+		for name, f in pairs(formatters) do
+			formatter = f(name)
+			if formatter then
+				print('format: '..format..' not found, using '..name)
+				used_format = name
+				break
+			end
+		end
+	end
+	return formatter, used_format
 end
 
 local function text_processor(ldoc)
@@ -299,9 +302,13 @@ end
 local function get_processor(ldoc, format)
    if format == 'plain' then return text_processor(ldoc) end
 
-   local formatter = get_formatter(format)
+   local formatter,actual_format = get_formatter(format)
    if formatter then
       markup.plain = false
+      -- AFAIK only markdown.lua has underscore-in-identifier problem...
+      if ldoc.dont_escape_underscore ~= nil then
+         ldoc.dont_escape_underscore = actual_format ~= 'markdown'
+      end      
       return markdown_processor(ldoc, formatter)
    end
 
