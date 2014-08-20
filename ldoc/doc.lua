@@ -1102,7 +1102,7 @@ function Module:process_see_reference (s,modules,istype)
       lua_manual_ref = global.lua_manual_ref
    end
    -- pure C projects use global lookup (no namespaces)
-   if ldoc.global_lookup == nil then
+   if ldoc and ldoc.global_lookup == nil then
       local using_c = ldoc.parse_extra and ldoc.parse_extra.C
       ldoc.global_lookup = using_c or false
    end
@@ -1148,7 +1148,7 @@ function Module:process_see_reference (s,modules,istype)
          end
       end
    else -- plain jane name; module in this package, function in this module
-      if ldoc.global_lookup then
+      if ldoc and ldoc.global_lookup then
         for m in modules:iter() do
             fun_ref = m:get_fun_ref(s)
             if fun_ref then return reference(s,m,fun_ref) end
@@ -1321,4 +1321,3 @@ function doc.filter_objects_through_function(filter, module_list)
 end
 
 return doc
-
