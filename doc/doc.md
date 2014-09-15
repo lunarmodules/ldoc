@@ -389,13 +389,13 @@ type of a parameter or return value when that type has a particular structure:
     ------
     -- extract standard variables.
     -- @param s the string
-    -- @return @{\stdvars}
+    -- @return @{\\stdvars}
     function extract_std(s) ... end
 
     ------
     -- standard variables.
-    -- Use @{\extract_std} to parse a string containing variables,
-    -- and @{\pack_std} to make such a string.
+    -- Use @{\\extract_std} to parse a string containing variables,
+    -- and @{\\pack_std} to make such a string.
     -- @field length
     -- @field duration
     -- @field viscosity

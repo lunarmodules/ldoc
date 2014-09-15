@@ -133,6 +133,7 @@ function doc.expand_annotation_item (tags, last_item)
    local item_name = last_item.tags.name
    for tag, value in pairs(tags) do
       if known_tags._annotation_tags[tag] then
+         tags.summary = nil
          tags:add('class','annotation')
          tags:add('summary',value)
          tags:add('name',item_name..'-'..tag..acount)
