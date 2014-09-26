@@ -758,6 +758,7 @@ ldoc.modules = module_list
 ldoc.title = ldoc.title or args.title
 ldoc.project = ldoc.project or args.project
 ldoc.package = args.package:match '%a+' and args.package or nil
+ldoc.updatetime = os.date("%Y-%m-%d %H:%M:%S")
 
 local html = require 'ldoc.html'
 
