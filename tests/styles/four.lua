@@ -31,12 +31,13 @@ end
 --- third useless function.
 -- Can always put comments inline, may
 -- be multiple.
--- note that first comment is refers to return
+-- note that first comment refers to return type!
 function three ( -- person:
     name, -- string: person's name
     age  -- int:
         -- not less than zero!
 )
+end
 
 ---- function with single optional arg
 -- @param[opt] one

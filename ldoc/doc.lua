@@ -238,7 +238,7 @@ function File:finish()
       elseif doc.project_level(item.type) then
          this_mod = item
          local package,mname,submodule
-         if item.type == 'module' then
+         if item.type == 'module' or item.type == 'classmod' then
             -- if name is 'package.mod', then mod_name is 'mod'
             package,mname = split_dotted_name(this_mod.name)
             if self.args.merge then
