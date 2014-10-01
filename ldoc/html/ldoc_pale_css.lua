@@ -286,6 +286,11 @@ ol ul { margin-top: 0px; }
 ol ol { margin-top: 0px; }
 ul ol { margin-top: 0px; }
 
+/* make the target distinct; helps when we're navigating to a function */
+a:target + * {
+  background-color: #FF9;
+}
+
 /* styles for prettification of source */
 pre .comment { color: #558817; }
 pre .constant { color: #a8660d; }
