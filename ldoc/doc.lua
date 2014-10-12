@@ -16,6 +16,7 @@ local TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE,TAG_FLAG,TAG_MULTI_LINE = 'M','id','S
 
 -- these are the basic tags known to ldoc. They come in several varieties:
 --  - 'M' tags with multiple values like 'param' (TAG_MULTI)
+--  - 'ML' tags which have a single multi-lined value like 'usage' (TAG_MULTI_LINE)
 --  - 'id' tags which are identifiers, like 'name' (TAG_ID)
 --  - 'S' tags with a single value, like 'release' (TAG_SINGLE)
 --  - 'N' tags which have no associated value, like 'local` (TAG_FLAG)
@@ -25,7 +26,7 @@ local known_tags = {
    class = 'id', name = 'id', pragma = 'id', alias = 'id', within = 'id',
    copyright = 'S', summary = 'S', description = 'S', release = 'S', license = 'S',
    fixme = 'S', todo = 'S', warning = 'S', raise = 'S', charset = 'S',
-   ['local'] = 'N', export = 'N', private = 'N', constructor = 'N', static = 'N';
+   ['local'] = 'N', export = 'N', private = 'N', constructor = 'N', static = 'N',include = 'S',
    -- project-level
    module = 'T', script = 'T', example = 'T', topic = 'T', submodule='T', classmod='T', file='T',
    -- module-level
@@ -41,7 +42,7 @@ known_tags._project_level = {
    topic = true,
    submodule = true,
    classmod = true,
-	file = true,
+   file = true,
 }
 
 known_tags._code_types = {

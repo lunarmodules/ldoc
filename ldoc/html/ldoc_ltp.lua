@@ -87,6 +87,9 @@ return [==[
 <h1>$(ldoc.module_typename(module)) <code>$(module.name)</code></h1>
 <p>$(M(module.summary,module))</p>
 <p>$(M(module.description,module))</p>
+#   if module.tags.include then
+        $(M(ldoc.include_file(module.tags.include)))
+#   end
 #   if module.usage then
 #     local li,il = use_li(module.usage)
     <h3>Usage:</h3>
