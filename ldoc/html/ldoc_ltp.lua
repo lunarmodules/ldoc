@@ -186,7 +186,9 @@ return [==[
             <span class="types">$(tp)</span>
 #       end
         $(M(item.params.map[p],item))
-#       if def then
+#       if def == true then
+         (<em>optional</em>)
+#      elseif def then
          (<em>default</em> $(def))
 #       end
 #       if item:readonly(p) then

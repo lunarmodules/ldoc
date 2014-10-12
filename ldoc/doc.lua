@@ -382,7 +382,7 @@ function File:finish()
                   item.section = item.type
                end
             elseif item.tags.within then -- ad-hoc section...
-					item.section = item.tags.within
+               item.section = item.tags.within
             else -- otherwise, just goes into the default sections (Functions,Tables,etc)
                item.section = item.type;
             end
@@ -807,8 +807,9 @@ function build_arg_list (names,pmods)
    -- with @param[opt] b
    local buffer, npending = { }, 0
    local function acc(x) table.insert(buffer, x) end
-   -- a number of trailing [opt]s can be safely converted to [opt],[optchain],...
-   if pmods then
+   -- a number of trailing [opt]s will be usually converted to [opt],[optchain],...
+   -- *unless* a person uses convert_opt.
+   if pmods and not doc.ldoc.convert_opt then
       local m = pmods[#names]
       if m and m.opt then
          m.optchain = m.opt
@@ -855,11 +856,11 @@ function Item:type_of_param(p)
    return mparam and mparam.type or ''
 end
 
+-- default value for param; if optional but no default, it's just `true`.
 function Item:default_of_param(p)
    local m = self:param_modifiers(p)
    if not m then return nil end
    local opt = m.optchain or m.opt
-   if opt == true then return nil end
    return opt
 end
 
