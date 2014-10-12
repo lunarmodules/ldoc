@@ -63,7 +63,7 @@ return [==[
 # -------- contents of project ----------
 # local this_mod = module and module.name
 # for kind, mods, type in ldoc.kinds() do
-#  if not ldoc.kinds_allowed or ldoc.kinds_allowed[type] then
+#  if ldoc.allowed_in_contents(type,module) then
 <h2>$(kind)</h2>
 <ul class="$(kind=='Topics' and '' or 'nowrap'">
 #  for mod in mods() do local name = ldoc.module_name(mod)
@@ -145,6 +145,9 @@ return [==[
     <dt>
     <a name = "$(item.name)"></a>
     <strong>$(display_name(item))</strong>
+#   if ldoc.prettify_files then
+    <a style="float:right;" href="$(ldoc.source_ref(item))">line $(item.lineno)</a>
+#  end
     </dt>
     <dd>
     $(M(ldoc.descript(item),item))

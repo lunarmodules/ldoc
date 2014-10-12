@@ -26,9 +26,10 @@ local spans = {keyword=true,number=true,string=true,comment=true,global=true,bac
 
 local cpp_lang = {c = true, cpp = true, cxx = true, h = true}
 
-function prettify.lua (lang, fname, code, initial_lineno, pre)
+function prettify.lua (lang, fname, code, initial_lineno, pre, linenos)
    local res, lexer, tokenizer = List(), require 'ldoc.lexer'
    local tnext = lexer.skipws
+	local ik = 1
    if not cpp_lang[lang] then
       tokenizer = lexer.lua
    else
@@ -50,6 +51,10 @@ function prettify.lua (lang, fname, code, initial_lineno, pre)
    if not t then return nil,"empty file" end
    while t do
       val = escape(val)
+      if linenos and tok:lineno() == linenos[ik] then
+      res:append('<a id="'..linenos[ik]..'"></a>')
+         ik = ik + 1
+      end
       if globals.functions[val] or globals.tables[val] then
          t = 'global'
       end

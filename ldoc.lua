@@ -150,6 +150,7 @@ local function setup_kinds ()
    ProjectMap:add_kind(lookup('classmod','Classes'))
    ProjectMap:add_kind(lookup('topic','Topics'))
    ProjectMap:add_kind(lookup('example','Examples'))
+   ProjectMap:add_kind(lookup('file','Source'))
 
    for k in pairs(kind_names) do
       if not known_types[k] then
@@ -232,7 +233,7 @@ local ldoc_contents = {
    'no_return_or_parms','no_summary','full_description','backtick_references', 'custom_see_handler',
    'no_space_before_args','parse_extra','no_lua_ref','sort_modules','use_markdown_titles',
    'unqualified', 'custom_display_name_handler', 'kind_names', 'custom_references',
-   'dont_escape_underscore','global_lookup',
+   'dont_escape_underscore','global_lookup','prettify_files'   
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
@@ -526,25 +527,47 @@ local function add_special_project_entity (f,tags,process)
    return item, F
 end
 
-if type(ldoc.examples) == 'string' then
-   ldoc.examples = {ldoc.examples}
-end
-if type(ldoc.examples) == 'table' then
+local function prettify_source_files(files,class,linemap) 
    local prettify = require 'ldoc.prettify'
 
-   process_file_list (ldoc.examples, '*.*', function(f)
+   process_file_list (files, '*.*', function(f)
       local ext = path.extension(f)
       local ftype = file_types[ext]
       if ftype then
          local item = add_special_project_entity(f,{
-            class = 'example',
+            class = class,
          })
          -- wrap prettify for this example so it knows which file to blame
          -- if there's a problem
          local lang = ext:sub(2)
-         item.postprocess = function(code) return prettify.lua(lang,f,code,0,true) end
+         item.postprocess = function(code)
+            return '<h2>'..path.basename(f)..'</h2>\n' ..
+                prettify.lua(lang,f,code,0,true,linemap and linemap[f])
+         end
       end
    end)
+end
+
+if type(ldoc.examples) == 'string' then
+   ldoc.examples = {ldoc.examples}
+end
+if type(ldoc.examples) == 'table' then
+   prettify_source_files(ldoc.examples,"example")
+end
+
+if ldoc.prettify_files then
+   local files = List()
+   local linemap = {}
+   for F in file_list:iter() do
+      files:append(F.filename)
+      local mod = F.modules[1]
+      local ls = List()
+      for item in mod.items:iter() do
+         ls:append(item.lineno)
+      end
+      linemap[F.filename] = ls
+   end
+   prettify_source_files(files,"file",linemap)
 end
 
 if args.simple then

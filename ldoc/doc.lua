@@ -27,7 +27,7 @@ local known_tags = {
    fixme = 'S', todo = 'S', warning = 'S', raise = 'S', charset = 'S',
    ['local'] = 'N', export = 'N', private = 'N', constructor = 'N', static = 'N';
    -- project-level
-   module = 'T', script = 'T', example = 'T', topic = 'T', submodule='T', classmod='T',
+   module = 'T', script = 'T', example = 'T', topic = 'T', submodule='T', classmod='T', file='T',
    -- module-level
    ['function'] = 'T', lfunction = 'T', table = 'T', section = 'T', type = 'T',
    annotation = 'T', factory = 'T';
@@ -41,6 +41,7 @@ known_tags._project_level = {
    topic = true,
    submodule = true,
    classmod = true,
+	file = true,
 }
 
 known_tags._code_types = {
