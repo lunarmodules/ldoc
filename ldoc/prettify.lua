@@ -29,7 +29,7 @@ local cpp_lang = {c = true, cpp = true, cxx = true, h = true}
 function prettify.lua (lang, fname, code, initial_lineno, pre, linenos)
    local res, lexer, tokenizer = List(), require 'ldoc.lexer'
    local tnext = lexer.skipws
-	local ik = 1
+   local ik = 1
    if not cpp_lang[lang] then
       tokenizer = lexer.lua
    else
@@ -52,7 +52,7 @@ function prettify.lua (lang, fname, code, initial_lineno, pre, linenos)
    while t do
       val = escape(val)
       if linenos and tok:lineno() == linenos[ik] then
-      res:append('<a id="'..linenos[ik]..'"></a>')
+         res:append('<a id="'..linenos[ik]..'"></a>')
          ik = ik + 1
       end
       if globals.functions[val] or globals.tables[val] then

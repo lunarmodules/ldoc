@@ -58,7 +58,7 @@ local function resolve_inline_references (ldoc, txt, item, plain)
             if name and do_escape then
                name = name:gsub('_', '\\_')
             end
-            return ('<a href="%s">%s</a> '):format(ldoc.href(ref),name)
+            return ('<a href="%s">%s</a>'):format(ldoc.href(ref),name)
          else
             return '<code>'..name..'</code>'
          end
@@ -246,16 +246,16 @@ local function get_formatter(format)
    local used_format = format
    local formatter = (formatters[format] or generic_formatter)(format)
    if not formatter then -- try another equivalent processor
-		for name, f in pairs(formatters) do
-			formatter = f(name)
-			if formatter then
-				print('format: '..format..' not found, using '..name)
-				used_format = name
-				break
-			end
-		end
-	end
-	return formatter, used_format
+      for name, f in pairs(formatters) do
+         formatter = f(name)
+         if formatter then
+            print('format: '..format..' not found, using '..name)
+            used_format = name
+            break
+         end
+      end
+   end
+   return formatter, used_format
 end
 
 local function text_processor(ldoc)
@@ -367,6 +367,5 @@ function markup.create (ldoc, format, pretty)
    end
    return processor
 end
-
 
 return markup
