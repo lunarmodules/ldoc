@@ -1,5 +1,6 @@
 ------------
--- Functions with options.
+-- Functions with options and custom tags
+--
 -- @include opt.md
 
 ---- testing [opt]
@@ -7,6 +8,7 @@
 -- @param[opt] two
 -- @param[opt]three
 -- @param[opt] four
+-- @remark use with caution!
 function use_opt (one,two,three,four)
 end
 
