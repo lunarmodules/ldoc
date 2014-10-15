@@ -14,6 +14,7 @@ local backtick_references
 
 -- inline <references> use same lookup as @see
 local function resolve_inline_references (ldoc, txt, item, plain)
+   local do_escape = not plain and not ldoc.dont_escape_underscore
    local res = (txt:gsub('@{([^}]-)}',function (name)
       if name:match '^\\' then return '@{'..name:sub(2)..'}' end
       local qname,label = utils.splitv(name,'%s*|')
@@ -42,7 +43,6 @@ local function resolve_inline_references (ldoc, txt, item, plain)
       if not label then
          label = ref.label
       end
-      local do_escape = not plain and not ldoc.dont_escape_underscore
       if label and do_escape  then -- a nastiness with markdown.lua and underscores
          label = label:gsub('_','\\_')
       end
@@ -135,7 +135,7 @@ local function process_multiline_markdown(ldoc, txt, F, filename, deflang)
          -- If we omit the following '\n', a '--' (or '//') comment on the
          -- last line won't be recognized.         
          code, err = prettify.code(lang,filename,code..'\n',L,false)
-         code = resolve_inline_references(ldoc, code, err_item)
+         code = resolve_inline_references(ldoc, code, err_item,true)
          append(res,'<pre>')
          append(res, code)
          append(res,'</pre>')
