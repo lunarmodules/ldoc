@@ -423,6 +423,7 @@ override 'merge'
 override 'not_luadoc'
 override 'module_file'
 override 'boilerplate'
+override 'all'
 
 setup_kinds()
 
@@ -620,7 +621,6 @@ for mod in module_list:iter() do
    project:add(mod,module_list)
 end
 
-override 'all'
 
 if ldoc.sort_modules then
    table.sort(module_list,function(m1,m2)
