@@ -143,12 +143,14 @@ This is a simple example of a documented function:
 You can also give the function name itself as an explicit tag,
 which is especially useful when documenting a Lua api exported by C code:
 
-    /// A C function which is exported to Lua with another name,
-    // because the ways of C can be mysterious!
-    // @function our_nice_function
-    int _some_function_for_lua(lua_State* l) {
-        ....
-    }
+```C
+/// A C function which is exported to Lua with another name,
+// because the ways of C can be mysterious!
+// @function our_nice_function
+int _some_function_for_lua(lua_State* l) {
+    ....
+}
+```
 
 The tags basically add all the detail that cannot be derived from the source code
 automatically.
@@ -189,7 +191,6 @@ function. For Lua, there can also be multiple 'return' tags
     end
 
     ...
-Of course there is also the 'module' tag which you have already seen.
 
 #### Tables and constant values (fields)
 
@@ -216,7 +217,8 @@ This can get tedious, so LDoc will attempt to extract table documentation from c
 
 The rule followed here is `NAME = <table-constructor>`. If LDoc can't work out the name and
 type from the following code, then a warning will be issued, pointing to the file and
-location.
+location.  Only single-level tables are currently supported, and the fields must be valid
+identifiers.
 
 Another kind of module-level type is 'field', such as follows:
 
@@ -239,9 +241,8 @@ When the code analysis would lead to the wrong type, you can always be explicit.
         ...
     end
 
-As mentioned before, this is often especially useful in C where things
-may look different in the C code than they will in the final Lua api which
-you want to document.
+This is especially useful in C where the function declarations
+are different from final Lua api which you are documenting.
 
 ### Doing modules the Lua 5.1 way
 
@@ -293,7 +294,8 @@ explicit assignment to a variable:
 ### Local functions
 
 Apart from exported functions, a module usually contains local functions. By default, LDoc
-does not include these in the documentation, but they can be enabled using the `--all` flag.
+does not include these in the documentation, but they can be enabled using the `--all` flag,
+or `all=true` in `config.ld`.
 They can be documented just like 'public' functions:
 
     --- it's clear that boo is local from context.
@@ -406,8 +408,12 @@ type of a parameter or return value when that type has a particular structure:
 The link text can be changed from the default by the extended syntax `@{\ref|text}.
 
 You can also put references in backticks, like `\`stdvars\``. This is commonly used in
-Markdown to indicate code, so it comes naturally when writing documents. It is controlled by
-the configuration variable `backtick_references` or the `backtick` format;
+Markdown to indicate code, so it comes naturally when writing documents. The difference
+is that the backticked expression does not have to be a reference and then will appear
+in code style; with @ references you will get a warning for unrecognized symbols
+and the result will be rendered as '???'.
+
+It is controlled by the configuration variable `backtick_references` or the `backtick` format;
 the default is `true` if you use Markdown in your project, but can be specified explicitly
 in `config.ld`.
 
@@ -944,6 +950,9 @@ control what the template will generate. Setting `one=true` in your configuratio
 will give a _one-column_ layout, which can be easier to use as a programming reference.  You
 can suppress the contents summary with `no_summary`.
 
+If you don't like the usual top-level names, like 'Module' and 'Topics', you can override these
+with `kind_names` in `config.ld`. For instance, in Penlight I use `kind_names={topic='Manual',module='Libraries'}`
+
 ## Customizing the Page
 
 A basic customization is to override the default UTF-8 encoding using `charset`. For instance,
@@ -1011,6 +1020,9 @@ and also in code if they're enclosed in backticks. Lua and C are known languages
 [lxsh](https://github.com/xolox/lua-lxsh)
 can be used (available from LuaRocks) if you want something more powerful. `pretty='lxsh'` will
 cause `lxsh` to be used, if available.
+
+Sometimes the best examples you have are your source files. `prettify_files=true` will prettify
+all sources, and generate per-function links to the source.
 
 ##  Readme files
 
@@ -1116,6 +1128,7 @@ As an extension, you're allowed to use **@param** tags in table definitions. Thi
 possible to use type aliases like **@string** to describe fields, since they will expand to
 'param'.
 
+
 Another modifier understood by LDoc is `opt`. For instance,
 
     ---- testing [opt]
@@ -1123,12 +1136,28 @@ Another modifier understood by LDoc is `opt`. For instance,
     -- @param[opt] two
     -- @param three
     -- @param[opt] four
-    function two (one,two,three,four)
+    function fun (one,two,three,four)
     end
-    ----> displayed as: two (one [, two], three [, four])
+    ----> displayed as: fun (one [, two], three [, four])
+    
+A more typical Lua API would have a chain of optional arguments, like so:
 
-This modifier can also be used with type aliases. If a value is given for `opt`
-then LDoc can present this as the default value for this optional argument.
+    ---- a chain of options
+    -- @param one
+    -- @param[opt] two
+    -- @param[optchain] three
+    -- @param[optchain] four
+    function fun (one,two,three,four)
+    end
+    ----> displayed as: fun (one [, two [, three [, four]]])
+    
+This is a bit tedious to type, so the rule is that a series of 'opt' modifiers will be interpreted
+as 'opt','optchain'.... .   If you want to be explicit, then do `convert_opt=true` in your
+`config.ld`.
+
+If a value is given for `opt`then LDoc can present this as the default value for this optional argument.
+
+This modifier can also be used with typed param aliases.
 
     --- a function with typed args.
     -- If the Lua function has varargs, then
@@ -1141,7 +1170,6 @@ then LDoc can present this as the default value for this optional argument.
     function one (name,age,...)
     end
     ----> displayed as: one (name, age [, calender='gregorian' [, offset=0]])
-
 
 (See @{four.lua}, rendered [here](http://stevedonovan.github.io/ldoc/examples/four))
 
