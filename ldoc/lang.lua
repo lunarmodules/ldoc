@@ -259,7 +259,7 @@ function CC.lexer(f)
    local err
    f,err = utils.readfile(f)
    if not f then quit(err) end
-   return lexer.cpp(f,{})
+   return lexer.cpp(f,{},nil,true)
 end
 
 function CC:grab_block_comment(v,tok)

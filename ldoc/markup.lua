@@ -54,13 +54,14 @@ local function resolve_inline_references (ldoc, txt, item, plain)
    if backtick_references then
       res  = res:gsub('`([^`]+)`',function(name)
          local ref,err = markup.process_reference(name)
+         local label = name
+         if name and do_escape then
+            label = name:gsub('_', '\\_')
+         end
          if ref then
-            if name and do_escape then
-               name = name:gsub('_', '\\_')
-            end
-            return ('<a href="%s">%s</a>'):format(ldoc.href(ref),name)
+            return ('<a href="%s">%s</a>'):format(ldoc.href(ref),label)
          else
-            return '<code>'..name..'</code>'
+            return '<code>'..label..'</code>'
          end
       end)
    end
@@ -117,7 +118,7 @@ local global_context, local_context
 -- - prettify any code blocks
 
 local function process_multiline_markdown(ldoc, txt, F, filename, deflang)
-   local res, L, append = {}, 0, table.insert   
+   local res, L, append = {}, 0, table.insert
    local err_item = {
       warning = function (self,msg)
          io.stderr:write(filename..':'..L..': '..msg,'\n')
@@ -133,7 +134,7 @@ local function process_multiline_markdown(ldoc, txt, F, filename, deflang)
       if code ~= '' then
          local err
          -- If we omit the following '\n', a '--' (or '//') comment on the
-         -- last line won't be recognized.         
+         -- last line won't be recognized.
          code, err = prettify.code(lang,filename,code..'\n',L,false)
          code = resolve_inline_references(ldoc, code, err_item,true)
          append(res,'<pre>')
@@ -308,7 +309,7 @@ local function get_processor(ldoc, format)
       -- AFAIK only markdown.lua has underscore-in-identifier problem...
       if ldoc.dont_escape_underscore ~= nil then
          ldoc.dont_escape_underscore = actual_format ~= 'markdown'
-      end      
+      end
       return markdown_processor(ldoc, formatter)
    end
 
