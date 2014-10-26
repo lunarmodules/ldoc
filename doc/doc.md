@@ -17,9 +17,14 @@ For instance, it is not so married to the idea that Lua modules should be define
 
 Otherwise, the output is very similar, which is no accident since the HTML templates are
 based directly on LuaDoc. You can ship your own customized templates and style sheets with
-your [own project](http://nilnor.github.com/textui/docs/), however. You have an option to
-use Markdown to process the documentation, which means no ugly HTML is needed in doc
-comments.  C/C++ extension modules may be documented in a similar way, although function
+your [own project](http://nilnor.github.com/textui/docs/) (also see Graham Hannington's
+documentation for [Lua for z/OS](lua4z.com/doc/)). LDoc comes with three extra themes; 'pale'
+for those who like whitespace, 'one' for one-column output, and 'fixed' for a fixed navigation
+bar down the left side.
+
+You have an option to use Markdown to process the documentation, which means no ugly HTML
+is needed in doc comments.
+C/C++ extension modules may be documented in a similar way, although function
 names cannot be inferred from the code itself.
 
 LDoc can provide integrated documentation, with traditional function comments, any documents
@@ -1139,7 +1144,7 @@ Another modifier understood by LDoc is `opt`. For instance,
     function fun (one,two,three,four)
     end
     ----> displayed as: fun (one [, two], three [, four])
-    
+
 A more typical Lua API would have a chain of optional arguments, like so:
 
     ---- a chain of options
@@ -1150,7 +1155,7 @@ A more typical Lua API would have a chain of optional arguments, like so:
     function fun (one,two,three,four)
     end
     ----> displayed as: fun (one [, two [, three [, four]]])
-    
+
 This is a bit tedious to type, so the rule is that a series of 'opt' modifiers will be interpreted
 as 'opt','optchain'.... .   If you want to be explicit, then do `convert_opt=true` in your
 `config.ld`.
@@ -1245,9 +1250,9 @@ when using Markdown. When explicit will expand non-references in backticks into 
   -  `manual_url` point to an alternative or local location for the Lua manual, e.g.
 'file:///D:/dev/lua/projects/lua-5.1.4/doc/manual.html'
   - `no_summary` suppress the Contents summary
-  -  `custom_tags` define some new tags, which will be presented after the function description. 
+  -  `custom_tags` define some new tags, which will be presented after the function description.
 The format is `{<name>,[title=<name>,}{hidden=false,}{format=nil}}`.  For instance
-`custom_tags={'remark',title='Remarks'}` will add a little `Remarks` section to the docs for any function 
+`custom_tags={'remark',title='Remarks'}` will add a little `Remarks` section to the docs for any function
 containing this tag.  `format` can be a function - if not present the default formatter will be used,
 e.g. Markdown
   - `custom_see_handler` function that filters see-references
@@ -1349,12 +1354,14 @@ could call 'minimal Markdown style' where there is no attempt to tag things (exc
 emphasizing parameter names). The narrative alone _can_ to be sufficient, if it is written
 well.
 
-There are two other stylesheets available in LDoc since 1.4; the first is `ldoc_one.css` which is what
+There are three other stylesheets available in LDoc since 1.4; the first is `ldoc_one.css` which is what
 you get from `one=true` and the second is `ldoc_pale.css`. This is a lighter theme which
 might give some relief from the heavier colours of the default. You can use this style with
 `style="!pale"` or `-s !pale`.
 See the [Lake](http://stevedonovan.github.io/lake/modules/lakelibs.html) documentation
-as an example of its use.
+as an example of its use.  With 1.4.3 there is also the `style='!fixed'` where the
+left navigation panel is fixed and does not scroll with the rest of the document;
+you may find this assists navigation in complex modules and documents.
 
 Of course, there's no reason why LDoc must always generate HTML. `--ext` defines what output
 extension to use; this can also be set in the configuration file. So it's possible to write
