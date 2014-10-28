@@ -72,7 +72,7 @@ body {
     background-color: #ffffff; margin: 0px;
 }
 
-code, tt { font-family: monospace; }
+code, tt { font-family: monospace; font-size: 1.1em; }
 
 body, p, td, th { font-size: .95em; line-height: 1.2em;}
 
@@ -269,9 +269,17 @@ dl.table dd, dl.function dd {padding-bottom: 1em; margin: 10px 0 0 20px;}
 dl.table h3, dl.function h3 {font-size: .95em;}
 
 /* styles for prettification of source */
-.keyword {font-weight: bold; color: #6666AA; }
-.number  { color: #AA6666; }
-.string  { color: #8888AA; }
-.comment { color: #666600; }
-.prepro { color: #006666; }
+pre .comment { color: #558817; }
+pre .constant { color: #a8660d; }
+pre .escape { color: #844631; }
+pre .keyword { color: #aa5050; font-weight: bold; }
+pre .library { color: #0e7c6b; }
+pre .marker { color: #512b1e; background: #fedc56; font-weight: bold; }
+pre .string { color: #8080ff; }
+pre .number { color: #f8660d; }
+pre .operator { color: #2239a8; font-weight: bold; }
+pre .preprocessor, pre .prepro { color: #a33243; }
+pre .global { color: #800080; }
+pre .prompt { color: #558817; }
+pre .url { color: #272fc2; text-decoration: underline; }
 ]==]

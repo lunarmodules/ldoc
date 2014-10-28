@@ -71,7 +71,7 @@ body {
     background-color: #ffffff; margin: 0px;
 }
 
-code, tt { font-family: monospace; }
+code, tt { font-family: monospace; font-size: 1.1em; }
 span.parameter { font-family:monospace; }
 span.parameter:after { content:":"; }
 span.types:before { content:"("; }
@@ -295,10 +295,10 @@ a:target + * {
 pre .comment { color: #558817; }
 pre .constant { color: #a8660d; }
 pre .escape { color: #844631; }
-pre .keyword { color: #2239a8; font-weight: bold; }
+pre .keyword { color: #aa5050; font-weight: bold; }
 pre .library { color: #0e7c6b; }
 pre .marker { color: #512b1e; background: #fedc56; font-weight: bold; }
-pre .string { color: #a8660d; }
+pre .string { color: #8080ff; }
 pre .number { color: #f8660d; }
 pre .operator { color: #2239a8; font-weight: bold; }
 pre .preprocessor, pre .prepro { color: #a33243; }
