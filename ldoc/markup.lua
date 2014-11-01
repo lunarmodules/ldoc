@@ -47,7 +47,7 @@ local function resolve_inline_references (ldoc, txt, item, plain)
          label = label:gsub('_','\\_')
       end
       local html = ldoc.href(ref) or '#'
-      label = label or qname
+      label = ldoc.escape(label or qname)
       local res = ('<a href="%s">%s</a>'):format(html,label)
       return res
    end))
@@ -58,6 +58,7 @@ local function resolve_inline_references (ldoc, txt, item, plain)
          if name and do_escape then
             label = name:gsub('_', '\\_')
          end
+         label = ldoc.escape(label)
          if ref then
             return ('<a href="%s">%s</a>'):format(ldoc.href(ref),label)
          else
