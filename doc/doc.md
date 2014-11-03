@@ -18,7 +18,7 @@ For instance, it is not so married to the idea that Lua modules should be define
 Otherwise, the output is very similar, which is no accident since the HTML templates are
 based directly on LuaDoc. You can ship your own customized templates and style sheets with
 your [own project](http://nilnor.github.com/textui/docs/) (also see Graham Hannington's
-documentation for [Lua for z/OS](lua4z.com/doc/)). LDoc comes with three extra themes; 'pale'
+documentation for [Lua for z/OS](http://lua4z.com/doc/)). LDoc comes with three extra themes; 'pale'
 for those who like whitespace, 'one' for one-column output, and 'fixed' for a fixed navigation
 bar down the left side.
 
