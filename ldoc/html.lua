@@ -176,6 +176,11 @@ function ldoc.source_ref (fun)
    end
 
    function ldoc.default_display_name(item)
+      -- Project-level items:
+      if doc.project_level(item.type) then
+        return ldoc.module_name(item)
+      end
+      -- Module-level items:
       local name = item.display_name or item.name
       if item.type == 'function' or item.type == 'lfunction' then
          if not ldoc.no_space_before_args then
