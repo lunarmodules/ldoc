@@ -303,6 +303,7 @@ pre .number { color: #f8660d; }
 pre .operator { color: #2239a8; font-weight: bold; }
 pre .preprocessor, pre .prepro { color: #a33243; }
 pre .global { color: #800080; }
+pre .user-keyword { color: #800080; }
 pre .prompt { color: #558817; }
 pre .url { color: #272fc2; text-decoration: underline; }
 ]]

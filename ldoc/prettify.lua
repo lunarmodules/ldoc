@@ -4,8 +4,11 @@
 -- A module reference to an example `test-fun.lua` would look like
 -- `@{example:test-fun}`.
 local List = require 'pl.List'
+local tablex = require 'pl.tablex'
 local globals = require 'ldoc.builtin.globals'
 local prettify = {}
+
+local user_keywords = {}
 
 local escaped_chars = {
    ['&'] = '&amp;',
@@ -58,7 +61,9 @@ function prettify.lua (lang, fname, code, initial_lineno, pre, linenos)
       if globals.functions[val] or globals.tables[val] then
          t = 'global'
       end
-      if spans[t] then
+      if user_keywords[val] then
+        res:append(span('user-keyword keyword-' .. val,val))
+      elseif spans[t] then
          if t == 'comment' or t == 'backtick' then -- may contain @{ref} or `..`
             val = prettify.resolve_inline_references(val,error_reporter)
          end
@@ -109,6 +114,12 @@ function prettify.set_prettifier (pretty)
          lxsh = nil
       end
    end
+end
+
+function prettify.set_user_keywords(keywords)
+  if keywords then
+    user_keywords = tablex.makeset(keywords)
+  end
 end
 
 return prettify

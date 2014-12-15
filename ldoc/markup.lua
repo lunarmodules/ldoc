@@ -319,7 +319,7 @@ local function get_processor(ldoc, format)
 end
 
 
-function markup.create (ldoc, format, pretty)
+function markup.create (ldoc, format, pretty, user_keywords)
    local processor
    markup.plain = true
    if format == 'backtick' then
@@ -329,6 +329,7 @@ function markup.create (ldoc, format, pretty)
    backtick_references = ldoc.backtick_references
    global_context = ldoc.package and ldoc.package .. '.'
    prettify.set_prettifier(pretty)
+   prettify.set_user_keywords(user_keywords)
 
    markup.process_reference = function(name,istype)
       if local_context == 'none.' and not name:match '%.' then
