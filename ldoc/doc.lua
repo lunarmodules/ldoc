@@ -913,6 +913,7 @@ end
 local struct_return_type = '*'
 
 function Item:build_return_groups()
+   local quote = tools.quote
    local modifiers = self.modifiers
    local retmod = modifiers['return']
    local groups = List()
