@@ -1275,6 +1275,9 @@ function tagged with a certain tag:
   - `no_space_before_args` set to `true` if you do not want a space between a function's name and its arguments.
   - `template_escape` overrides the usual '#' used for Lua code in templates.
 This needs to be changed if the output format is Markdown, for instance.
+  - `user_keywords` A list of keywords that will be marked in "prettified" code. Useful if
+you want to display your own functions in a special way. Each keyword may be styled differently
+(using CSS). Only works when `pretty` is set to 'lua' (the default).
 
 _Available functions are:_
 
