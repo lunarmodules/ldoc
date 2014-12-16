@@ -134,10 +134,15 @@ return [==[
 # local show_parms = show_return
 # for kind, items in module.kinds() do
 #   local kitem = module.kinds:get_item(kind)
-    <h2><a name="$(no_spaces(kind))"></a>$(kind)</h2>
+#   local has_description = kitem and ldoc.descript(kitem) ~= ""
+    <h2 class="section-header $(has_description and 'has-description')"><a name="$(no_spaces(kind))"></a>$(kind)</h2>
     $(M(module.kinds:get_section_description(kind),nil))
 #   if kitem then
-        $(M(ldoc.descript(kitem),kitem))
+#       if has_description then
+          <div class="section-description">
+          $(M(ldoc.descript(kitem),kitem))
+          </div>
+#       end
 #       if kitem.usage then
             <h3>Usage:</h3>
             <pre class="example">$(ldoc.prettify(kitem.usage[1]))</pre>
