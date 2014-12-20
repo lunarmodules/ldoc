@@ -1,69 +1,4 @@
-return [[
-/* BEGIN RESET
-
-Copyright (c) 2010, Yahoo! Inc. All rights reserved.
-Code licensed under the BSD License:
-http://developer.yahoo.com/yui/license.html
-version: 2.8.2r1
-*/
-html {
-    color: #000;
-    background: #FFF;
-}
-body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,button,textarea,p,blockquote,th,td {
-    margin: 0;
-    padding: 0;
-}
-table {
-    border-collapse: collapse;
-    border-spacing: 0;
-}
-fieldset,img {
-    border: 0;
-}
-address,caption,cite,code,dfn,em,strong,th,var,optgroup {
-    font-style: inherit;
-    font-weight: inherit;
-}
-del,ins {
-    text-decoration: none;
-}
-li {
-    list-style: bullet;
-    margin-left: 20px;
-}
-caption,th {
-    text-align: left;
-}
-h1,h2,h3,h4,h5,h6 {
-    font-size: 100%;
-    font-weight: bold;
-}
-q:before,q:after {
-    content: '';
-}
-abbr,acronym {
-    border: 0;
-    font-variant: normal;
-}
-sup {
-    vertical-align: baseline;
-}
-sub {
-    vertical-align: baseline;
-}
-legend {
-    color: #000;
-}
-input,button,textarea,select,optgroup,option {
-    font-family: inherit;
-    font-size: inherit;
-    font-style: inherit;
-    font-weight: inherit;
-}
-input,button,textarea,select {*font-size:100%;
-}
-/* END RESET */
+return require('ldoc.html._reset_css') .. [[
 
 body {
     margin-left: 1em;
@@ -115,24 +50,18 @@ p.name {
     padding-top: 1em;
 }
 
-pre.example {
-    background-color: rgb(245, 245, 245);
-    border: 1px solid silver;
-    padding: 10px;
-    margin: 10px 0 10px 0;
-    font-family: "Andale Mono", monospace;
-    font-size: .85em;
-}
-
 pre {
-    background-color: rgb(245,245,255); // rgb(245, 245, 245);
-    border: 1px solid #cccccc; //silver;
+    background-color: rgb(245, 245, 245);
+    border: 1px solid #C0C0C0; /* silver */
     padding: 10px;
     margin: 10px 0 10px 0;
     overflow: auto;
     font-family: "Andale Mono", monospace;
 }
 
+pre.example {
+    font-size: .85em;
+}
 
 table.index { border: 1px #00007f; }
 table.index td { text-align: left; vertical-align: top; }
@@ -300,19 +229,5 @@ a:target + * {
   background-color: #FF9;
 }
 
-/* styles for prettification of source */
-pre .comment { color: #558817; }
-pre .constant { color: #a8660d; }
-pre .escape { color: #844631; }
-pre .keyword { color: #aa5050; font-weight: bold; }
-pre .library { color: #0e7c6b; }
-pre .marker { color: #512b1e; background: #fedc56; font-weight: bold; }
-pre .string { color: #8080ff; }
-pre .number { color: #f8660d; }
-pre .operator { color: #2239a8; font-weight: bold; }
-pre .preprocessor, pre .prepro { color: #a33243; }
-pre .global { color: #800080; }
-pre .user-keyword { color: #800080; }
-pre .prompt { color: #558817; }
-pre .url { color: #272fc2; text-decoration: underline; }
 ]]
+.. require('ldoc.html._code_css')
