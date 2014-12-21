@@ -753,7 +753,7 @@ if builtin_style or builtin_template then
    local function tmpwrite (name)
       local ok,text = pcall(require,'ldoc.html.'..name:gsub('%.','_'))
       if not ok then
-         quit("cannot find builtin template "..name)
+         quit("cannot find builtin template "..name.." ("..text..")")
       end
       if not utils.writefile(path.join(tmpdir,name),text) then
          quit("cannot write to temp directory "..tmpdir)
