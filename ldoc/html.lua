@@ -278,6 +278,24 @@ function ldoc.source_ref (fun)
       quit("template not found at '"..args.template.."' Use -l to specify directory containing ldoc.ltp")
    end
 
+   -- Runs a template on a module to generate HTML page.
+   local function templatize(template_str, ldoc, module)
+      local out, err = template.substitute(template_str, {
+         ldoc = ldoc,
+         module = module,
+         _escape = ldoc.template_escape
+      })
+      if not out then
+         quit(("template failed for %s: %s"):format(
+               module and module.name or ldoc.output or "index",
+               err))
+      end
+      if ldoc.postprocess_html then
+         out = ldoc.postprocess_html(out, module)
+      end
+      return cleanup_whitespaces(out)
+   end
+
    local css = ldoc.css
    ldoc.output = args.output
    ldoc.ipairs = ipairs
@@ -299,13 +317,8 @@ function ldoc.source_ref (fun)
       save_and_set_ldoc(ldoc.module.tags.set)
    end
    set_charset(ldoc)
-   local out,err = template.substitute(module_template,{
-      ldoc = ldoc,
-      module = ldoc.module,
-      _escape = ldoc.template_escape
-    })
+   local out = templatize(module_template, ldoc, ldoc.module)
    ldoc.root = false
-   if not out then quit("template failed: "..err) end
    restore_ldoc()
 
    check_directory(args.dir) -- make sure output directory is ok
@@ -352,17 +365,8 @@ function ldoc.source_ref (fun)
          if ldoc.body and m.postprocess then
             ldoc.body = m.postprocess(ldoc.body)
          end
-         out,err = template.substitute(module_template,{
-            module=m,
-            ldoc = ldoc,
-            _escape = ldoc.template_escape
-         })
-         if not out then
-            quit('template failed for '..m.name..': '..err)
-         else
-            out = cleanup_whitespaces(out)
-            writefile(args.dir..lkind..'/'..m.name..args.ext,out)
-         end
+         local out = templatize(module_template, ldoc, m)
+         writefile(args.dir..lkind..'/'..m.name..args.ext,out)
          restore_ldoc()
       end
    end

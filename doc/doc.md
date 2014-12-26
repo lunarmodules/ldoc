@@ -1278,6 +1278,9 @@ This needs to be changed if the output format is Markdown, for instance.
   - `user_keywords` A list of keywords that will be marked in "prettified" code. Useful if
 you want to display your own functions in a special way. Each keyword may be styled differently
 (using CSS). Only works when `pretty` is set to 'lua' (the default).
+  - `postprocess_html` function that allows a last-minute modification to the produced HTML page.
+The arguments are the raw HTML that's intended to be written out (a string), and the module object.
+The string this function returns will be what's actually gets written out.
 
 _Available functions are:_
 
