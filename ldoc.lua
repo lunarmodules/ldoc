@@ -62,7 +62,7 @@ ldoc, a documentation generator for Lua, vs 1.4.3
   -S,--simple no return or params, no summary
   -O,--one one-column output layout
   --unsafe              Normally, code in the configuration file can't access
-                        Lua's global builtins. This switch enbles such access.
+                        Lua's global builtins. This switch enables such access.
   --dump                debug output dump
   --filter (default none) filter output as Lua data (e.g pl.pretty.dump)
   --tags (default none) show all references to given tags, comma-separated
@@ -249,7 +249,7 @@ ldoc_contents = tablex.makeset(ldoc_contents)
 local function chain_tables(near, far)
    return setmetatable({}, {
       __index = function(_, k)
-         return near[k] and near[k] or far[k]
+         return (near[k] ~= nil) and near[k] or far[k]
       end,
       __newindex = function(_, k, v)
          near[k] = v
