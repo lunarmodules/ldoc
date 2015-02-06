@@ -14,6 +14,7 @@ local backtick_references
 
 -- inline <references> use same lookup as @see
 local function resolve_inline_references (ldoc, txt, item, plain)
+   local do_escape = not plain and not ldoc.dont_escape_underscore
    local res = (txt:gsub('@{([^}]-)}',function (name)
       if name:match '^\\' then return '@{'..name:sub(2)..'}' end
       local qname,label = utils.splitv(name,'%s*|')
@@ -42,25 +43,26 @@ local function resolve_inline_references (ldoc, txt, item, plain)
       if not label then
          label = ref.label
       end
-      local do_escape = not plain and not ldoc.dont_escape_underscore
       if label and do_escape  then -- a nastiness with markdown.lua and underscores
          label = label:gsub('_','\\_')
       end
       local html = ldoc.href(ref) or '#'
-      label = label or qname
+      label = ldoc.escape(label or qname)
       local res = ('<a href="%s">%s</a>'):format(html,label)
       return res
    end))
    if backtick_references then
       res  = res:gsub('`([^`]+)`',function(name)
          local ref,err = markup.process_reference(name)
+         local label = name
+         if name and do_escape then
+            label = name:gsub('_', '\\_')
+         end
+         label = ldoc.escape(label)
          if ref then
-            if name and do_escape then
-               name = name:gsub('_', '\\_')
-            end
-            return ('<a href="%s">%s</a> '):format(ldoc.href(ref),name)
+            return ('<a href="%s">%s</a>'):format(ldoc.href(ref),label)
          else
-            return '<code>'..name..'</code>'
+            return '<code>'..label..'</code>'
          end
       end)
    end
@@ -117,7 +119,7 @@ local global_context, local_context
 -- - prettify any code blocks
 
 local function process_multiline_markdown(ldoc, txt, F, filename, deflang)
-   local res, L, append = {}, 0, table.insert   
+   local res, L, append = {}, 0, table.insert
    local err_item = {
       warning = function (self,msg)
          io.stderr:write(filename..':'..L..': '..msg,'\n')
@@ -133,9 +135,9 @@ local function process_multiline_markdown(ldoc, txt, F, filename, deflang)
       if code ~= '' then
          local err
          -- If we omit the following '\n', a '--' (or '//') comment on the
-         -- last line won't be recognized.         
+         -- last line won't be recognized.
          code, err = prettify.code(lang,filename,code..'\n',L,false)
-         code = resolve_inline_references(ldoc, code, err_item)
+         code = resolve_inline_references(ldoc, code, err_item,true)
          append(res,'<pre>')
          append(res, code)
          append(res,'</pre>')
@@ -246,16 +248,16 @@ local function get_formatter(format)
    local used_format = format
    local formatter = (formatters[format] or generic_formatter)(format)
    if not formatter then -- try another equivalent processor
-		for name, f in pairs(formatters) do
-			formatter = f(name)
-			if formatter then
-				print('format: '..format..' not found, using '..name)
-				used_format = name
-				break
-			end
-		end
-	end
-	return formatter, used_format
+      for name, f in pairs(formatters) do
+         formatter = f(name)
+         if formatter then
+            print('format: '..format..' not found, using '..name)
+            used_format = name
+            break
+         end
+      end
+   end
+   return formatter, used_format
 end
 
 local function text_processor(ldoc)
@@ -308,7 +310,7 @@ local function get_processor(ldoc, format)
       -- AFAIK only markdown.lua has underscore-in-identifier problem...
       if ldoc.dont_escape_underscore ~= nil then
          ldoc.dont_escape_underscore = actual_format ~= 'markdown'
-      end      
+      end
       return markdown_processor(ldoc, formatter)
    end
 
@@ -317,7 +319,7 @@ local function get_processor(ldoc, format)
 end
 
 
-function markup.create (ldoc, format, pretty)
+function markup.create (ldoc, format, pretty, user_keywords)
    local processor
    markup.plain = true
    if format == 'backtick' then
@@ -327,6 +329,7 @@ function markup.create (ldoc, format, pretty)
    backtick_references = ldoc.backtick_references
    global_context = ldoc.package and ldoc.package .. '.'
    prettify.set_prettifier(pretty)
+   prettify.set_user_keywords(user_keywords)
 
    markup.process_reference = function(name,istype)
       if local_context == 'none.' and not name:match '%.' then
@@ -367,6 +370,5 @@ function markup.create (ldoc, format, pretty)
    end
    return processor
 end
-
 
 return markup

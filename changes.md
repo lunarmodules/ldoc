@@ -1,3 +1,25 @@
+## Version 1.4.3
+
+### Features
+
+  * @include tag for including Markdown documentation file directly into module docstring
+  * `prettify_files` makes per-item links to prettified source.
+  * link targets rendered in bright yellow to make referenced functions more obvious
+  * add update time to footer of page
+  * better C support: `global_lookup=true` - invoked when `parse_extra={C=true}`
+  * `kind_names` can override names used in sidebar
+  
+### Fixes
+
+  * `all=true` in `config.ld` did not work.
+  * `dont_escape_underscore` logic fixed: do not use in prettified code blocks
+  * check that `ldoc` config exists before checking field values
+  * annotation rendering fixed
+  * summary not dropped when using `type` sections
+  * directory as argument case was broken
+  * parameter names which were List methods causing mayhem
+  * files are processed in fixed order across platforms
+
 ## Version 1.4.2
 
 ### Features

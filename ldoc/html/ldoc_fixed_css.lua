@@ -69,7 +69,7 @@ table.index td { text-align: left; vertical-align: top; }
 #container {
     margin-left: 1em;
     margin-right: 1em;
-    background-color: #f0f0f0;
+    background-color: #ffffff;
 }
 
 #product {
@@ -83,25 +83,31 @@ table.index td { text-align: left; vertical-align: top; }
 }
 
 #main {
-    background-color: #f0f0f0;
-    border-left: 2px solid #cccccc;
+    background-color:#FFFFFF; // #f0f0f0;
+    border-left: 1px solid #cccccc;
 }
 
 #navigation {
+    position: fixed;
+    top: 0;
+    left: 0;
     float: left;
     width: 14em;
     vertical-align: top;
-    background-color: #f0f0f0;
+    background-color:#FFFFFF; // #f0f0f0;
+    border-right: 2px solid #cccccc;
     overflow: visible;
+    overflow-y: scroll;
+    height: 100%;
+    padding-left: 1em;
 }
 
 #navigation h2 {
-    background-color:#e7e7e7;
+    background-color:#FFFFFF;//:#e7e7e7;
     font-size:1.1em;
     color:#000000;
     text-align: left;
     padding:0.2em;
-    border-top:1px solid #dddddd;
     border-bottom:1px solid #dddddd;
 }
 
@@ -125,16 +131,19 @@ table.index td { text-align: left; vertical-align: top; }
 #content {
     margin-left: 14em;
     padding: 1em;
+    padding-left: 2em;
     width: 700px;
     border-left: 2px solid #cccccc;
-    border-right: 2px solid #cccccc;
+   // border-right: 2px solid #cccccc;
     background-color: #ffffff;
 }
 
 #about {
     clear: both;
-    padding: 5px;
+    padding-left: 1em;
+    margin-left: 14em; // avoid the damn sidebar!
     border-top: 2px solid #cccccc;
+    border-left: 2px solid #cccccc;
     background-color: #ffffff;
 }
 
@@ -182,9 +191,8 @@ table.module_list td {
     border-style: solid;
     border-color: #cccccc;
 }
-table.module_list td.name { background-color: #f0f0f0; min-width: 200px; }
+table.module_list td.name { background-color: #f0f0f0; ; min-width: 200px; }
 table.module_list td.summary { width: 100%; }
-
 
 table.function_list {
     border-width: 1px;
@@ -198,17 +206,17 @@ table.function_list td {
     border-style: solid;
     border-color: #cccccc;
 }
-table.function_list td.name { background-color: #f0f0f0; min-width: 200px; }
+table.function_list td.name { background-color: #f6f6ff; ; min-width: 200px; }
 table.function_list td.summary { width: 100%; }
-
-ul.nowrap {
-    overflow:auto;
-    white-space:nowrap;
-}
 
 dl.table dt, dl.function dt {border-top: 1px solid #ccc; padding-top: 1em;}
 dl.table dd, dl.function dd {padding-bottom: 1em; margin: 10px 0 0 20px;}
 dl.table h3, dl.function h3 {font-size: .95em;}
+
+ul.nowrap {
+    overflow:auto;
+    whitespace:nowrap;
+}
 
 /* stop sublists from having initial vertical space */
 ul ul { margin-top: 0px; }

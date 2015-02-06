@@ -4,8 +4,11 @@
 -- A module reference to an example `test-fun.lua` would look like
 -- `@{example:test-fun}`.
 local List = require 'pl.List'
+local tablex = require 'pl.tablex'
 local globals = require 'ldoc.builtin.globals'
 local prettify = {}
+
+local user_keywords = {}
 
 local escaped_chars = {
    ['&'] = '&amp;',
@@ -24,11 +27,12 @@ end
 
 local spans = {keyword=true,number=true,string=true,comment=true,global=true,backtick=true}
 
-local cpp_lang = {c = true, cpp = true, cxx = true, h = true}
+local cpp_lang = {C = true, c = true, cpp = true, cxx = true, h = true}
 
-function prettify.lua (lang, fname, code, initial_lineno, pre)
+function prettify.lua (lang, fname, code, initial_lineno, pre, linenos)
    local res, lexer, tokenizer = List(), require 'ldoc.lexer'
    local tnext = lexer.skipws
+   local ik = 1
    if not cpp_lang[lang] then
       tokenizer = lexer.lua
    else
@@ -50,10 +54,16 @@ function prettify.lua (lang, fname, code, initial_lineno, pre)
    if not t then return nil,"empty file" end
    while t do
       val = escape(val)
+      if linenos and tok:lineno() == linenos[ik] then
+         res:append('<a id="'..linenos[ik]..'"></a>')
+         ik = ik + 1
+      end
       if globals.functions[val] or globals.tables[val] then
          t = 'global'
       end
-      if spans[t] then
+      if user_keywords[val] then
+        res:append(span('user-keyword keyword-' .. val,val))
+      elseif spans[t] then
          if t == 'comment' or t == 'backtick' then -- may contain @{ref} or `..`
             val = prettify.resolve_inline_references(val,error_reporter)
          end
@@ -104,6 +114,12 @@ function prettify.set_prettifier (pretty)
          lxsh = nil
       end
    end
+end
+
+function prettify.set_user_keywords(keywords)
+  if keywords then
+    user_keywords = tablex.makeset(keywords)
+  end
 end
 
 return prettify

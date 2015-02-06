@@ -16,6 +16,7 @@ local TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE,TAG_FLAG,TAG_MULTI_LINE = 'M','id','S
 
 -- these are the basic tags known to ldoc. They come in several varieties:
 --  - 'M' tags with multiple values like 'param' (TAG_MULTI)
+--  - 'ML' tags which have a single multi-lined value like 'usage' (TAG_MULTI_LINE)
 --  - 'id' tags which are identifiers, like 'name' (TAG_ID)
 --  - 'S' tags with a single value, like 'release' (TAG_SINGLE)
 --  - 'N' tags which have no associated value, like 'local` (TAG_FLAG)
@@ -25,9 +26,9 @@ local known_tags = {
    class = 'id', name = 'id', pragma = 'id', alias = 'id', within = 'id',
    copyright = 'S', summary = 'S', description = 'S', release = 'S', license = 'S',
    fixme = 'S', todo = 'S', warning = 'S', raise = 'S', charset = 'S',
-   ['local'] = 'N', export = 'N', private = 'N', constructor = 'N', static = 'N';
+   ['local'] = 'N', export = 'N', private = 'N', constructor = 'N', static = 'N',include = 'S',
    -- project-level
-   module = 'T', script = 'T', example = 'T', topic = 'T', submodule='T', classmod='T',
+   module = 'T', script = 'T', example = 'T', topic = 'T', submodule='T', classmod='T', file='T',
    -- module-level
    ['function'] = 'T', lfunction = 'T', table = 'T', section = 'T', type = 'T',
    annotation = 'T', factory = 'T';
@@ -41,6 +42,7 @@ known_tags._project_level = {
    topic = true,
    submodule = true,
    classmod = true,
+   file = true,
 }
 
 known_tags._code_types = {
@@ -133,6 +135,7 @@ function doc.expand_annotation_item (tags, last_item)
    local item_name = last_item.tags.name
    for tag, value in pairs(tags) do
       if known_tags._annotation_tags[tag] then
+         tags.summary = nil
          tags:add('class','annotation')
          tags:add('summary',value)
          tags:add('name',item_name..'-'..tag..acount)
@@ -237,7 +240,7 @@ function File:finish()
       elseif doc.project_level(item.type) then
          this_mod = item
          local package,mname,submodule
-         if item.type == 'module' then
+         if item.type == 'module' or item.type == 'classmod' then
             -- if name is 'package.mod', then mod_name is 'mod'
             package,mname = split_dotted_name(this_mod.name)
             if self.args.merge then
@@ -380,7 +383,7 @@ function File:finish()
                   item.section = item.type
                end
             elseif item.tags.within then -- ad-hoc section...
-					item.section = item.tags.within
+               item.section = item.tags.within
             else -- otherwise, just goes into the default sections (Functions,Tables,etc)
                item.section = item.type;
             end
@@ -805,8 +808,9 @@ function build_arg_list (names,pmods)
    -- with @param[opt] b
    local buffer, npending = { }, 0
    local function acc(x) table.insert(buffer, x) end
-   -- a number of trailing [opt]s can be safely converted to [opt],[optchain],...
-   if pmods then
+   -- a number of trailing [opt]s will be usually converted to [opt],[optchain],...
+   -- *unless* a person uses convert_opt.
+   if pmods and not doc.ldoc.convert_opt then
       local m = pmods[#names]
       if m and m.opt then
          m.optchain = m.opt
@@ -853,11 +857,11 @@ function Item:type_of_param(p)
    return mparam and mparam.type or ''
 end
 
+-- default value for param; if optional but no default, it's just `true`.
 function Item:default_of_param(p)
    local m = self:param_modifiers(p)
    if not m then return nil end
    local opt = m.optchain or m.opt
-   if opt == true then return nil end
    return opt
 end
 
@@ -909,6 +913,7 @@ end
 local struct_return_type = '*'
 
 function Item:build_return_groups()
+   local quote = tools.quote
    local modifiers = self.modifiers
    local retmod = modifiers['return']
    local groups = List()

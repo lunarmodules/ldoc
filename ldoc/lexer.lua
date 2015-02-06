@@ -44,7 +44,7 @@ local STRING2 = [[^".-[^\\]"]]
 local STRING3 = "^((['\"])%2)" -- empty string
 local PREPRO = '^#.-[^\\]\n'
 
-local plain_matches,lua_matches,cpp_matches,lua_keyword,cpp_keyword
+local plain_matches,lua_matches,cpp_matches,cpp_matches_no_string,lua_keyword,cpp_keyword
 
 local function tdump(tok)
     return tok,tok
@@ -324,7 +324,7 @@ end
 -- @param filter a table of token types to exclude, by default {space=true,comments=true}
 -- @param options a table of options; by default, {number=true,string=true},
 -- which means convert numbers and strip string quotes.
-function lexer.cpp(s,filter,options)
+function lexer.cpp(s,filter,options,no_string)
     filter = filter or {comments=true}
     if not cpp_keyword then
         cpp_keyword = {
@@ -375,7 +375,39 @@ function lexer.cpp(s,filter,options)
             {'^.',tdump}
         }
     end
-    return lexer.scan(s,cpp_matches,filter,options)
+    if not cpp_matches_no_string then
+        cpp_matches_no_string = {
+            {WSPACE,wsdump},
+            {PREPRO,pdump},
+            {NUMBER3,ndump},
+            {IDEN,cpp_vdump},
+            {NUMBER4,ndump},
+            {NUMBER5,ndump},
+            {'^//.-\n',cdump},
+            {'^/%*.-%*/',cdump},
+            {'^==',tdump},
+            {'^!=',tdump},
+            {'^<=',tdump},
+            {'^>=',tdump},
+            {'^->',tdump},
+            {'^&&',tdump},
+            {'^||',tdump},
+            {'^%+%+',tdump},
+            {'^%-%-',tdump},
+            {'^%+=',tdump},
+            {'^%-=',tdump},
+            {'^%*=',tdump},
+            {'^/=',tdump},
+            {'^|=',tdump},
+            {'^%^=',tdump},
+            {'^::',tdump},
+            {'^%.%.%.',tdump},
+            {'^.',tdump}
+        }
+    end
+    return lexer.scan(s,
+      not no_string and cpp_matches or cpp_matches_no_string,
+      filter,options)
 end
 
 --- get a list of parameters separated by a delimiter from a stream.

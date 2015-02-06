@@ -354,7 +354,7 @@ local function parse_file(fname, lang, package, args)
 
          -- end of a block of document comments
          if ldoc_comment and tags then
-            local line = t ~= nil and lineno()
+            local line = lineno()
             if t ~= nil then
                if item_follows then -- parse the item definition
                   local err = item_follows(tags,tok)

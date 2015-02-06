@@ -17,9 +17,14 @@ For instance, it is not so married to the idea that Lua modules should be define
 
 Otherwise, the output is very similar, which is no accident since the HTML templates are
 based directly on LuaDoc. You can ship your own customized templates and style sheets with
-your [own project](http://nilnor.github.com/textui/docs/), however. You have an option to
-use Markdown to process the documentation, which means no ugly HTML is needed in doc
-comments.  C/C++ extension modules may be documented in a similar way, although function
+your [own project](http://nilnor.github.com/textui/docs/) (also see Graham Hannington's
+documentation for [Lua for z/OS](http://lua4z.com/doc/)). LDoc comes with three extra themes; 'pale'
+for those who like whitespace, 'one' for one-column output, and 'fixed' for a fixed navigation
+bar down the left side.
+
+You have an option to use Markdown to process the documentation, which means no ugly HTML
+is needed in doc comments.
+C/C++ extension modules may be documented in a similar way, although function
 names cannot be inferred from the code itself.
 
 LDoc can provide integrated documentation, with traditional function comments, any documents
@@ -143,12 +148,14 @@ This is a simple example of a documented function:
 You can also give the function name itself as an explicit tag,
 which is especially useful when documenting a Lua api exported by C code:
 
-    /// A C function which is exported to Lua with another name,
-    // because the ways of C can be mysterious!
-    // @function our_nice_function
-    int _some_function_for_lua(lua_State* l) {
-        ....
-    }
+```C
+/// A C function which is exported to Lua with another name,
+// because the ways of C can be mysterious!
+// @function our_nice_function
+int _some_function_for_lua(lua_State* l) {
+    ....
+}
+```
 
 The tags basically add all the detail that cannot be derived from the source code
 automatically.
@@ -189,7 +196,6 @@ function. For Lua, there can also be multiple 'return' tags
     end
 
     ...
-Of course there is also the 'module' tag which you have already seen.
 
 #### Tables and constant values (fields)
 
@@ -216,7 +222,8 @@ This can get tedious, so LDoc will attempt to extract table documentation from c
 
 The rule followed here is `NAME = <table-constructor>`. If LDoc can't work out the name and
 type from the following code, then a warning will be issued, pointing to the file and
-location.
+location.  Only single-level tables are currently supported, and the fields must be valid
+identifiers.
 
 Another kind of module-level type is 'field', such as follows:
 
@@ -239,9 +246,8 @@ When the code analysis would lead to the wrong type, you can always be explicit.
         ...
     end
 
-As mentioned before, this is often especially useful in C where things
-may look different in the C code than they will in the final Lua api which
-you want to document.
+This is especially useful in C where the function declarations
+are different from final Lua api which you are documenting.
 
 ### Doing modules the Lua 5.1 way
 
@@ -293,7 +299,8 @@ explicit assignment to a variable:
 ### Local functions
 
 Apart from exported functions, a module usually contains local functions. By default, LDoc
-does not include these in the documentation, but they can be enabled using the `--all` flag.
+does not include these in the documentation, but they can be enabled using the `--all` flag,
+or `all=true` in `config.ld`.
 They can be documented just like 'public' functions:
 
     --- it's clear that boo is local from context.
@@ -389,13 +396,13 @@ type of a parameter or return value when that type has a particular structure:
     ------
     -- extract standard variables.
     -- @param s the string
-    -- @return @{\stdvars}
+    -- @return @{\\stdvars}
     function extract_std(s) ... end
 
     ------
     -- standard variables.
-    -- Use @{\extract_std} to parse a string containing variables,
-    -- and @{\pack_std} to make such a string.
+    -- Use @{\\extract_std} to parse a string containing variables,
+    -- and @{\\pack_std} to make such a string.
     -- @field length
     -- @field duration
     -- @field viscosity
@@ -406,8 +413,12 @@ type of a parameter or return value when that type has a particular structure:
 The link text can be changed from the default by the extended syntax `@{\ref|text}.
 
 You can also put references in backticks, like `\`stdvars\``. This is commonly used in
-Markdown to indicate code, so it comes naturally when writing documents. It is controlled by
-the configuration variable `backtick_references` or the `backtick` format;
+Markdown to indicate code, so it comes naturally when writing documents. The difference
+is that the backticked expression does not have to be a reference and then will appear
+in code style; with @ references you will get a warning for unrecognized symbols
+and the result will be rendered as '???'.
+
+It is controlled by the configuration variable `backtick_references` or the `backtick` format;
 the default is `true` if you use Markdown in your project, but can be specified explicitly
 in `config.ld`.
 
@@ -944,6 +955,9 @@ control what the template will generate. Setting `one=true` in your configuratio
 will give a _one-column_ layout, which can be easier to use as a programming reference.  You
 can suppress the contents summary with `no_summary`.
 
+If you don't like the usual top-level names, like 'Module' and 'Topics', you can override these
+with `kind_names` in `config.ld`. For instance, in Penlight I use `kind_names={topic='Manual',module='Libraries'}`
+
 ## Customizing the Page
 
 A basic customization is to override the default UTF-8 encoding using `charset`. For instance,
@@ -1011,6 +1025,9 @@ and also in code if they're enclosed in backticks. Lua and C are known languages
 [lxsh](https://github.com/xolox/lua-lxsh)
 can be used (available from LuaRocks) if you want something more powerful. `pretty='lxsh'` will
 cause `lxsh` to be used, if available.
+
+Sometimes the best examples you have are your source files. `prettify_files=true` will prettify
+all sources, and generate per-function links to the source.
 
 ##  Readme files
 
@@ -1116,6 +1133,7 @@ As an extension, you're allowed to use **@param** tags in table definitions. Thi
 possible to use type aliases like **@string** to describe fields, since they will expand to
 'param'.
 
+
 Another modifier understood by LDoc is `opt`. For instance,
 
     ---- testing [opt]
@@ -1123,12 +1141,28 @@ Another modifier understood by LDoc is `opt`. For instance,
     -- @param[opt] two
     -- @param three
     -- @param[opt] four
-    function two (one,two,three,four)
+    function fun (one,two,three,four)
     end
-    ----> displayed as: two (one [, two], three [, four])
+    ----> displayed as: fun (one [, two], three [, four])
 
-This modifier can also be used with type aliases. If a value is given for `opt`
-then LDoc can present this as the default value for this optional argument.
+A more typical Lua API would have a chain of optional arguments, like so:
+
+    ---- a chain of options
+    -- @param one
+    -- @param[opt] two
+    -- @param[optchain] three
+    -- @param[optchain] four
+    function fun (one,two,three,four)
+    end
+    ----> displayed as: fun (one [, two [, three [, four]]])
+
+This is a bit tedious to type, so the rule is that a series of 'opt' modifiers will be interpreted
+as 'opt','optchain'.... .   If you want to be explicit, then do `convert_opt=true` in your
+`config.ld`.
+
+If a value is given for `opt`then LDoc can present this as the default value for this optional argument.
+
+This modifier can also be used with typed param aliases.
 
     --- a function with typed args.
     -- If the Lua function has varargs, then
@@ -1141,7 +1175,6 @@ then LDoc can present this as the default value for this optional argument.
     function one (name,age,...)
     end
     ----> displayed as: one (name, age [, calender='gregorian' [, offset=0]])
-
 
 (See @{four.lua}, rendered [here](http://stevedonovan.github.io/ldoc/examples/four))
 
@@ -1204,20 +1237,29 @@ _These only appear in the configuration file:_
   - `examples` a directory or file: can be a table
   - `readme` or `topics` readme files (to be processed with Markdown)
   - `pretty` code prettify 'lua' (default) or 'lxsh'
+  - `prettify_files` prettify the source as well and make links to it; if its value is "show"
+then also index the source files.
   - `charset` use if you want to override the UTF-8 default (also **@charset** in files)
   - `sort` set if you want all items in alphabetical order
   - `no_return_or_parms` don't show parameters or return values in output
+  - `no_lua_ref` stop obsessively trying to create references to standard Lua libraries
   - `backtick_references` whether references in backticks will be resolved. Happens by default
 when using Markdown. When explicit will expand non-references in backticks into `<code>` elements
   - `plain` set to true if `format` is set but you don't want code comments processed
-  - `wrap` ??
+  - `wrap` set to true if you want to allow long names to wrap in the summaries
   -  `manual_url` point to an alternative or local location for the Lua manual, e.g.
 'file:///D:/dev/lua/projects/lua-5.1.4/doc/manual.html'
   - `no_summary` suppress the Contents summary
+  -  `custom_tags` define some new tags, which will be presented after the function description.
+The format is `{<name>,[title=<name>,}{hidden=false,}{format=nil}}`.  For instance
+`custom_tags={'remark',title='Remarks'}` will add a little `Remarks` section to the docs for any function
+containing this tag.  `format` can be a function - if not present the default formatter will be used,
+e.g. Markdown
   - `custom_see_handler` function that filters see-references
   - `custom_display_name_handler` function that formats an item's name. The arguments are the item
 and the default function used to format the name. For example, to show an icon or label beside any
 function tagged with a certain tag:
+
       -- define a @callback tag:
       custom_tags = { { 'callback', hidden = true } }
 
@@ -1231,7 +1273,14 @@ function tagged with a certain tag:
 
   - `not_luadoc` set to `true` if the docs break LuaDoc compatibility
   - `no_space_before_args` set to `true` if you do not want a space between a function's name and its arguments.
-  - `template_escape` overrides the usual '#' used for Lua code in templates. This needs to be changed if the output format is Markdown, for instance.
+  - `template_escape` overrides the usual '#' used for Lua code in templates.
+This needs to be changed if the output format is Markdown, for instance.
+  - `user_keywords` A list of keywords that will be marked in "prettified" code. Useful if
+you want to display your own functions in a special way. Each keyword may be styled differently
+(using CSS). Only works when `pretty` is set to 'lua' (the default).
+  - `postprocess_html` function that allows a last-minute modification to the produced HTML page.
+The arguments are the raw HTML that's intended to be written out (a string), and the module object.
+The string this function returns will be what's actually gets written out.
 
 _Available functions are:_
 
@@ -1311,12 +1360,14 @@ could call 'minimal Markdown style' where there is no attempt to tag things (exc
 emphasizing parameter names). The narrative alone _can_ to be sufficient, if it is written
 well.
 
-There are two other stylesheets available in LDoc since 1.4; the first is `ldoc_one.css` which is what
+There are three other stylesheets available in LDoc since 1.4; the first is `ldoc_one.css` which is what
 you get from `one=true` and the second is `ldoc_pale.css`. This is a lighter theme which
 might give some relief from the heavier colours of the default. You can use this style with
 `style="!pale"` or `-s !pale`.
 See the [Lake](http://stevedonovan.github.io/lake/modules/lakelibs.html) documentation
-as an example of its use.
+as an example of its use.  With 1.4.3 there is also the `style='!fixed'` where the
+left navigation panel is fixed and does not scroll with the rest of the document;
+you may find this assists navigation in complex modules and documents.
 
 Of course, there's no reason why LDoc must always generate HTML. `--ext` defines what output
 extension to use; this can also be set in the configuration file. So it's possible to write

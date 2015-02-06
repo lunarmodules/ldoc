@@ -93,7 +93,7 @@ function html.generate_output(ldoc, args, project)
 
    -- Item descriptions come from combining the summary and description fields
    function ldoc.descript(item)
-      return (item.summary or '?')..' '..(item.description or '')
+      return tools.join(' ', item.summary, item.description)
    end
 
    function ldoc.module_name (mod)
@@ -152,12 +152,35 @@ function html.generate_output(ldoc, args, project)
       end
       return base..name..'.html'
    end
+   
+   function ldoc.include_file (file)
+      local text,e = utils.readfile(file)
+      if not text then quit("unable to include "..file)
+      else
+         return text
+      end
+   end
+
+-- these references are never from the index...?
+function ldoc.source_ref (fun)
+      local modname = fun.module.name
+      local pack,name = tools.split_dotted_name(modname)
+      if not pack then
+         name = modname
+      end
+      return (ldoc.single and "" or "../").."source/"..name..'.lua.html#'..fun.lineno
+   end
 
    function ldoc.use_li(ls)
       if #ls > 1 then return '<li>','</li>' else return '','' end
    end
 
    function ldoc.default_display_name(item)
+      -- Project-level items:
+      if doc.project_level(item.type) then
+        return ldoc.module_name(item)
+      end
+      -- Module-level items:
       local name = item.display_name or item.name
       if item.type == 'function' or item.type == 'lfunction' then
          if not ldoc.no_space_before_args then
@@ -233,6 +256,18 @@ function html.generate_output(ldoc, args, project)
       return names
    end
 
+   -- the somewhat tangled logic that controls whether a type appears in the
+   -- navigation sidebar. (At least it's no longer in the template ;))
+   function ldoc.allowed_in_contents(type,module)
+      local allowed = true
+      if ldoc.kinds_allowed then
+         allowed = ldoc.kinds_allowed[type]
+      elseif ldoc.prettify_files and type == 'file' then
+         allowed = ldoc.prettify_files == 'show' or (module and module.type == 'file')
+      end
+      return allowed
+   end
+
    local function set_charset (ldoc,m)
       m = m or ldoc.module
       ldoc.doc_charset = (m and m.tags.charset) or ldoc.charset
@@ -241,6 +276,24 @@ function html.generate_output(ldoc, args, project)
    local module_template,err = utils.readfile (path.join(args.template,ldoc.templ))
    if not module_template then
       quit("template not found at '"..args.template.."' Use -l to specify directory containing ldoc.ltp")
+   end
+
+   -- Runs a template on a module to generate HTML page.
+   local function templatize(template_str, ldoc, module)
+      local out, err = template.substitute(template_str, {
+         ldoc = ldoc,
+         module = module,
+         _escape = ldoc.template_escape
+      })
+      if not out then
+         quit(("template failed for %s: %s"):format(
+               module and module.name or ldoc.output or "index",
+               err))
+      end
+      if ldoc.postprocess_html then
+         out = ldoc.postprocess_html(out, module)
+      end
+      return cleanup_whitespaces(out)
    end
 
    local css = ldoc.css
@@ -264,13 +317,8 @@ function html.generate_output(ldoc, args, project)
       save_and_set_ldoc(ldoc.module.tags.set)
    end
    set_charset(ldoc)
-   local out,err = template.substitute(module_template,{
-      ldoc = ldoc,
-      module = ldoc.module,
-      _escape = ldoc.template_escape
-    })
+   local out = templatize(module_template, ldoc, ldoc.module)
    ldoc.root = false
-   if not out then quit("template failed: "..err) end
    restore_ldoc()
 
    check_directory(args.dir) -- make sure output directory is ok
@@ -317,17 +365,8 @@ function html.generate_output(ldoc, args, project)
          if ldoc.body and m.postprocess then
             ldoc.body = m.postprocess(ldoc.body)
          end
-         out,err = template.substitute(module_template,{
-            module=m,
-            ldoc = ldoc,
-            _escape = ldoc.template_escape
-         })
-         if not out then
-            quit('template failed for '..m.name..': '..err)
-         else
-            out = cleanup_whitespaces(out)
-            writefile(args.dir..lkind..'/'..m.name..args.ext,out)
-         end
+         local out = templatize(module_template, ldoc, m)
+         writefile(args.dir..lkind..'/'..m.name..args.ext,out)
          restore_ldoc()
       end
    end

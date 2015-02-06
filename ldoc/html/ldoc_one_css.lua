@@ -1,69 +1,4 @@
-return [==[
-/* BEGIN RESET
-
-Copyright (c) 2010, Yahoo! Inc. All rights reserved.
-Code licensed under the BSD License:
-http://developer.yahoo.com/yui/license.html
-version: 2.8.2r1
-*/
-html {
-    color: #000;
-    background: #FFF;
-}
-body,div,dl,dt,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,button,textarea,p,blockquote,th,td {
-    margin: 0;
-    padding: 0;
-}
-table {
-    border-collapse: collapse;
-    border-spacing: 0;
-}
-fieldset,img {
-    border: 0;
-}
-address,caption,cite,code,dfn,em,strong,th,var,optgroup {
-    font-style: inherit;
-    font-weight: inherit;
-}
-del,ins {
-    text-decoration: none;
-}
-li {
-    list-style: bullet;
-    margin-left: 20px;
-}
-caption,th {
-    text-align: left;
-}
-h1,h2,h3,h4,h5,h6 {
-    font-size: 100%;
-    font-weight: bold;
-}
-q:before,q:after {
-    content: '';
-}
-abbr,acronym {
-    border: 0;
-    font-variant: normal;
-}
-sup {
-    vertical-align: baseline;
-}
-sub {
-    vertical-align: baseline;
-}
-legend {
-    color: #000;
-}
-input,button,textarea,select,optgroup,option {
-    font-family: inherit;
-    font-size: inherit;
-    font-style: inherit;
-    font-weight: inherit;
-}
-input,button,textarea,select {*font-size:100%;
-}
-/* END RESET */
+return require('ldoc.html._reset_css') .. [[
 
 body {
     margin-left: 1em;
@@ -72,7 +7,7 @@ body {
     background-color: #ffffff; margin: 0px;
 }
 
-code, tt { font-family: monospace; }
+code, tt { font-family: monospace; font-size: 1.1em; }
 
 body, p, td, th { font-size: .95em; line-height: 1.2em;}
 
@@ -110,23 +45,18 @@ p.name {
     padding-top: 1em;
 }
 
-pre.example {
-    background-color: rgb(245, 245, 245);
-    border: 1px solid silver;
-    padding: 10px;
-    margin: 10px 0 10px 0;
-    font-family: "Andale Mono", monospace;
-    font-size: .85em;
-}
-
 pre {
     background-color: rgb(245, 245, 245);
-    border: 1px solid silver;
+    border: 1px solid #C0C0C0; /* silver */
     padding: 10px;
     margin: 10px 0 10px 0;
+    overflow: auto;
     font-family: "Andale Mono", monospace;
 }
 
+pre.example {
+    font-size: .85em;
+}
 
 table.index { border: 1px #00007f; }
 table.index td { text-align: left; vertical-align: top; }
@@ -268,10 +198,5 @@ dl.table dt, dl.function dt {border-top: 1px solid #ccc; padding-top: 1em;}
 dl.table dd, dl.function dd {padding-bottom: 1em; margin: 10px 0 0 20px;}
 dl.table h3, dl.function h3 {font-size: .95em;}
 
-/* styles for prettification of source */
-.keyword {font-weight: bold; color: #6666AA; }
-.number  { color: #AA6666; }
-.string  { color: #8888AA; }
-.comment { color: #666600; }
-.prepro { color: #006666; }
-]==]
+]]
+.. require('ldoc.html._code_css')
