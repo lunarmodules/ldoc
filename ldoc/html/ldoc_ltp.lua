@@ -65,7 +65,7 @@ return [==[
 # for kind, mods, type in ldoc.kinds() do
 #  if ldoc.allowed_in_contents(type,module) then
 <h2>$(kind)</h2>
-<ul class="$(kind=='Topics' and '' or 'nowrap'">
+<ul class="$(kind=='Topics' and '' or 'nowrap')">
 #  for mod in mods() do local name = display_name(mod)
 #   if mod.name == this_mod then
   <li><strong>$(name)</strong></li>
