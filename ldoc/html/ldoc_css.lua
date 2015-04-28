@@ -24,7 +24,7 @@ em { font-style: italic;}
 
 h1 {
     font-size: 1.5em;
-    margin: 0 0 20px 0;
+    margin: 20px 0 20px 0;
 }
 h2, h3, h4 { margin: 15px 0 10px 0; }
 h2 { font-size: 1.25em; }
