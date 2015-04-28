@@ -35,10 +35,14 @@ build = {
     ["ldoc.prettify"] = "ldoc/prettify.lua",
     ["ldoc.markdown"] = "ldoc/markdown.lua",
     ["ldoc.doc"] = "ldoc/doc.lua",
-    ["ldoc.html.ldoc_css"] = "ldoc/html/ldoc_css.lua",
     ["ldoc.html.ldoc_ltp"] = "ldoc/html/ldoc_ltp.lua",
+    ["ldoc.html.ldoc_md_ltp"] = "ldoc/html/ldoc_md_ltp.lua",
+    ["ldoc.html.ldoc_css"] = "ldoc/html/ldoc_css.lua",
+    ["ldoc.html._code_css"] = "ldoc/html/_code_css.lua",
+    ["ldoc.html._reset_css"] = "ldoc/html/_reset_css.lua",
     ["ldoc.html.ldoc_one_css"] = "ldoc/html/ldoc_one_css.lua",
     ["ldoc.html.ldoc_pale_css"] = "ldoc/html/ldoc_pale_css.lua",
+    ["ldoc.html.ldoc_fixed_css"] = "ldoc/html/ldoc_fixed_css.lua",
     ["ldoc.builtin.globals"] = "ldoc/builtin/globals.lua",
     ["ldoc.builtin.coroutine"] = "ldoc/builtin/coroutine.lua",
     ["ldoc.builtin.global"] = "ldoc/builtin/global.lua",
@@ -59,4 +63,3 @@ build = {
     }
   }
 }
-
