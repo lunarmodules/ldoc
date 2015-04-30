@@ -61,6 +61,8 @@ ldoc, a documentation generator for Lua, vs 1.4.3
   -M,--merge allow module merging
   -S,--simple no return or params, no summary
   -O,--one one-column output layout
+  --unsafe              Normally, code in the configuration file can't access
+                        Lua's global builtins. This switch enables such access.
   --dump                debug output dump
   --filter (default none) filter output as Lua data (e.g pl.pretty.dump)
   --tags (default none) show all references to given tags, comma-separated
@@ -238,16 +240,33 @@ local ldoc_contents = {
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
-local function loadstr (ldoc,txt)
+-- Chains two tables.
+--
+-- Given two tables, 'near' and 'far', returns a new
+-- table which is a proxy to 'near'. Any unresolved
+-- references are looked up in 'far'.
+--
+local function chain_tables(near, far)
+   return setmetatable({}, {
+      __index = function(_, k)
+         return (near[k] ~= nil) and near[k] or far[k]
+      end,
+      __newindex = function(_, k, v)
+         near[k] = v
+      end,
+   })
+end
+
+local function loadstr (env,txt)
    local chunk, err
    local load
    -- Penlight's Lua 5.2 compatibility has wobbled over the years...
    if not rawget(_G,'loadin') then -- Penlight 0.9.5
        -- Penlight 0.9.7; no more global load() override
       load = load or utils.load
-      chunk,err = load(txt,'config',nil,ldoc)
+      chunk,err = load(txt,'config',nil,env)
    else
-      chunk,err = loadin(ldoc,txt)
+      chunk,err = loadin(env,txt)
    end
    return chunk, err
 end
@@ -265,7 +284,8 @@ local function read_ldoc_config (fname)
    end
    local txt,not_found = utils.readfile(fname)
    if txt then
-      chunk, err = loadstr(ldoc,txt)
+      local env = args.unsafe and chain_tables(ldoc, _G) or ldoc
+      chunk, err = loadstr(env,txt)
       if chunk then
          if args.define ~= 'none' then ldoc[args.define] = true end
          ok,err = pcall(chunk)
