@@ -557,6 +557,8 @@ if type(ldoc.examples) == 'table' then
    prettify_source_files(ldoc.examples,"example")
 end
 
+ldoc.is_file_prettyfied = {}
+
 if ldoc.prettify_files then
    local files = List()
    local linemap = {}
@@ -569,6 +571,17 @@ if ldoc.prettify_files then
       end
       linemap[F.filename] = ls
    end
+
+   if type(ldoc.prettify_files) == 'table' then
+      files = tools.expand_file_list(ldoc.prettify_files, '*.*')
+   -- -- not sure about resolving ldoc.prettify_files as string due to backward compatibility, see:
+   -- --     - tests/styles/opt.ld:7
+   -- --     - doc/html.lua:266
+   -- elseif type(ldoc.prettify_files) == 'string' then
+   --    files = tools.expand_file_list({ldoc.prettify_files}, '*.*')
+   end
+
+   ldoc.is_file_prettyfied = tablex.makeset(files)
    prettify_source_files(files,"file",linemap)
 end
 
