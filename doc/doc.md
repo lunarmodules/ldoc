@@ -1247,8 +1247,6 @@ then also index the source files.
 when using Markdown. When explicit will expand non-references in backticks into `<code>` elements
   - `plain` set to true if `format` is set but you don't want code comments processed
   - `wrap` set to true if you want to allow long names to wrap in the summaries
-  -  `manual_url` point to an alternative or local location for the Lua manual, e.g.
-'file:///D:/dev/lua/projects/lua-5.1.4/doc/manual.html'
   - `no_summary` suppress the Contents summary
   -  `custom_tags` define some new tags, which will be presented after the function description.
 The format is `{<name>,[title=<name>,}{hidden=false,}{format=nil}}`.  For instance
@@ -1289,8 +1287,25 @@ _Available functions are:_
   - `add_language_extension(ext,lang)` here `lang` may be either 'c' or 'lua', and `ext` is
 an extension to be recognized as this language
   - `add_section`
+  - `manual_url(url)` point to an alternative or local location for the Lua manual, e.g.
+'file:///D:/dev/lua/projects/lua-5.3/doc/manual.html'. Needs to be invoked as function.
   - `new_type(tag,header,project_level)` used to add new tags, which are put in their own
 section `header`. They may be 'project level'.
+  - `tables(tab)` overrides the library sections in the manual (see ldoc.builtin.globals and `manual_url`). 
+      
+      
+	-- This is the entry for the table for Lua 5.3:
+	tables {
+		io = '6.8',
+		package = '6.3',
+		math = '6.7',
+		os = '6.9',
+		string = '6.4',
+		table = '6.6',
+		coroutine = '6.2',
+		debug = '6.10',
+	}
+
   - `tparam_alias(name,type)` for instance, you may wish that `Object` becomes a new tag alias
 that means `@tparam Object`.
   - `custom_see_handler(pattern,handler)`. If a reference matches `pattern`, then the
