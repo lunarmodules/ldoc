@@ -557,7 +557,7 @@ if type(ldoc.examples) == 'table' then
    prettify_source_files(ldoc.examples,"example")
 end
 
-ldoc.is_file_prettyfied = {}
+ldoc.is_file_prettified = {}
 
 if ldoc.prettify_files then
    local files = List()
@@ -574,14 +574,20 @@ if ldoc.prettify_files then
 
    if type(ldoc.prettify_files) == 'table' then
       files = tools.expand_file_list(ldoc.prettify_files, '*.*')
-   -- -- not sure about resolving ldoc.prettify_files as string due to backward compatibility, see:
-   -- --     - tests/styles/opt.ld:7
-   -- --     - doc/html.lua:266
-   -- elseif type(ldoc.prettify_files) == 'string' then
-   --    files = tools.expand_file_list({ldoc.prettify_files}, '*.*')
+   elseif type(ldoc.prettify_files) == 'string' then
+      -- the gotcha is that if the person has a folder called 'show', only the contents
+      -- of that directory will be converted.  So, we warn of this amibiguity
+      if ldoc.prettify_files == 'show' then
+         -- just fall through with all module files collected above
+         if path.exists 'show' then
+            print("Notice: if you only want to prettify files in `show`, then set prettify_files to `show/`")
+         end
+      else
+         files = tools.expand_file_list({ldoc.prettify_files}, '*.*')
+      end
    end
 
-   ldoc.is_file_prettyfied = tablex.makeset(files)
+   ldoc.is_file_prettified = tablex.makeset(files)
    prettify_source_files(files,"file",linemap)
 end
 

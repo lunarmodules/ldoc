@@ -153,7 +153,7 @@ return [==[
     <dt>
     <a name = "$(item.name)"></a>
     <strong>$(display_name(item))</strong>
-#   if ldoc.prettify_files and ldoc.is_file_prettyfied[item.module.file.filename] then
+#   if ldoc.prettify_files and ldoc.is_file_prettified[item.module.file.filename] then
     <a style="float:right;" href="$(ldoc.source_ref(item))">line $(item.lineno)</a>
 #  end
     </dt>
