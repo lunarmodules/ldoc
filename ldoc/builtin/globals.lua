@@ -91,6 +91,10 @@ local xlib_url = 'http://stevedonovan.github.io/lua-stdlibs/modules/'
 
 local tables = globals.tables
 
+function globals.set_tables(tab)
+   tables = tab
+end
+
 local function function_ref (name,tbl)
    local href
    if not tbl then -- can only be a standard Lua global function
