@@ -61,6 +61,7 @@ ldoc, a documentation generator for Lua, vs 1.4.3
   -M,--merge allow module merging
   -S,--simple no return or params, no summary
   -O,--one one-column output layout
+  --date (default system) use this date in generated doc
   --dump                debug output dump
   --filter (default none) filter output as Lua data (e.g pl.pretty.dump)
   --tags (default none) show all references to given tags, comma-separated
@@ -801,7 +802,12 @@ ldoc.modules = module_list
 ldoc.title = ldoc.title or args.title
 ldoc.project = ldoc.project or args.project
 ldoc.package = args.package:match '%a+' and args.package or nil
-ldoc.updatetime = os.date("%Y-%m-%d %H:%M:%S")
+
+if args.date == 'system' then
+   ldoc.updatetime = os.date("%Y-%m-%d %H:%M:%S")
+else
+   ldoc.updatetime = args.date
+end
 
 local html = require 'ldoc.html'
 
