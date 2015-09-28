@@ -722,7 +722,7 @@ See @{mylib.c} for the full example.
 
 1.4 introduces basic support for [Moonscript](http://moonscript.org). Moonscript module
 conventions are just the same as Lua, except for an explicit class construct.
-@{list.moon} shows how **@classmod** can declare modules that export one class, with metamethods
+@{List.moon} shows how **@classmod** can declare modules that export one class, with metamethods
 and methods put implicitly into a separate section.
 
 ## Basic Usage
@@ -1247,16 +1247,16 @@ then also index the source files.
 when using Markdown. When explicit will expand non-references in backticks into `<code>` elements
   - `plain` set to true if `format` is set but you don't want code comments processed
   - `wrap` set to true if you want to allow long names to wrap in the summaries
-  -  `manual_url` point to an alternative or local location for the Lua manual, e.g.
-'file:///D:/dev/lua/projects/lua-5.1.4/doc/manual.html'
+  -  `manual_url(url)` point to an alternative or local location for the Lua manual, e.g.
+'manual_url file:///D:/dev/lua/projects/lua-5.1.4/doc/manual.html'.  Remember it is a function!
   - `no_summary` suppress the Contents summary
   -  `custom_tags` define some new tags, which will be presented after the function description.
 The format is `{<name>,[title=<name>,}{hidden=false,}{format=nil}}`.  For instance
 `custom_tags={'remark',title='Remarks'}` will add a little `Remarks` section to the docs for any function
 containing this tag.  `format` can be a function - if not present the default formatter will be used,
 e.g. Markdown
-  - `custom_see_handler` function that filters see-references
-  - `custom_display_name_handler` function that formats an item's name. The arguments are the item
+  - `custom_see_handler(pat,handler)` function that filters see-references
+  - `custom_display_name_handler(item, default_handler)` function that formats an item's name. The arguments are the item
 and the default function used to format the name. For example, to show an icon or label beside any
 function tagged with a certain tag:
 
