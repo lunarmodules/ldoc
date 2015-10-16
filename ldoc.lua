@@ -61,6 +61,7 @@ ldoc, a documentation generator for Lua, vs 1.4.3
   -M,--merge allow module merging
   -S,--simple no return or params, no summary
   -O,--one one-column output layout
+  --date (default system) use this date in generated doc
   --description (default none) project description
   --dump                debug output dump
   --filter (default none) filter output as Lua data (e.g pl.pretty.dump)
@@ -558,6 +559,8 @@ if type(ldoc.examples) == 'table' then
    prettify_source_files(ldoc.examples,"example")
 end
 
+ldoc.is_file_prettified = {}
+
 if ldoc.prettify_files then
    local files = List()
    local linemap = {}
@@ -570,6 +573,23 @@ if ldoc.prettify_files then
       end
       linemap[F.filename] = ls
    end
+
+   if type(ldoc.prettify_files) == 'table' then
+      files = tools.expand_file_list(ldoc.prettify_files, '*.*')
+   elseif type(ldoc.prettify_files) == 'string' then
+      -- the gotcha is that if the person has a folder called 'show', only the contents
+      -- of that directory will be converted.  So, we warn of this amibiguity
+      if ldoc.prettify_files == 'show' then
+         -- just fall through with all module files collected above
+         if path.exists 'show' then
+            print("Notice: if you only want to prettify files in `show`, then set prettify_files to `show/`")
+         end
+      else
+         files = tools.expand_file_list({ldoc.prettify_files}, '*.*')
+      end
+   end
+
+   ldoc.is_file_prettified = tablex.makeset(files)
    prettify_source_files(files,"file",linemap)
 end
 
@@ -784,7 +804,12 @@ ldoc.title = ldoc.title or args.title
 ldoc.description = ldoc.description or utils.choose(args.description ~= "none", args.description);
 ldoc.project = ldoc.project or args.project
 ldoc.package = args.package:match '%a+' and args.package or nil
-ldoc.updatetime = os.date("%Y-%m-%d %H:%M:%S")
+
+if args.date == 'system' then
+   ldoc.updatetime = os.date("%Y-%m-%d %H:%M:%S")
+else
+   ldoc.updatetime = args.date
+end
 
 local html = require 'ldoc.html'
 
