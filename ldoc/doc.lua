@@ -1198,7 +1198,8 @@ end
 -- and try to to resolve this.
 function Module:resolve_references(modules)
    local found = List()
-   for item in self.items:iter() do
+   -- Resolve see references in item. Can be Module or Item type.
+   local function resolve_item_references(item)
       local see = item.tags.see
       if see then -- this guy has @see references
          item.see = List()
@@ -1212,6 +1213,11 @@ function Module:resolve_references(modules)
             end
          end
       end
+   end
+
+   resolve_item_references(self); -- Resolve module-level see references.
+   for item in self.items:iter() do
+      resolve_item_references(item); -- Resolve item-level see references.
    end
    -- mark as found, so we don't waste time re-searching
    for f in found:iter() do
