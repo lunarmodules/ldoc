@@ -90,6 +90,15 @@ return [==[
 #   if module.tags.include then
         $(M(ldoc.include_file(module.tags.include)))
 #   end
+#   if module.see then
+#     local li,il = use_li(module.see)
+    <h3>See also:</h3>
+    <ul>
+#     for see in iter(module.see) do
+         $(li)<a href="$(ldoc.href(see))">$(see.label)</a>$(il)
+#    end -- for
+    </ul>
+#   end -- if see
 #   if module.usage then
 #     local li,il = use_li(module.usage)
     <h3>Usage:</h3>
