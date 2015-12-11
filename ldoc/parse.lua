@@ -22,7 +22,7 @@ local tnext, append = lexer.skipws, table.insert
 -- followed by the value, which may extend over several lines.
 local luadoc_tag = '^%s*@(%w+)'
 local luadoc_tag_value = luadoc_tag..'(.*)'
-local luadoc_tag_mod_and_value = luadoc_tag..'%[(.*)%](.*)'
+local luadoc_tag_mod_and_value = luadoc_tag..'%[([^%]]*)%](.*)'
 
 -- assumes that the doc comment consists of distinct tag lines
 local function parse_at_tags(text)
