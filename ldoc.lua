@@ -236,6 +236,7 @@ local ldoc_contents = {
    'unqualified', 'custom_display_name_handler', 'kind_names', 'custom_references',
    'dont_escape_underscore','global_lookup','prettify_files','convert_opt', 'user_keywords',
    'postprocess_html',
+   'custom_css',
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 

@@ -296,7 +296,7 @@ function ldoc.source_ref (fun)
       return cleanup_whitespaces(out)
    end
 
-   local css = ldoc.css
+   local css, custom_css = ldoc.css, ldoc.custom_css
    ldoc.output = args.output
    ldoc.ipairs = ipairs
    ldoc.pairs = pairs
@@ -329,6 +329,10 @@ function ldoc.source_ref (fun)
       check_file(args.dir..css, path.join(args.style,css))
    end
 
+   if custom_css then -- has custom CSS been copied?
+      check_file(args.dir..custom_css, custom_css)
+   end
+
    -- write out the module index
    out = cleanup_whitespaces(out)
    writefile(args.dir..args.output..args.ext,out)
@@ -348,6 +352,9 @@ function ldoc.source_ref (fun)
    -- e.g. when reading a topic the other Topics will be listed first.
    if css then
       ldoc.css = '../'..css
+   end
+   if custom_css then
+      ldoc.custom_css = '../'..custom_css
    end
    for m in mods:iter() do
       local kind, lkind, modules = unpack(m)
