@@ -14,7 +14,6 @@ local M = tools
 local append = table.insert
 local lexer = require 'ldoc.lexer'
 local quit = utils.quit
-local lfs = require 'lfs'
 
 -- at rendering time, can access the ldoc table from any module item,
 -- or the item itself if it's a module
@@ -225,7 +224,9 @@ end
 
 function M.check_directory(d)
    if not path.isdir(d) then
-      lfs.mkdir(d)
+      if not dir.makepath(d) then
+         quit("Could not create "..d.." directory")
+      end
    end
 end
 
