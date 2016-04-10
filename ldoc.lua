@@ -65,6 +65,7 @@ ldoc, a documentation generator for Lua, vs 1.4.3
   --dump                debug output dump
   --filter (default none) filter output as Lua data (e.g pl.pretty.dump)
   --tags (default none) show all references to given tags, comma-separated
+  --fatalwarnings non-zero exit status on any warning
   <file> (string) source file or directory containing source
 
   `ldoc .` reads options from an `config.ld` file in same directory;
@@ -143,6 +144,7 @@ local function setup_kinds ()
    ModuleMap:add_kind(lookup('function','Functions','Parameters'))
    ModuleMap:add_kind(lookup('table','Tables','Fields'))
    ModuleMap:add_kind(lookup('field','Fields'))
+   ModuleMap:add_kind(lookup('type','Types'))
    ModuleMap:add_kind(lookup('lfunction','Local Functions','Parameters'))
    ModuleMap:add_kind(lookup('annotation','Issues'))
 
@@ -816,4 +818,8 @@ html.generate_output(ldoc, args, project)
 if args.verbose then
    print 'modules'
    for k in pairs(module_list.by_name) do print(k) end
+end
+
+if args.fatalwarnings and Item.had_warning then
+   os.exit(1)
 end

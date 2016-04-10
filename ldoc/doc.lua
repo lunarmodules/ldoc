@@ -1020,6 +1020,7 @@ function Item:warning(msg)
    if type(file) == 'table' then require 'pl.pretty'.dump(file); file = '?' end
    file = file or '?'
    io.stderr:write(file,':',self.lineno or '1',': ',self.name or '?',': ',msg,'\n')
+   Item.had_warning = true
    return nil
 end
 
