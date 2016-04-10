@@ -336,7 +336,12 @@ function M.get_parameters (tok,endtoken,delim,lang)
          return text:match("%s*%-%-+%s*(.*)")
       end
       extract_arg = function(tl,idx)
-         return value_of(tl[idx or 1])
+         idx = idx or 1
+         local res = value_of(tl[idx])
+         if res == '[' then -- we do allow array indices in tables now
+            res = '['..value_of(tl[idx + 1])..']'
+         end
+         return res
       end
    end
 
