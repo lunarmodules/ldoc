@@ -231,7 +231,29 @@ local formatters =
       end
       return ok and markdown
    end,
-   discount = generic_formatter,
+   discount = function(format)
+      local ok, markdown = pcall(require, 'discount')
+      if ok then
+         if 'function' == type(markdown) then
+            -- lua-discount by A.S. Bradbury, https://luarocks.org/modules/luarocks/lua-discount
+         elseif 'table' == type(markdown) and 'function' == type(markdown.compile) then
+            -- discount by Craig Barnes, https://luarocks.org/modules/craigb/discount
+            markdown = markdown.compile
+            return function(text)
+               local result, errmsg = markdown(text)
+               assert(nil ~= result and result.body, errmsg)
+               return result.body
+            end
+         else
+            ok = false
+         end
+      end
+      if not ok then
+         print('format: using built-in markdown')
+         ok, markdown = pcall(require, 'ldoc.markdown')
+      end
+      return ok and markdown
+   end,
    lunamark = function(format)
       local ok, lunamark = pcall(require, format)
       if ok then
