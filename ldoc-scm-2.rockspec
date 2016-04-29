@@ -3,7 +3,7 @@ version = "scm-2"
 
 source = {
   dir="LDoc",
-  url = "git://github.com/stevedonovan/LDoc.git"
+  url = "https://github.com/stevedonovan/LDoc.git"
 }
 
 description = {
