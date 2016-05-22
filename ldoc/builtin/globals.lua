@@ -58,7 +58,7 @@ if lua52 then
       coroutine = '6.2',
       debug = '6.10'
     }
-   globals.set_manual_url 'http://www.lua.org/manual/5.2/manual.html'
+   globals.set_manual_url 'https://www.lua.org/manual/5.2/manual.html'
 else
    globals.tables = {
       io = '5.7',
@@ -70,7 +70,7 @@ else
       coroutine = '5.2',
       debug = '5.9'
    }
-   globals.set_manual_url 'http://www.lua.org/manual/5.1/manual.html'
+   globals.set_manual_url 'https://www.lua.org/manual/5.1/manual.html'
 end
 
 local file_methods = {
