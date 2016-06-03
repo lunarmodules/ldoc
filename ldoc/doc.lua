@@ -1285,7 +1285,7 @@ function Item:dump(verbose)
          print 'description:'
          print(self.description)
       end
-      if #self.params > 0 then
+      if self.params and #self.params > 0 then
          print 'parameters:'
          for _,p in ipairs(self.params) do
             print('',p,self.params.map[p])
