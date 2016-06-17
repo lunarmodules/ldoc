@@ -9,6 +9,7 @@ globals.functions = {
    assert = true,
    collectgarbage = true,
    dofile = true,
+   error = true,
    getmetatable = true,
    setmetatable = true,
    pairs = true,
