@@ -141,7 +141,7 @@ function doc.expand_annotation_item (tags, last_item)
          tags:add('name',item_name..'-'..tag..acount)
          acount = acount + 1
          return true
-      elseif tag == 'return' then
+      elseif tags.error and tag == 'return' then
          last_item:set_tag(tag,value)
       end
    end
