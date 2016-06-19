@@ -21,9 +21,9 @@ function assert(v , message) end
 --   want to control the step size you must experimentally tune the value of
 --   * "arg". Returns true if the step finished a collection cycle.
 --   * "setpause": sets `arg` as the new value for the *pause* of the collector
---   (see §2.10). Returns the previous value for *pause*.
+--   (see 2.10). Returns the previous value for *pause*.
 --   * "setstepmul": sets `arg` as the new value for the *step multiplier*
---   of the collector (see §2.10). Returns the previous value for *step*.
+--   of the collector (see 2.10). Returns the previous value for *step*.
 --
 function collectgarbage(opt , arg) end
 
@@ -55,14 +55,6 @@ function error(message , level) end
 -- * `_G._G`: _G._G
 
 ---
--- Returns the current environment in use by the function.
--- `f` can be a Lua function or a number that specifies the function at that
--- stack level: Level 1 is the function calling `getfenv`. If the given
--- function is not a Lua function, or if `f` is 0, `getfenv` returns the
--- global environment. The default for `f` is 1.
-function getfenv(f) end
-
----
 -- If `object` does not have a metatable, returns nil. Otherwise, if the
 -- object's metatable has a `"__metatable"` field, returns the associated
 -- value. Otherwise, returns the metatable of the given object.
@@ -77,27 +69,26 @@ function getmetatable(object) end
 function ipairs(t) end
 
 ---
--- Loads a chunk using function `func` to get its pieces. Each call to
--- `func` must return a string that concatenates with previous results. A
--- return of an empty string, nil, or no value signals the end of the chunk.
--- If there are no errors, returns the compiled chunk as a function; otherwise,
--- returns nil plus the error message. The environment of the returned function
--- is the global environment.
--- `chunkname` is used as the chunk name for error messages and debug
--- information. When absent, it defaults to "`=(load)`".
-function load(func , chunkname) end
+-- Loads a chunk.
+-- If `ld` is a string, the chunk is this string.
+-- If `ld` is a function, load calls it repeatedly to get the chunk pieces. Each call to `ld` must return a 
+-- string that concatenates with previous results. A return of an empty string, nil, or no value
+-- signals the end of the chunk.
+-- If there are no syntactic errors, returns the compiled chunk as a function;
+-- otherwise, returns nil plus the error message.
+-- If the resulting function has upvalues, the first upvalue is set to the value of the global environment or to `env`,
+-- if that parameter is given. When loading main chunks, the first upvalue will be the`_ENV` variable (see 2.2).
+-- `source` is used as the source of the chunk for error messages and debug information (see 4.9).
+-- When absent, it defaults to `ld`, if `ld` is a string, or to "=(load)" otherwise.
+-- The string `mode` controls whether the chunk can be text or binary (that is, a precompiled chunk).
+-- It may be the string "b" (only binary chunks), "t" (only text chunks), or "bt" (both binary and text).
+-- The default is "bt"
+function load (ld [, source [, mode [, env]]]) end
 
 ---
 -- Similar to `load`, but gets the chunk from file `filename` or from the
 -- standard input, if no file name is given.
-function loadfile(filename) end
-
----
--- Similar to `load`, but gets the chunk from the given string.
--- To load and run a given string, use the idiom
---   assert(loadstring(s))()
--- When absent, `chunkname` defaults to the given string.
-function loadstring(string , chunkname) end
+function loadfile ([filename [, mode [, env]]]) end
 
 ---
 -- Allows a program to traverse all fields of a table. Its first argument is
@@ -169,14 +160,6 @@ function rawset(table, index, value) end
 function select(index, ...) end
 
 ---
--- Sets the environment to be used by the given function. `f` can be a Lua
--- function or a number that specifies the function at that stack level: Level
--- 1 is the function calling `setfenv`. `setfenv` returns the given function.
--- As a special case, when `f` is 0 `setfenv` changes the environment of the
--- running thread. In this case, `setfenv` returns no values.
-function setfenv(f, table) end
-
----
 -- Sets the metatable for the given table. (You cannot change the metatable
 -- of other types from Lua, only from C.) If `metatable` is nil, removes the
 -- metatable of the given table. If the original metatable has a `"__metatable"`
@@ -193,8 +176,8 @@ function setmetatable(table, metatable) end
 -- letter '`A`' (in either upper or lower case) represents 10, '`B`' represents
 -- 11, and so forth, with '`Z`' representing 35. In base 10 (the default),
 -- the number can have a decimal part, as well as an optional exponent part
--- (see §2.1). In other bases, only unsigned integers are accepted.
-function tonumber(e , base) end
+-- (see 2.1). In other bases, only unsigned integers are accepted.
+function tonumber(e [, base]) end
 
 ---
 -- Receives an argument of any type and converts it to a string in a
@@ -211,14 +194,6 @@ function tostring(e) end
 -- `nil`" (a string, not the value nil), "`number`", "`string`", "`boolean`",
 -- "`table`", "`function`", "`thread`", and "`userdata`".
 function type(v) end
-
----
--- Returns the elements from the given table. This function is equivalent to
---   return list[i], list[i+1], ..., list[j]
--- except that the above code can be written only for a fixed number of
--- elements. By default, `i` is 1 and `j` is the length of the list, as
--- defined by the length operator (see §2.5.5).
-function unpack(list , i , j) end
 
 ---
 -- A global variable (not a function) that holds a string containing the
@@ -238,24 +213,6 @@ function unpack(list , i , j) end
 -- also returns all results from the call, after this first result. In case
 -- of any error, `xpcall` returns false plus the result from `err`.
 function xpcall(f, err) end
-
----
--- Creates a module. If there is a table in `package.loaded[name]`,
--- this table is the module. Otherwise, if there is a global table `t`
--- with the given name, this table is the module. Otherwise creates a new
--- table `t` and sets it as the value of the global `name` and the value of
--- `package.loaded[name]`. This function also initializes `t._NAME` with the
--- given name, `t._M` with the module (`t` itself), and `t._PACKAGE` with the
--- package name (the full module name minus last component; see below). Finally,
--- `module` sets `t` as the new environment of the current function and the
--- new value of `package.loaded[name]`, so that `require` returns `t`.
--- If `name` is a compound name (that is, one with components separated by
--- dots), `module` creates (or reuses, if they already exist) tables for each
--- component. For instance, if `name` is `a.b.c`, then `module` stores the
--- module table in field `c` of field `b` of global `a`.
--- This function can receive optional *options* after the module name, where
--- each option is a function to be applied over the module.
-function module(name , ...) end
 
 ---
 -- Loads the given module. The function starts by looking into the

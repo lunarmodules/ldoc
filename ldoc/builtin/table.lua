@@ -19,12 +19,6 @@ function table.concat(table , sep , i , j) end
 function table.insert(table, pos, value) end
 
 ---
--- Returns the largest positive numerical index of the given table, or
--- zero if the table has no positive numerical indices. (To do its job this
--- function does a linear traversal of the whole table.)
-function table.maxn(table) end
-
----
 -- Removes from `table` the element at position `pos`, shifting down other
 -- elements to close the space, if necessary. Returns the value of the removed
 -- element. The default value for `pos` is `n`, where `n` is the length of the
@@ -33,6 +27,10 @@ function table.maxn(table) end
 function table.remove(table , pos) end
 
 ---
+-- Returns a new table with all parameters stored into keys 1, 2, etc. and with a field "n" with
+-- the total number of parameters. Note that the resulting table may not be a sequence.
+function table.pack (···) end
+---
 -- Sorts table elements in a given order,
 -- *in-place*, from `table[1]` to `table[n]`, where `n` is the length of the
 -- table. If `comp` is given, then it must be a function that receives two
@@ -40,5 +38,13 @@ function table.remove(table , pos) end
 -- (so that `not comp(a[i+1],a[i])` will be true after the sort). If `comp`
 -- is not given, then the '<' operator will be used.
 function table.sort(table , comp) end
+
+---
+-- Returns the elements from the given table. This function is equivalent to
+--   return list[i], list[i+1], ..., list[j]
+-- except that the above code can be written only for a fixed number of
+-- elements. By default, `i` is 1 and `j` is the length of the list, as
+-- defined by the length operator (see §2.5.5).
+function unpack(list , i , j) end
 
 return table

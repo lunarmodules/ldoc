@@ -171,5 +171,21 @@ function string.sub(s, i , j) end
 -- definition of what a lowercase letter is depends on the current locale.
 function string.upper(s) end
 
+---
+-- (5.3) Returns a binary string containing the values v1, v2, etc. packed (that is, serialized in binary form)
+--- according to the format string fmt (see 6.4.2).
+function string.pack (fmt, v1, v2, ···) end
+
+---
+-- (5.3) Returns the size of a string resulting from string.pack with the given format. 
+-- The format string cannot have the variable-length options 's' or 'z' (see 6.4.2).
+function string.packsize (fmt) end
+
+---
+-- (5.3) Returns the values packed in string s (see string.pack) according to the format string fmt (see 6.4.2).
+-- An optional pos marks where to start reading in s (default is 1)
+-- After the read values, this function also returns the index of the first unread byte in s.
+function string.unpack (fmt, s [, pos]) end
+
 return string
 
