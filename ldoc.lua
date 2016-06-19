@@ -806,10 +806,14 @@ ldoc.title = ldoc.title or args.title
 ldoc.project = ldoc.project or args.project
 ldoc.package = args.package:match '%a+' and args.package or nil
 
-if args.date == 'system' then
-   ldoc.updatetime = os.date("%Y-%m-%d %H:%M:%S")
+if os.getenv("SOURCE_DATE_EPOCH") == nil then
+  if args.date == 'system' then
+    ldoc.updatetime = os.date("%Y-%m-%d %H:%M:%S")
+  else
+    ldoc.updatetime = args.date
+  end
 else
-   ldoc.updatetime = args.date
+  ldoc.updatetime = os.date("!%Y-%m-%d %H:%M:%S",os.getenv("SOURCE_DATE_EPOCH"))
 end
 
 local html = require 'ldoc.html'
