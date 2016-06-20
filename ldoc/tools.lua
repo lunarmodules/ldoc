@@ -242,8 +242,11 @@ function M.check_file (f,original)
 end
 
 function M.writefile(name,text)
-   local ok,err = utils.writefile(name,text)
+   local f,err = io.open(name,"wb")
+--~    local ok,err = utils.writefile(name,text)
    if err then quit(err) end
+   f:write(text)
+   f:close()
 end
 
 function M.name_of (lpath)
