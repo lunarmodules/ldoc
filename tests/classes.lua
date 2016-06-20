@@ -10,7 +10,7 @@ local _M = {}
 _M.Bonzo = class()
 
 --- a method.
--- function one
+-- function one; reference to @{one.md.classes|documentation}
 function Bonzo:one()
 
 end

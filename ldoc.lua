@@ -27,17 +27,18 @@ local tablex = require 'pl.tablex'
 
 -- Penlight compatibility
 utils.unpack = utils.unpack or unpack or table.unpack
-
 local append = table.insert
-
 local lapp = require 'pl.lapp'
+
+local version = '1.4.4'
 
 -- so we can find our private modules
 app.require_here()
 
 --- @usage
 local usage = [[
-ldoc, a documentation generator for Lua, vs 1.4.3
+ldoc, a documentation generator for Lua, vs ]]..version..[[
+
   -d,--dir (default doc) output directory
   -o,--output  (default 'index') output name
   -v,--verbose          verbose
@@ -66,6 +67,8 @@ ldoc, a documentation generator for Lua, vs 1.4.3
   --filter (default none) filter output as Lua data (e.g pl.pretty.dump)
   --tags (default none) show all references to given tags, comma-separated
   --fatalwarnings non-zero exit status on any warning
+  --testing  reproducible build; no date or version on output
+  
   <file> (string) source file or directory containing source
 
   `ldoc .` reads options from an `config.ld` file in same directory;
@@ -101,8 +104,6 @@ function ProjectMap:_init ()
    self.fieldname = 'type'
 end
 
-
-
 local lua, cc = lang.lua, lang.cc
 
 local file_types = {
@@ -120,7 +121,7 @@ local file_types = {
 ------- ldoc external API ------------
 
 -- the ldoc table represents the API available in `config.ld`.
-local ldoc = { charset = 'UTF-8' }
+local ldoc = { charset = 'UTF-8', version = version }
 
 local known_types, kind_names = {}
 
@@ -238,7 +239,7 @@ local ldoc_contents = {
    'unqualified', 'custom_display_name_handler', 'kind_names', 'custom_references',
    'dont_escape_underscore','global_lookup','prettify_files','convert_opt', 'user_keywords',
    'postprocess_html',
-   'custom_css',
+   'custom_css','version'
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
@@ -806,14 +807,18 @@ ldoc.title = ldoc.title or args.title
 ldoc.project = ldoc.project or args.project
 ldoc.package = args.package:match '%a+' and args.package or nil
 
-if os.getenv("SOURCE_DATE_EPOCH") == nil then
+local source_date_epoch = os.getenv("SOURCE_DATE_EPOCH")
+if args.testing then
+   ldoc.updatetime = "2015-01-01 12:00:00"
+   ldoc.version = 'TESTING'  
+elseif source_date_epoch == nil then
   if args.date == 'system' then
     ldoc.updatetime = os.date("%Y-%m-%d %H:%M:%S")
   else
     ldoc.updatetime = args.date
   end
 else
-  ldoc.updatetime = os.date("!%Y-%m-%d %H:%M:%S",os.getenv("SOURCE_DATE_EPOCH"))
+  ldoc.updatetime = os.date("!%Y-%m-%d %H:%M:%S",source_date_epoch)
 end
 
 local html = require 'ldoc.html'
