@@ -92,7 +92,7 @@ Here are all the tags known to LDoc:
   * **@classmod** Like **@module** but describing a class
   * **@submodule** A file containing definitions that you wish to put into the named _master_ module
   * **@script**  A Lua program
-  * **@author** (multiple), **copyright**, **@license**, **@release** only used for _project-level_ tags like **@module**
+  * **@author** (multiple), **@copyright**, **@license**, **@release** only used for _project-level_ tags like **@module**
   * **@function**, **@lfunction**. Functions inside a module
   * **@param**  formal arguments of a function (multiple)
   * **@return** returned values of a function (multiple)
