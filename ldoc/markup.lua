@@ -90,6 +90,8 @@ function markup.add_sections(F, txt)
       end
       local title = line:match (title_pat)
       if title then
+         --- Windows line endings are the cockroaches of text
+         title = title:gsub('\r$','')
          -- Markdown allows trailing '#'...
          title = title:gsub('%s*#+$','')
          sections[L] = F:add_document_section(lstrip(title))
