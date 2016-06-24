@@ -1252,10 +1252,17 @@ local function dump_tags (tags)
    end
 end
 
+-- ANSI colour codes for making important stuff BOLD
+-- (but not on Windows)
+local bold,default = '\x1B[1m','\x1B[0m'
+if utils.dir_separator == '\\' then
+   bold,default = '',''
+end
+
 function Module:dump(verbose)
    if not doc.project_level(self.type) then return end
    print '----'
-   print(self.type..':',self.name,self.summary)
+   print(self.type..':',bold..self.name,self.summary..default)
    if self.description then print(self.description) end
    dump_tags (self.tags)
    for item in self.items:iter() do
@@ -1280,7 +1287,9 @@ function Item:dump(verbose)
    end
    if verbose then
       print()
+      io.write(bold)
       print(self.type,name)
+      io.write(default)
       print(self.summary)
       if self.description and self.description:match '%S' then
          print 'description:'
@@ -1300,7 +1309,7 @@ function Item:dump(verbose)
       end
       dump_tags(self.tags)
    else
-      print('* '..name..' - '..self.summary)
+      print('* '..bold..name..default..' - '..self.summary)
    end
 end
 
