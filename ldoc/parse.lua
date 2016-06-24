@@ -225,7 +225,7 @@ local function parse_file(fname, lang, package, args)
          return nil
       end
    end
-   if lang.parse_module_call and t ~= 'comment'then
+   if lang.parse_module_call and t ~= 'comment' then
       while t and not (t == 'iden' and v == 'module') do
          t,v = tnext(tok)
       end
@@ -314,7 +314,9 @@ local function parse_file(fname, lang, package, args)
                      tags:add('class','function')
                   end
                   item_follows, is_local = false, false
-                elseif lang:is_module_modifier (tags) then
+               elseif args.no_args_infer then
+                  F:error("No name and type provided (no_args_infer)")
+               elseif lang:is_module_modifier (tags) then
                   if not item_follows then
                      F:warning("@usage or @export followed by unknown code")
                      break

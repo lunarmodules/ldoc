@@ -58,6 +58,7 @@ ldoc, a documentation generator for Lua, vs ]]..version..[[
   -X,--not_luadoc break LuaDoc compatibility. Descriptions may continue after tags.
   -D,--define (default none) set a flag to be used in config.ld
   -C,--colon use colon style
+  -N,--no_args_infer  don't infer arguments from source
   -B,--boilerplate ignore first comment in source files
   -M,--merge allow module merging
   -S,--simple no return or params, no summary
@@ -68,7 +69,7 @@ ldoc, a documentation generator for Lua, vs ]]..version..[[
   --tags (default none) show all references to given tags, comma-separated
   --fatalwarnings non-zero exit status on any warning
   --testing  reproducible build; no date or version on output
-  
+
   <file> (string) source file or directory containing source
 
   `ldoc .` reads options from an `config.ld` file in same directory;
@@ -239,7 +240,8 @@ local ldoc_contents = {
    'unqualified', 'custom_display_name_handler', 'kind_names', 'custom_references',
    'dont_escape_underscore','global_lookup','prettify_files','convert_opt', 'user_keywords',
    'postprocess_html',
-   'custom_css','version'
+   'custom_css','version',
+   'no_args_infer'
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
@@ -424,6 +426,7 @@ local process_file_list = tools.process_file_list
 
 setup_package_base()
 
+override 'no_args_infer'
 override 'colon'
 override 'merge'
 override 'not_luadoc'
@@ -810,7 +813,7 @@ ldoc.package = args.package:match '%a+' and args.package or nil
 local source_date_epoch = os.getenv("SOURCE_DATE_EPOCH")
 if args.testing then
    ldoc.updatetime = "2015-01-01 12:00:00"
-   ldoc.version = 'TESTING'  
+   ldoc.version = 'TESTING'
 elseif source_date_epoch == nil then
   if args.date == 'system' then
     ldoc.updatetime = os.date("%Y-%m-%d %H:%M:%S")
