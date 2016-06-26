@@ -3,9 +3,9 @@
 module 'global'
 
 ---
--- Issues an error when the value of its argument `v` is false (i.e.,
--- nil or false); otherwise, returns all its arguments. `message` is an error
--- message; when absent, it defaults to "assertion failed!"
+-- Issues an error when  its argument `v` is false.
+-- That is, nil or false. otherwise, returns all its arguments. 
+-- `message` is an error when absent, it defaults to "assertion failed!"
 function assert(v , message) end
 
 ---
@@ -36,8 +36,9 @@ function collectgarbage(opt , arg) end
 function dofile(filename) end
 
 ---
--- Terminates the last protected function called and returns `message`
--- as the error message. Function `error` never returns.
+-- Terminates the last protected function called.
+-- Returns `message` as the error message.
+-- Function `error` never returns.
 -- Usually, `error` adds some information about the error position at the
 -- beginning of the message. The `level` argument specifies how to get the
 -- error position. With level 1 (the default), the error position is where the
@@ -61,7 +62,7 @@ function error(message , level) end
 function getmetatable(object) end
 
 ---
--- Returns three values: an iterator function, the table `t`, and 0,
+-- For iterating over sequences. Returns three values: an iterator function, the table `t`, and 0,
 -- so that the construction
 --   for i,v in ipairs(t) do *body* end
 -- will iterate over the pairs (`1,t[1]`), (`2,t[2]`), ..., up to the
@@ -86,9 +87,9 @@ function ipairs(t) end
 function load (ld [, source [, mode [, env]]]) end
 
 ---
--- Similar to `load`, but gets the chunk from file `filename` or from the
+-- Similar to `load`, but gets the chunk from file `filename`. Or from the
 -- standard input, if no file name is given.
-function loadfile ([filename [, mode [, env]]]) end
+function loadfile (filename [, mode [, env]]]) end
 
 ---
 -- Allows a program to traverse all fields of a table. Its first argument is
@@ -112,10 +113,11 @@ function loadfile ([filename [, mode [, env]]]) end
 function next(table , index) end
 
 ---
+-- For iterating over all key-value pairs of a table.
 -- Returns three values: the `next` function, the table `t`, and nil,
 -- so that the construction
 --   for k,v in pairs(t) do *body* end
--- will iterate over all key–value pairs of table `t`.
+-- will iterate over all key-value pairs of table `t`.
 -- See function `next` for the caveats of modifying the table during its
 -- traversal.
 function pairs(t) end
@@ -130,31 +132,31 @@ function pairs(t) end
 function pcall(f, arg1, ...) end
 
 ---
--- Receives any number of arguments, and prints their values to `stdout`,
--- using the `tostring` function to convert them to strings. `print` is not
+--Prints any number of  values to `stdout`.
+-- Uses the `tostring` function to convert them to strings. `print` is not
 -- intended for formatted output, but only as a quick way to show a value,
 -- typically for debugging. For formatted output, use `string.format`.
 function print(...) end
 
 ---
--- Checks whether `v1` is equal to `v2`, without invoking any
+-- Checks whether `v1` is equal to `v2`. Does not invoke any
 -- metamethod. Returns a boolean.
 function rawequal(v1, v2) end
 
 ---
--- Gets the real value of `table[index]`, without invoking any
+-- Gets the real value of `table[index]`. Does not invoke any
 -- metamethod. `table` must be a table; `index` may be any value.
 function rawget(table, index) end
 
 ---
--- Sets the real value of `table[index]` to `value`, without invoking any
+-- Sets the real value of `table[index]` to `value`. Does not invoke any
 -- metamethod. `table` must be a table, `index` any value different from nil,
 -- and `value` any Lua value.
 -- This function returns `table`.
 function rawset(table, index, value) end
 
 ---
--- If `index` is a number, returns all arguments after argument number
+-- Returns all arguments after argument number
 -- `index`. Otherwise, `index` must be the string `"#"`, and `select` returns
 -- the total number of extra arguments it received.
 function select(index, ...) end
@@ -180,9 +182,8 @@ function setmetatable(table, metatable) end
 function tonumber(e [, base]) end
 
 ---
--- Receives an argument of any type and converts it to a string in a
--- reasonable format. For complete control of how numbers are converted, use
--- `string.format`.
+-- Converts any value to a string in a reasonable format.
+-- For complete control of how numbers are converted, use `string.format`.
 -- If the metatable of `e` has a `"__tostring"` field, then `tostring` calls
 -- the corresponding value with `e` as argument, and uses the result of the
 -- call as its result.
