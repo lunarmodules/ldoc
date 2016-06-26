@@ -151,7 +151,7 @@ function Lua:item_follows(t,v,tok)
       parser = parse_lua_function_header
    elseif t == 'iden' then
       local name,t,v = tools.get_fun_name(tok,v)
-      if t ~= '=' then return nil end -- probably invalid code...
+      if t ~= '=' then return nil,"not  'name = function,table or value'" end
       t,v = tnext(tok)
       if t == 'keyword' and v == 'function' then -- case [2]
          tnext(tok) -- skip '('
@@ -189,8 +189,10 @@ function Lua:item_follows(t,v,tok)
             parse_lua_table(tags,tok)
          end
       else
-         return nil
+         return nil,'not returning function or table'
       end
+   else
+      return nil,"not 'name=value' or 'return value'"
    end
    return parser, is_local, case
 end

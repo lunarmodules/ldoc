@@ -121,6 +121,10 @@ function Tags:iter ()
    return self._order:iter()
 end
 
+local function comment_contains_tags (comment,args)
+   return (args.colon and comment:find ': ') or (not args.colon and comment:find '@')
+end
+
 -- This takes the collected comment block, and uses the docstyle to
 -- extract tags and values.  Assume that the summary ends in a period or a question
 -- mark, and everything else in the preamble is the description.
@@ -271,7 +275,7 @@ local function parse_file(fname, lang, package, args)
 
          if t == 'space' then t,v = tnext(tok) end
 
-         local item_follows, tags, is_local, case
+         local item_follows, tags, is_local, case, parse_error
          if ldoc_comment then
             comment = table.concat(comment)
             if comment:match '^%s*$' then
@@ -283,8 +287,9 @@ local function parse_file(fname, lang, package, args)
                first_comment = false
             else
                item_follows, is_local, case = lang:item_follows(t,v,tok)
+               if not item_follows then parse_error = is_local end
             end
-            if item_follows or comment:find '@' or comment:find ': ' then
+            if item_follows or comment_contains_tags(comment,args) then
                tags = extract_tags(comment,args)
                -- explicitly named @module (which is recommended)
                if doc.project_level(tags.class) then
@@ -313,7 +318,7 @@ local function parse_file(fname, lang, package, args)
                      F:warning("no type specified, assuming function: '"..tags.name.."'")
                      tags:add('class','function')
                   end
-                  item_follows, is_local = false, false
+                  item_follows, is_local, parse_error = false, false, false
                elseif args.no_args_infer then
                   F:error("No name and type provided (no_args_infer)")
                elseif lang:is_module_modifier (tags) then
@@ -332,6 +337,8 @@ local function parse_file(fname, lang, package, args)
                      ldoc_comment = false
                   end
                end
+            elseif parse_error then
+               F:warning('definition cannot be parsed - '..parse_error)
             end
          end
          -- some hackery necessary to find the module() call
@@ -361,6 +368,8 @@ local function parse_file(fname, lang, package, args)
                if item_follows then -- parse the item definition
                   local err = item_follows(tags,tok)
                   if err then F:error(err) end
+               elseif parse_error then
+                  F:warning('definition cannot be parsed - '..parse_error)
                else
                   lang:parse_extra(tags,tok,case)
                end
