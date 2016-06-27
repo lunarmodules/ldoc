@@ -292,18 +292,21 @@ local function parse_file(fname, lang, package, args)
             end
             if item_follows or comment_contains_tags(comment,args) then
                tags = extract_tags(comment,args)
+
                -- explicitly named @module (which is recommended)
                if doc.project_level(tags.class) then
                   module_found = tags.name
                   -- might be a module returning a single function!
                   if tags.param or tags['return'] then
                      local parms, ret, summ = tags.param, tags['return'],tags.summary
+                     local name = tags.name
                      tags.param = nil
                      tags['return'] = nil
-                     tags.summary = nil
-                     add_module(tags,tags.name,false)
+                     tags['class'] = nil
+                     tags['name'] = nil
+                     add_module(tags,name,false)
                      tags = {
-                        summary = summ,
+                        summary = '',
                         name = 'returns...',
                         class = 'function',
                         ['return'] = ret,
