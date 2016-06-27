@@ -197,6 +197,7 @@ local function parse_file(fname, lang, package, args)
    function F:warning (msg,kind,line)
       kind = kind or 'warning'
       line = line or lineno()
+      Item.had_warning = true
       io.stderr:write(fname..':'..line..': '..msg,'\n')
    end
 
