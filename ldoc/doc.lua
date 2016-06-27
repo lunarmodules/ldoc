@@ -6,6 +6,7 @@ local class = require 'pl.class'
 local utils = require 'pl.utils'
 local List = require 'pl.List'
 local Map = require 'pl.Map'
+local text = require 'pl.text'
 
 local doc = {}
 local global = require 'ldoc.builtin.globals'
@@ -615,6 +616,12 @@ function Item:finish()
    tags.see = read_del(tags,'see')
    if tags.see then
       tags.see = tools.identifier_list(tags.see)
+   end
+   if self.usage then
+      for i = 1,#self.usage do
+         local usage = self.usage[i]:gsub('^%s*\n','')
+         self.usage[i] = text.dedent(usage)
+      end
    end
    if  doc.project_level(self.type) then
       -- we are a module, so become one!
