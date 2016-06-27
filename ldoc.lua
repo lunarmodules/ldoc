@@ -774,7 +774,7 @@ end
 local builtin_style, builtin_template = match_bang(args.style),match_bang(args.template)
 if builtin_style or builtin_template then
    -- '!' here means 'use built-in templates'
-   local user = path.expanduser('~'):gsub('[/\\ ]','_')
+   local user = path.expanduser('~'):gsub('[/\\: ]','_')
    local tmpdir = path.join(path.is_windows and os.getenv('TMP') or '/tmp','ldoc'..user)
    if not path.isdir(tmpdir) then
       lfs.mkdir(tmpdir)

@@ -537,13 +537,17 @@ function Item.check_tag(tags,tag, value, modifiers)
          if avalue then value = avalue..' '..value end
          if amod then
             modifiers = modifiers or {}
+            local value_tokens = utils.split(value)
             for m,v in pairs(amod) do
-               local idx = v:match('^%$(%d+)')
+               local idx = tonumber(v:match('^%$(%d+)'))
                if idx then
                   v, value = value:match('(%S+)(.*)')
+               --   v = value_tokens[idx]
+               --   value_tokens[idx] = ''
                end
                modifiers[m] = v
             end
+            -- value = table.concat(value_tokens, ' ')
          end
       else -- has to be a function that at least returns tag, value
          return alias(tags,value,modifiers)
