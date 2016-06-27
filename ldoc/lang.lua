@@ -322,8 +322,17 @@ function Moon:_init()
    self.start_comment_ = '^%s*%-%-%-+'     -- used for doc comment line start
    self.block_comment = '^%-%-%[=*%[%-+' -- used for block doc comments
    self.end_comment_ = '[^%-]%-%-+\n$' ---- exclude --- this kind of comment ---
-   self.method_call = '.'
+   self.method_call = '\\'
    self:finalize()
+end
+
+--- much like Lua, BUT auto-assign parameters start with @
+function Moon:extract_arg (tl,idx)
+   idx = idx or 1
+   local auto_assign = tl[idx][1] == '@'
+   if auto_assign then idx = idx + 1 end
+   local res = tl[idx][2]
+   return res
 end
 
 function Moon:item_follows (t,v,tok)
@@ -340,24 +349,28 @@ function Moon:item_follows (t,v,tok)
             tags:add('name',name)
          end
       elseif t == '=' or t == ':' then -- function/method
+         local fat = false
          t,v = tnext(tok)
          return function(tags,tok)
             if not tags.name then
                tags:add('name',name)
             end
             if t == '(' then
-               tags.formal_args,t,v = tools.get_parameters(tok)
+               tags.formal_args,t,v = tools.get_parameters(tok,')',',',self)
             else
                tags.formal_args = List()
             end
+            t,v = tnext(tok)
             tags:add('class','function')
-            if t == '=' then
-               tags.formal_args:insert(1,'self')
-               tags.formal_args.comments = {self=''}
+            if t == '>' then
+--~                tags.formal_args:insert(1,'self')
+--~                tags.formal_args.comments = {self=''}
+            else
+               tags.static = true
             end
          end
       else
-         return nil
+         return nil, "expecting '=' or ':'"
       end
    end
 end
