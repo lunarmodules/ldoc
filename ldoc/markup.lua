@@ -239,13 +239,23 @@ local formatters =
       if ok then
          if 'function' == type(markdown) then
             -- lua-discount by A.S. Bradbury, https://luarocks.org/modules/luarocks/lua-discount
-         elseif 'table' == type(markdown) and 'function' == type(markdown.compile) then
+         elseif 'table' == type(markdown) and ('function' == type(markdown.compile) or 'function' == type(markdown.to_html)) then
             -- discount by Craig Barnes, https://luarocks.org/modules/craigb/discount
-            markdown = markdown.compile
+            -- result of apt-get install lua-discount (links against libmarkdown2)
+            local mysterious_debian_variant = markdown.to_html ~= nil
+            markdown = markdown.compile or markdown.to_html
             return function(text)
                local result, errmsg = markdown(text)
-               assert(nil ~= result and result.body, errmsg)
-               return result.body
+               if result then
+                  if mysterious_debian_variant then
+                     return result
+                  else
+                     return result.body
+                  end
+               else
+                  io.stderr:write('LDoc discount failed with error ',errmsg)
+                  io.exit(1)
+               end
             end
          else
             ok = false
