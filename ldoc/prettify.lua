@@ -50,6 +50,7 @@ function prettify.lua (lang, fname, code, initial_lineno, pre, linenos)
          io.stderr:write(fname..':'..tok:lineno()+initial_lineno..': '..msg,'\n')
       end
    }
+   local last_t, last_val
    local t,val = tok()
    if not t then return nil,"empty file" end
    while t do
@@ -71,7 +72,11 @@ function prettify.lua (lang, fname, code, initial_lineno, pre, linenos)
       else
          res:append(val)
       end
+      last_t, last_val = t,val
       t,val = tok()
+   end
+   if last_t == 'comment' then
+      res[#res] = span('comment',last_val:gsub('\r*\n$',''))
    end
    local last = res[#res]
    if last:match '\n$' then

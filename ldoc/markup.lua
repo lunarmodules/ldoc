@@ -171,6 +171,7 @@ local function process_multiline_markdown(ldoc, txt, F, filename, deflang)
          end
          pretty_code (code,fence)
          line = getline() -- skip fence
+         if not line then break end
       end
       indent, line = indent_line(line)
       if indent >= 4 then -- indented code block
