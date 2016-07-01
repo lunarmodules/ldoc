@@ -231,8 +231,13 @@ local function parse_file(fname, lang, package, args)
       end
    end
    if lang.parse_module_call and t ~= 'comment' then
-      while t and not (t == 'iden' and v == 'module') do
-         t,v = tnext(tok)
+      local prev_token
+      while t do
+         if prev_token ~= '.' and prev_token ~= ':' and t == 'iden' and v == 'module' then
+            break
+         end
+         prev_token = t
+         t, v = tnext(tok)
       end
       if not t then
          if not args.ignore then
