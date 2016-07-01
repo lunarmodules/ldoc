@@ -246,7 +246,7 @@ local function parse_file(fname, lang, package, args)
          --return nil
       else
          mod,t,v = lang:parse_module_call(tok,t,v)
-         if mod ~= '...' then
+         if mod and mod ~= '...' then
             add_module(Tags.new{summary='(no description)'},mod,true)
             first_comment = false
             module_found = true
