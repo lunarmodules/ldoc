@@ -361,7 +361,7 @@ examples of use; there can be multiple such tags:
     -- @return second part
     -- @usage local hello,world = split2("hello world")
     -- @see split
-    funtion split2(s,delim) .. end
+    function split2(s,delim) .. end
 
 Here it's assumed that 'split' is a function defined in the same module. If you wish to link
 to a function in another module, then the reference has to be qualified.
