@@ -6,7 +6,7 @@ Copyright (C) 2011-2012 Steve Donovan.
 
 This project grew out of the documentation needs of
 [Penlight](https://github.com/stevedonovan/Penlight) (and not always getting satisfaction
-with LuaDoc) and depends on Penlight itself.(This allowed me to _not_ write a lot of code.)
+with LuaDoc) and depends on Penlight itself. (This allowed me to _not_ write a lot of code.)
 
 The [API documentation](http://stevedonovan.github.com/Penlight/api/index.html) of Penlight
 is an example of a project using plain LuaDoc markup processed using LDoc.
@@ -46,7 +46,7 @@ in Lua for Windows, and Penlight is also available through LuaRocks as `luarocks
 penlight`.
 
 Unpack the sources somewhere and make an alias to `ldoc.lua` on your path. That is, either
-an excutable script called 'ldoc' like so:
+an executable script called 'ldoc' like so:
 
     lua /path/to/ldoc/ldoc.lua $*
 
