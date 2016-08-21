@@ -50,10 +50,9 @@ function error(message , level) end
 ---
 -- A global variable (not a function) that holds the global environment
 -- (that is, `_G._G = _G`). Lua itself does not use this variable; changing
--- its value does not affect any environment, nor vice-versa. (Use `setfenv`
--- to change environments.)
--- function _G end
--- * `_G._G`: _G._G
+-- its value does not affect any environment, nor vice-versa. (Set `__ENV`
+-- to change environments in functions)
+-- @table _G
 
 ---
 -- If `object` does not have a metatable, returns nil. Otherwise, if the
@@ -200,8 +199,7 @@ function type(v) end
 -- A global variable (not a function) that holds a string containing the
 -- current interpreter version. The current contents of this variable is
 -- "`Lua 5.1`".
--- function _VERSION end
--- * `_G._VERSION`: _G._VERSION
+-- @table _VERSION
 
 ---
 -- This function is similar to `pcall`, except that you can set a new

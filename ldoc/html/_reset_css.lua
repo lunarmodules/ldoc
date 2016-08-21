@@ -29,7 +29,6 @@ del,ins {
     text-decoration: none;
 }
 li {
-//    list-style: disc;
     margin-left: 20px;
 }
 caption,th {
