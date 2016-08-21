@@ -251,7 +251,7 @@ are different from final Lua api which you are documenting.
 
 ### Doing modules the Lua 5.1 way
 
-As an alternative to using the 'module' tag as described before, you
+As an alternative to using the 'module' tag as described previously, you
 can still start your modules the Lua 5.1 way:
 
     --- solvers for common equations.
@@ -311,13 +311,13 @@ They can be documented just like 'public' functions:
     --- we need to give a hint here for foo
     -- @local here
     function foo(...) .. end
-
+    
 ### Alternative way of specifying tags
 
 Since 1.3, LDoc allows the use of _colons_ instead of @.
 
     --- a simple function.
-    -- string name person's name
+    -- string: name person's name
     -- int: age age of person
     -- !person: person object
     -- treturn: ?string
@@ -329,7 +329,80 @@ In this style, types may be used directly if prefixed with '!' or '?' (for type-
 
 (see @{colon.lua}, rendered [here](http://stevedonovan.github.io/ldoc/examples/colon))
 
-### Which files are processed
+## Sections
+
+LDoc supports _explicit_ sections. By default, the implicit sections correspond to the pre-existing
+types in a module: 'Functions', 'Tables' and 'Fields' (There is another default section
+'Local Functions' which only appears if LDoc is invoked with the `--all` flag.) But new
+sections can be added; the first mechanism is when you @{Adding_new_Tags|define a new type}
+(say 'macro'). Then a new section ('Macros') is created to contain these types.
+
+There is also a way to declare ad-hoc sections using the **@section** tag.
+The need occurs when a module has a lot of functions that need to be put into logical
+sections.
+
+    --- File functions.
+    -- Useful utilities for opening foobar format files.
+    -- @section file
+
+    --- open a file
+    ...
+
+    --- read a file
+    ...
+
+    --- Encoding operations.
+    -- Encoding foobar output in different ways.
+    -- @section encoding
+
+    ...
+
+A section doc-comment has the same structure as a normal doc-comment; the summary is used as
+the new section title, and the description will be output at the start of the function
+details for that section; the name is not used, but must be unique.
+
+Sections appear under 'Contents' on the left-hand side. See the
+[winapi](http://stevedonovan.github.com/winapi/api.html) documentation for an example of how
+this looks.
+
+Arguably a module writer should not write such very long modules, but it is not the job of
+the documentation tool to limit the programmer!
+
+A specialized kind of section is `type`: it is used for documenting classes. The functions
+(or fields) within a type section are considered to be the methods of that class.
+
+    --- A File class.
+    -- @type File
+
+    ....
+    --- get the modification time.
+    -- @return standard time since epoch
+    function File:mtime()
+    ...
+    end
+
+(In an ideal world, we would use the word 'class' instead of 'type', but this would conflict
+with the LuaDoc `class` tag.)
+
+A section continues until the next section is found, `@section end`, or end of file.
+
+You can put items into _implicit sections_ using **@within**. This allows you to put
+adjacent functions in different sections, so that you are not forced to order your code
+in a particular way.
+
+With 1.4, there is another option for documenting classes, which is the top-level type
+`classmod`. It is intended for larger classes which are implemented within one module,
+and the advantage that methods can be put into sections.
+
+Sometimes a module may logically span several files, which can easily happen with large
+There will be a master module with name
+'foo' and other files which when required add functions to that module. If these files have
+a **@submodule** tag, their contents will be placed in the master module documentation. However,
+a current limitation is that the master module must be processed before the submodules.
+
+See the `tests/submodule` example for how this works in practice.
+
+## Which files are processed?
 
 By default, LDoc will process any file ending in '.lua' or '.luadoc' in a specified
 directory; you may point it to a single file as well. A 'project' usually consists of many
@@ -346,7 +419,6 @@ items like functions, tables, sections, and so forth.
 
 If you want to document scripts, then use **@script** instead of **@module**. New with 1.4 is
 **@classmod** which is a module which exports a single class.
-
 
 ## See References
 
@@ -492,111 +564,6 @@ Saying `@set no_summary=true` in a module comment will temporarily disable summa
 the template is expanded. Generally configuration variables that effect template expansion
 are modifiable in this way.  For instance, if you wish that the contents of a particular module
 be sorted, then `@set sort=true` will do it _just_ for that module.
-
-## Sections
-
-LDoc supports _explicit_ sections. By default, the implicit sections correspond to the pre-existing
-types in a module: 'Functions', 'Tables' and 'Fields' (There is another default section
-'Local Functions' which only appears if LDoc is invoked with the `--all` flag.) But new
-sections can be added; the first mechanism is when you @{Adding_new_Tags|define a new type}
-(say 'macro'). Then a new section ('Macros') is created to contain these types.
-
-There is also a way to declare ad-hoc sections using the **@section** tag.
-The need occurs when a module has a lot of functions that need to be put into logical
-sections.
-
-    --- File functions.
-    -- Useful utilities for opening foobar format files.
-    -- @section file
-
-    --- open a file
-    ...
-
-    --- read a file
-    ...
-
-    --- Encoding operations.
-    -- Encoding foobar output in different ways.
-    -- @section encoding
-
-    ...
-
-A section doc-comment has the same structure as a normal doc-comment; the summary is used as
-the new section title, and the description will be output at the start of the function
-details for that section; the name is not used, but must be unique.
-
-Sections appear under 'Contents' on the left-hand side. See the
-[winapi](http://stevedonovan.github.com/winapi/api.html) documentation for an example of how
-this looks.
-
-Arguably a module writer should not write such very long modules, but it is not the job of
-the documentation tool to limit the programmer!
-
-A specialized kind of section is `type`: it is used for documenting classes. The functions
-(or fields) within a type section are considered to be the methods of that class.
-
-    --- A File class.
-    -- @type File
-
-    ....
-    --- get the modification time.
-    -- @return standard time since epoch
-    function File:mtime()
-    ...
-    end
-
-(In an ideal world, we would use the word 'class' instead of 'type', but this would conflict
-with the LuaDoc `class` tag.)
-
-A section continues until the next section is found, `@section end`, or end of file.
-
-You can put items into an implicit section using **@within**. This allows you to put
-adjacent functions in different sections, so that you are not forced to order your code
-in a particular way.
-
-With 1.4, there is another option for documenting classes, which is the top-level type
-`classmod`. It is intended for larger classes which are implemented within one module,
-and the advantage that methods can be put into sections.
-
-Sometimes a module may logically span several files, which can easily happen with large
-There will be a master module with name
-'foo' and other files which when required add functions to that module. If these files have
-a **@submodule** tag, their contents will be placed in the master module documentation. However,
-a current limitation is that the master module must be processed before the submodules.
-
-See the `tests/submodule` example for how this works in practice.
-
-## Differences from LuaDoc
-
-LDoc only does 'module' documentation, so the idea of 'files' is redundant.
-
-One added convenience is that it is easier to name entities:
-
-    ------------
-    -- a simple module.
-    -- (LuaDoc)
-    -- @class module
-    -- @name simple
-
-becomes:
-
-    ------------
-    -- a simple module.
-    -- (LDoc)
-    -- @module simple
-
-This is because type names (like 'function', 'module', 'table', etc) can function as tags.
-LDoc also provides a means to add new types (e.g. 'macro') using a configuration file which
-can be shipped with the source. If you become bored with typing 'param' repeatedly then you
-can define an alias for it, such as 'p'. This can also be specified in the configuration file.
-
-LDoc will also work with C/C++ files, since extension writers clearly have the same
-documentation needs as Lua module writers.
-
-LDoc allows you to attach a _type_ to a parameter or return value with `tparam` or `treturn`,
-and gives the documenter the option to use Markdown to parse the contents of comments.
-You may also include code examples which will be prettified, and readme files which will be
-rendered with Markdown and contain prettified code blocks.
 
 ## Adding new Tags
 

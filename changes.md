@@ -1,3 +1,30 @@
+## Version 1.4.4
+
+### Features
+  * better Lua 5.3 support
+  * handles tables with integer_keys as well as string keys
+  * `--testing` - version and date does not change
+  * `--no_args_infer` to completely switch off argument inference and parsing
+  * `custom_csv` option to specify extra CSS file
+  * explicit warnings if we cannot deduce item from following code
+  * modules may return a single _function_ (see tests/funmod.lua)
+  * honours the `SOURCE_DATE_EPOCH` environment variable
+  * Moonscript fat arrow and auto-assign ctor support
+  * Better Discount support. All varieties including Debian lua-discount package (binding to libmarkdown2)
+  * prettier output for `ldoc -m` on Unix
+  * updated global builtin documentation
+
+
+### Fixes
+  * consistently using Unix line-endings
+  * `--fatalwarnings` now also works with parser errors (#255)
+  * user-specific temporary directory for expanding templates
+  * blank line after comment of code block suppressed (#240)
+  * comments at end of code blocks were not highlighting
+  * strip left spaces from usage code (#191)
+  * don't parse `module` if it's a field name (e.g `foo.module()`)
+  * temporary files on Windows fix
+
 ## Version 1.4.3
 
 ### Features
