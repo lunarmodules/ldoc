@@ -293,7 +293,10 @@ local function parse_file(fname, lang, package, args)
                first_comment = false
             else
                item_follows, is_local, case = lang:item_follows(t,v,tok)
-               if not item_follows then parse_error = is_local end
+               if not item_follows then
+                  is_local = false
+                  parse_error = is_local
+               end
             end
             if item_follows or comment_contains_tags(comment,args) then
                tags = extract_tags(comment,args)
@@ -322,6 +325,7 @@ local function parse_file(fname, lang, package, args)
                doc.expand_annotation_item(tags,current_item)
                -- if the item has an explicit name or defined meaning
                -- then don't continue to do any code analysis!
+               local field_or_param = (tags.field or tags.param) and not tags.class
                if tags.name then
                   if not tags.class then
                      F:warning("no type specified, assuming function: '"..tags.name.."'")
@@ -346,7 +350,10 @@ local function parse_file(fname, lang, package, args)
                      ldoc_comment = false
                   end
                end
-            elseif parse_error then
+            -- Watch out for the case where there are field or param tags
+            -- but no class, since these will be fixed up later as module/class
+            -- entities
+            elseif parse_error and not field_or_param then
                F:warning('definition cannot be parsed - '..parse_error)
             end
          end
