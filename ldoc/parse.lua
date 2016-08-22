@@ -294,8 +294,8 @@ local function parse_file(fname, lang, package, args)
             else
                item_follows, is_local, case = lang:item_follows(t,v,tok)
                if not item_follows then
-                  is_local = false
                   parse_error = is_local
+                  is_local = false
                end
             end
             if item_follows or comment_contains_tags(comment,args) then
