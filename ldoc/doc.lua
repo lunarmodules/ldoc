@@ -296,7 +296,7 @@ function File:finish()
             item.display_name = display_name
             this_mod.section = item
             -- the purpose of this little hack is to properly distinguish
-            -- between built-in kinds and any user-defined kins.
+            -- between built-in kinds and any user-defined kinds.
             this_mod.kinds:add_kind(display_name,display_name..' ',nil,item)
             this_mod.sections:append(item)
             this_mod.sections.by_name[lookup_name:gsub('%A','_')] = item
