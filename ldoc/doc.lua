@@ -362,9 +362,7 @@ function File:finish()
                         end
                      end
                      -- Whether to use '.' or the language's version of ':' (e.g. \ for Moonscript)
-                     item.local_name = item.name
-                     item.fully_qualified_name = class..(not static and this_mod.file.lang.method_call or '.')..item.name
-                     item.name = item.fully_qualified_name
+                     item.name = class..(not static and this_mod.file.lang.method_call or '.')..item.name
                    end
                   if stype == 'factory'  then
                      if item.tags.private then to_be_removed = true
@@ -411,6 +409,10 @@ function File:finish()
             -- must be a free-standing function (sometimes a problem...)
          end
       end
+      item.names_hierarchy = require('pl.utils').split(
+        item.name,
+        '[.:]'
+      )
    end
 end
 
@@ -1357,4 +1359,3 @@ function doc.filter_objects_through_function(filter, module_list)
 end
 
 return doc
-
