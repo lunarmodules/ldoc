@@ -1182,6 +1182,7 @@ _Same meaning as the corresponding parameters:_
 of files and directories.
   - `project` name of project, used as title in top left
   - `title` page title, default 'Reference'
+  - `description` a short project description used under the project title
   - `package ` explicit base package name; also used for resolving references in documents
   - `all` show local functions, etc as well in the docs
   - `format` markup processor, can be 'plain' (default), 'markdown' or 'discount'
@@ -1199,7 +1200,6 @@ explicit **@submodule** tag
 
 _These only appear in the configuration file:_
 
-  - `description` a short project description used under the project title
   - `full_description` when you _really_ need a longer project description
   - `examples` a directory or file: can be a table
   - `readme` or `topics` readme files (to be processed with Markdown)

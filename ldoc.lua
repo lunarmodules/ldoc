@@ -64,6 +64,7 @@ ldoc, a documentation generator for Lua, vs ]]..version..[[
   -S,--simple no return or params, no summary
   -O,--one one-column output layout
   --date (default system) use this date in generated doc
+  --description (default none) project description
   --dump                debug output dump
   --filter (default none) filter output as Lua data (e.g pl.pretty.dump)
   --tags (default none) show all references to given tags, comma-separated
@@ -808,6 +809,7 @@ ldoc.log = print
 ldoc.kinds = project
 ldoc.modules = module_list
 ldoc.title = ldoc.title or args.title
+ldoc.description = ldoc.description or utils.choose(args.description ~= "none", args.description);
 ldoc.project = ldoc.project or args.project
 ldoc.package = args.package:match '%a+' and args.package or nil
 
