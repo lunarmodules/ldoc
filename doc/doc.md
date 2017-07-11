@@ -1296,7 +1296,6 @@ Although not currently rendered by the template as HTML, they can be extracted b
 LDoc, like LuaDoc, generates output HTML using a template, in this case `ldoc/html/ldoc_ltp.lua`. This
 is expanded by the powerful but simple preprocessor devised originally by [Rici
 Lake](http://lua-users.org/wiki/SlightlyLessSimpleLuaPreprocessor) which is now part of
-Lake](http://lua-users.org/wiki/SlightlyLessSimpleLuaPreprocessor) which is now part of
 Penlight. There are two rules - any line starting with '#' is Lua code, which can also be
 embedded with '$(...)'.
 
