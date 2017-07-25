@@ -1102,7 +1102,7 @@ function Module:process_see_reference (s,modules,istype)
    local mod_ref,fun_ref,name,packmod
    local ref = custom_see_references(s)
    if ref then return ref end
-   if not s:match '^[%w_%.%:%-]+$' or not s:match '[%w_]$' then
+   if not s:match '^[%w_%.\\%:%-]+$' or not s:match '[%w_]$' then
       return nil, "malformed see reference: '"..s..'"'
    end
 
