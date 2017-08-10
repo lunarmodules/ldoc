@@ -39,36 +39,40 @@ app.require_here()
 local usage = [[
 ldoc, a documentation generator for Lua, v]]..version..[[
 
-  -d,--dir (default doc) output directory
-  -o,--output  (default 'index') output name
-  -v,--verbose          verbose
-  -a,--all              show local functions, etc, in docs
-  -q,--quiet            suppress output
-  -m,--module           module docs as text
-  -s,--style (default !) directory for style sheet (ldoc.css)
-  -l,--template (default !) directory for template (ldoc.ltp)
-  -p,--project (default ldoc) project name
-  -t,--title (default Reference) page title
-  -f,--format (default plain) formatting - can be markdown, discount or plain
-  -b,--package  (default .) top-level package basename (needed for module(...))
-  -x,--ext (default html) output file extension
-  -c,--config (default config.ld) configuration name
-  -u,--unqualified     don't show package name in sidebar links
-  -i,--ignore ignore any 'no doc comment or no module' warnings
-  -X,--not_luadoc break LuaDoc compatibility. Descriptions may continue after tags.
-  -D,--define (default none) set a flag to be used in config.ld
-  -C,--colon use colon style
-  -N,--no_args_infer  don't infer arguments from source
-  -B,--boilerplate ignore first comment in source files
-  -M,--merge allow module merging
-  -S,--simple no return or params, no summary
-  -O,--one one-column output layout
-  --date (default system) use this date in generated doc
-  --dump                debug output dump
-  --filter (default none) filter output as Lua data (e.g pl.pretty.dump)
-  --tags (default none) show all references to given tags, comma-separated
-  --fatalwarnings non-zero exit status on any warning
-  --testing  reproducible build; no date or version on output
+  Invocation:
+    ldoc [options] <file>
+
+  Options:
+    -d,--dir		(default doc) output directory
+    -o,--output		(default 'index') output name
+    -v,--verbose	verbose
+    -a,--all		show local functions, etc, in docs
+    -q,--quiet		suppress output
+    -m,--module		module docs as text
+    -s,--style		(default !) directory for style sheet (ldoc.css)
+    -l,--template	(default !) directory for template (ldoc.ltp)
+    -p,--project	(default ldoc) project name
+    -t,--title		(default Reference) page title
+    -f,--format		(default plain) formatting - can be markdown, discount or plain
+    -b,--package	(default .) top-level package basename (needed for module(...))
+    -x,--ext		(default html) output file extension
+    -c,--config		(default config.ld) configuration name
+    -u,--unqualified	don't show package name in sidebar links
+    -i,--ignore		ignore any 'no doc comment or no module' warnings
+    -X,--not_luadoc	break LuaDoc compatibility. Descriptions may continue after tags.
+    -D,--define		(default none) set a flag to be used in config.ld
+    -C,--colon		use colon style
+    -N,--no_args_infer	don't infer arguments from source
+    -B,--boilerplate	ignore first comment in source files
+    -M,--merge		allow module merging
+    -S,--simple		no return or params, no summary
+    -O,--one		one-column output layout
+    --date		(default system) use this date in generated doc
+    --dump		debug output dump
+    --filter		(default none) filter output as Lua data (e.g pl.pretty.dump)
+    --tags		(default none) show all references to given tags, comma-separated
+    --fatalwarnings	non-zero exit status on any warning
+    --testing		reproducible build; no date or version on output
 
   <file> (string) source file or directory containing source
 
