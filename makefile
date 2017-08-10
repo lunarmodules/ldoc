@@ -14,6 +14,9 @@ install_luajit: install_parts
 	@chmod -v +x "$(DESTDIR)$(LUA_BINDIR)/ldoc"
 
 install_parts:
+	@if [ ! -d "$(DESTDIR)$(LUA_BINDIR)" ]; then \
+		mkdir -vp "$(DESTDIR)$(LUA_BINDIR)"; \
+	fi
 	@mkdir -vp "$(DESTDIR)$(LUA_SHAREDIR)"
 	@cp -v ldoc.lua "$(DESTDIR)$(LUA_SHAREDIR)"
 	@cp -vr ldoc "$(DESTDIR)$(LUA_SHAREDIR)"
