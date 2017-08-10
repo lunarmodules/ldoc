@@ -41,8 +41,10 @@ ldoc, a documentation generator for Lua, v]]..version..[[
 
   Invocation:
     ldoc [options] <file>
+    ldoc --version
 
   Options:
+    -V,--version	show version information
     -d,--dir		(default doc) output directory
     -o,--output		(default 'index') output name
     -v,--verbose	verbose
@@ -74,7 +76,7 @@ ldoc, a documentation generator for Lua, v]]..version..[[
     --fatalwarnings	non-zero exit status on any warning
     --testing		reproducible build; no date or version on output
 
-  <file> (string) source file or directory containing source
+  <file> (optional string) source file or directory containing source
 
   `ldoc .` reads options from an `config.ld` file in same directory;
   `ldoc -c path/to/myconfig.ld <file>` reads options from `path/to/myconfig.ld`
@@ -91,6 +93,11 @@ local parse = require 'ldoc.parse'
 local KindMap = tools.KindMap
 local Item,File,Module = doc.Item,doc.File,doc.Module
 local quit = utils.quit
+
+if args.version then
+   print('LDoc v' .. version)
+   os.exit(0)
+end
 
 
 local ModuleMap = class(KindMap)
@@ -349,6 +356,9 @@ else
       if err then quit("no "..quote(args.config).." found") end
    end
    -- with user-provided file
+   if args.file == nil then
+      lapp.error('missing required parameter: file')
+   end
    args.file = abspath(args.file)
 end
 
