@@ -37,7 +37,7 @@ app.require_here()
 
 --- @usage
 local usage = [[
-ldoc, a documentation generator for Lua, vs ]]..version..[[
+ldoc, a documentation generator for Lua, v]]..version..[[
 
   -d,--dir (default doc) output directory
   -o,--output  (default 'index') output name
