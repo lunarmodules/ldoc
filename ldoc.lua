@@ -114,6 +114,7 @@ local file_types = {
    ['.c'] = cc,
    ['.h'] = cc,
    ['.cpp'] = cc,
+   ['.hpp'] = cc,
    ['.cxx'] = cc,
    ['.C'] = cc,
    ['.mm'] = cc,
