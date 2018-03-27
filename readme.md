@@ -31,7 +31,7 @@ line number of the reference is given.  LDoc knows about modules which do not us
 - this is important since this function has become deprecated in Lua 5.2. And you can avoid
 having to embed HTML in commments by using Markdown.
 
-LDoc will also work with Lua C extension code, and provides some convenient shortcuts.
+LDoc will also work with Lua C/C++ extension code, and provides some convenient shortcuts.
 
 An example showing the support for named sections and 'classes' is the [Winapi
 documentation](http://stevedonovan.github.com/winapi/api.html); this is generated from
