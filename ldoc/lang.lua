@@ -250,9 +250,10 @@ end
 local CC = class(Lang)
 
 function CC:_init()
-   self.line_comment = '^//+'
-   self.start_comment_ = '^///+'
-   self.block_comment = '^/%*%*+'
+   local identifier = 'LUA_API'
+   self.line_comment = '^//' .. identifier
+   self.start_comment_ = self.line_comment
+   self.block_comment = '^/%*%*' .. identifier
    self.method_call = ':'
    self:finalize()
 end

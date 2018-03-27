@@ -659,7 +659,7 @@ As always, explicit tags can override this behaviour if it is inappropriate.
 LDoc can process C/C++ files:
 
 ```c
-/***
+/**LUA_API
 Create a table with given array and hash slots.
 @function createtable
 @param narr initial array slots, default 0
@@ -670,7 +670,10 @@ static int l_createtable (lua_State *L) {
 ....
 ```
 
-Both `/**` and `///` are recognized as starting a comment block. Otherwise, the tags are
+Both `/**LUA_API` and `///LUA_API` are recognized as a comment . The word `LUA_API`
+serves as an identifier to distinguish lua api related comments from other
+comments.
+Otherwise, the tags are
 processed in exactly the same way. It is necessary to specify that this is a function with a
 given name, since this cannot be reliably be inferred from code. Such a file will need a
 module comment, which is treated exactly as in Lua.
