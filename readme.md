@@ -55,3 +55,8 @@ Or a batch file called 'ldoc.bat':
     @echo off
     lua \path\to\ldoc\ldoc.lua %*
 
+Or include this repo in 'LUA_PATH' and use it directly as an executable by
+including ldoc.lua in your 'PATH':
+
+    export LUA_PATH="path/to/ldoc/?.lua;;"
+
