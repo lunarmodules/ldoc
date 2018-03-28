@@ -27,7 +27,7 @@ end
 
 local spans = {keyword=true,number=true,string=true,comment=true,global=true,backtick=true}
 
-local cpp_lang = {C = true, c = true, cpp = true, cxx = true, h = true}
+local cpp_lang = {C = true, c = true, cpp = true, cxx = true, h = true, hpp = true}
 
 function prettify.lua (lang, fname, code, initial_lineno, pre, linenos)
    local res, lexer, tokenizer = List(), require 'ldoc.lexer'
