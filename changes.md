@@ -35,7 +35,7 @@
   * add update time to footer of page
   * better C support: `global_lookup=true` - invoked when `parse_extra={C=true}`
   * `kind_names` can override names used in sidebar
-  
+
 ### Fixes
 
   * `all=true` in `config.ld` did not work.
