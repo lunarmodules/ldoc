@@ -177,7 +177,7 @@ function string.upper(s) end
 function string.pack (fmt, v1, v2, ···) end
 
 ---
--- (5.3) Returns the size of a string resulting from string.pack with the given format. 
+-- (5.3) Returns the size of a string resulting from string.pack with the given format.
 -- The format string cannot have the variable-length options 's' or 'z' (see 6.4.2).
 function string.packsize (fmt) end
 

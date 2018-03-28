@@ -4,7 +4,7 @@ module 'global'
 
 ---
 -- Issues an error when  its argument `v` is false.
--- That is, nil or false. otherwise, returns all its arguments. 
+-- That is, nil or false. otherwise, returns all its arguments.
 -- `message` is an error when absent, it defaults to "assertion failed!"
 function assert(v , message) end
 
@@ -71,7 +71,7 @@ function ipairs(t) end
 ---
 -- Loads a chunk.
 -- If `ld` is a string, the chunk is this string.
--- If `ld` is a function, load calls it repeatedly to get the chunk pieces. Each call to `ld` must return a 
+-- If `ld` is a function, load calls it repeatedly to get the chunk pieces. Each call to `ld` must return a
 -- string that concatenates with previous results. A return of an empty string, nil, or no value
 -- signals the end of the chunk.
 -- If there are no syntactic errors, returns the compiled chunk as a function;

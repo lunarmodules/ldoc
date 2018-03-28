@@ -152,7 +152,7 @@ function html.generate_output(ldoc, args, project)
       end
       return base..name..'.html'
    end
-   
+
    function ldoc.include_file (file)
       local text,e = utils.readfile(file)
       if not text then quit("unable to include "..file)
@@ -212,7 +212,7 @@ function ldoc.source_ref (fun)
    function ldoc.is_list (t)
       return type(t) == 'table' and t.append
    end
-   
+
    function ldoc.strip_header (s)
       if not s then return s end
       return s:gsub('^%s*#+%s+','')
