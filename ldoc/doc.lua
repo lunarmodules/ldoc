@@ -363,7 +363,7 @@ function File:finish()
                      end
                      -- Whether to use '.' or the language's version of ':' (e.g. \ for Moonscript)
                      item.name = class..(not static and this_mod.file.lang.method_call or '.')..item.name
-                   end
+                  end
                   if stype == 'factory'  then
                      if item.tags.private then to_be_removed = true
                      elseif item.type == 'lfunction' then
