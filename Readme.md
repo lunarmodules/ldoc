@@ -45,6 +45,8 @@ This is straightforward; the only external dependency is
 in Lua for Windows, and Penlight is also available through LuaRocks as `luarocks install
 penlight`.
 
+### Local
+
 Unpack the sources somewhere and make an alias to `ldoc.lua` on your path. That is, either
 an excutable script called 'ldoc' like so:
 
@@ -55,8 +57,14 @@ Or a batch file called 'ldoc.bat':
     @echo off
     lua \path\to\ldoc\ldoc.lua %*
 
-Or include this repo in 'LUA_PATH' and use it directly as an executable by
-including ldoc.lua in your 'PATH':
+In order for that to work you have to set 'LUA_PATH':
 
     export LUA_PATH="path/to/ldoc/?.lua;;"
 
+### Local with luarocks
+
+Call 'luarocks' like so in the repo root folder:
+
+    luarocks --local make
+
+and put the generated executable in your `PATH`.
