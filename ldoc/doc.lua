@@ -363,7 +363,7 @@ function File:finish()
                      end
                      -- Whether to use '.' or the language's version of ':' (e.g. \ for Moonscript)
                      item.name = class..(not static and this_mod.file.lang.method_call or '.')..item.name
-                   end
+                  end
                   if stype == 'factory'  then
                      if item.tags.private then to_be_removed = true
                      elseif item.type == 'lfunction' then
@@ -1076,10 +1076,10 @@ end
 
 local function reference (s, mod_ref, item_ref)
    local name = item_ref and item_ref.name or ''
-   -- this is deeply hacky; classes have 'Class ' prepended.
---~    if item_ref and doc.class_tag(item_ref.type) then
---~       name = 'Class_'..name
---~    end
+-- this is deeply hacky; classes have 'Class ' prepended.
+   if item_ref and doc.class_tag(item_ref.type) then
+      name = 'Class_'..name
+   end
    return {mod = mod_ref, name = name, label=s}
 end
 

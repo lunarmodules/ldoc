@@ -30,7 +30,7 @@ utils.unpack = utils.unpack or unpack or table.unpack
 local append = table.insert
 local lapp = require 'pl.lapp'
 
-local version = '1.4.6'
+local version = '1.4.7'
 
 -- so we can find our private modules
 app.require_here()
@@ -114,6 +114,7 @@ local file_types = {
    ['.c'] = cc,
    ['.h'] = cc,
    ['.cpp'] = cc,
+   ['.hpp'] = cc,
    ['.cxx'] = cc,
    ['.C'] = cc,
    ['.mm'] = cc,

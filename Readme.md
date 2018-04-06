@@ -31,7 +31,7 @@ line number of the reference is given.  LDoc knows about modules which do not us
 - this is important since this function has become deprecated in Lua 5.2. And you can avoid
 having to embed HTML in commments by using Markdown.
 
-LDoc will also work with Lua C extension code, and provides some convenient shortcuts.
+LDoc will also work with Lua C/C++ extension code, and provides some convenient shortcuts.
 
 An example showing the support for named sections and 'classes' is the [Winapi
 documentation](http://stevedonovan.github.com/winapi/api.html); this is generated from
@@ -45,6 +45,8 @@ This is straightforward; the only external dependency is
 in Lua for Windows, and Penlight is also available through LuaRocks as `luarocks install
 penlight`.
 
+### Local
+
 Unpack the sources somewhere and make an alias to `ldoc.lua` on your path. That is, either
 an excutable script called 'ldoc' like so:
 
@@ -55,3 +57,14 @@ Or a batch file called 'ldoc.bat':
     @echo off
     lua \path\to\ldoc\ldoc.lua %*
 
+In order for that to work you have to set 'LUA_PATH':
+
+    export LUA_PATH="path/to/ldoc/?.lua;;"
+
+### Local with luarocks
+
+Call 'luarocks' like so in the repo root folder:
+
+    luarocks --local make
+
+and put the generated executable in your `PATH`.
