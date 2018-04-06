@@ -1,0 +1,13 @@
+language: bash
+
+sudo: required
+
+before_install:
+    - sudo apt-get update -q
+    - sudo apt-get install luarocks
+
+install:
+    - sudo luarocks make
+
+after_success:
+    - ldoc --config ./doc/config.ld .
