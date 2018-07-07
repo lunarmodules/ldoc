@@ -24,9 +24,9 @@ local TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE,TAG_FLAG,TAG_MULTI_LINE = 'M','id','S
 --  - 'T' tags which represent a type, like 'function' (TAG_TYPE)
 local known_tags = {
    param = 'M', see = 'M', comment = 'M', usage = 'ML', ['return'] = 'M', field = 'M', author='M',set='M';
-   class = 'id', name = 'id', pragma = 'id', alias = 'id',
+   class = 'id', name = 'id', pragma = 'id', alias = 'id', curator='M', contributor='M',
    copyright = 'S', summary = 'S', description = 'S', release = 'S', license = 'S',
-   fixme = 'S', todo = 'S', warning = 'S', raise = 'S', charset = 'S', within = 'S',
+   fixme = 'S', todo = 'S', warning = 'S', note = 'S', raise = 'S', charset = 'S', within = 'S',
    ['local'] = 'N', export = 'N', private = 'N', constructor = 'N', static = 'N',include = 'S',
    -- project-level
    module = 'T', script = 'T', example = 'T', topic = 'T', submodule='T', classmod='T', file='T',
@@ -57,7 +57,7 @@ known_tags._presentation_names = {
 }
 
 known_tags._module_info = {
-   'copyright','release','license','author'
+   'copyright','release','license','author', 'curator', 'contributor'
 }
 
 local see_reference_handlers = {}
@@ -126,7 +126,7 @@ end
 
 -- annotation tags can appear anywhere in the code and may contain any of these tags:
 known_tags._annotation_tags = {
-   fixme = true, todo = true, warning = true
+   fixme = true, todo = true, warning = true, note = true
 }
 
 local acount = 1
