@@ -2,6 +2,13 @@
 
 Copyright (C) 2011-2012 Steve Donovan.
 
+## Fork of Steve Donovan's LDoc that fixes issue 301 and adds the following tags:
+
+- **@contributor** Someone's Name
+- **@curator** SomeOne's Name
+
+Both of the above tags are processed similar to the **@author** tag
+
 ## Rationale
 
 This project grew out of the documentation needs of
