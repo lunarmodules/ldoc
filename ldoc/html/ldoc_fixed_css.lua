@@ -132,7 +132,7 @@ table.index td { text-align: left; vertical-align: top; }
     margin-left: 14em;
     padding: 1em;
     padding-left: 2em;
-    width: 700px;
+    width: 800px;
     border-left: 2px solid #cccccc;
    // border-right: 2px solid #cccccc;
     background-color: #ffffff;
