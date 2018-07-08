@@ -30,7 +30,7 @@ utils.unpack = utils.unpack or unpack or table.unpack
 local append = table.insert
 local lapp = require 'pl.lapp'
 
-local version = '1.4.6'
+local version = '1.4.6-u_dev'
 
 -- so we can find our private modules
 app.require_here()
