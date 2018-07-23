@@ -42,7 +42,7 @@ documentation](http://stevedonovan.github.com/winapi/api.html); this is generate
 This is straightforward; the only external dependency is
 [Penlight](https://github.com/stevedonovan/Penlight), which in turn needs
 [LuaFileSystem](http://keplerproject.github.com/luafilesystem/). These are already present
-in Lua for Windows, and Penlight is also available through LuaRocks as `luarocks install
+in [Lua for Windows](https://github.com/rjpcomputing/luaforwindows), and Penlight is also available through LuaRocks as `luarocks install
 penlight`.
 
 Unpack the sources somewhere and make an alias to `ldoc.lua` on your path. That is, either
