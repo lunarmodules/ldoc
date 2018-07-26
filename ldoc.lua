@@ -229,6 +229,9 @@ function ldoc.custom_see_handler(pat, handler)
    doc.add_custom_see_handler(pat, handler)
 end
 
+-- Enable `require` command within `config.ld`
+ldoc.require = require
+
 local ldoc_contents = {
    'alias','add_language_extension','custom_tags','new_type','add_section', 'tparam_alias',
    'file','project','title','package','format','output','dir','ext', 'topics',
@@ -241,7 +244,8 @@ local ldoc_contents = {
    'dont_escape_underscore','global_lookup','prettify_files','convert_opt', 'user_keywords',
    'postprocess_html',
    'custom_css','version',
-   'no_args_infer'
+   'no_args_infer',
+   'require',
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
