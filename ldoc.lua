@@ -571,6 +571,7 @@ if ldoc.prettify_files then
    local files = List()
    local linemap = {}
    for F in file_list:iter() do
+      print("Pretty Print file: ", F.filename)
       files:append(F.filename)
       local mod = F.modules[1]
       local ls = List()
