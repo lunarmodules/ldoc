@@ -754,8 +754,11 @@ Niklas Frykholm. For convenience, LDoc comes with a copy of markdown.lua.
 more features than the pure Lua version, such as PHP-Extra style tables.
   - [lunamark](http://jgm.github.com/lunamark/), another pure Lua processor,  faster than
 markdown, and with extra features (`luarocks install lunamark`).
+  - commonmark via [cmark-lua](https://github.com/jgm/cmark-lua), a Lua wrapper
+around the fast [libcmark](https://github.com/jgm/cmark) C library (`luarocks
+install cmark`)
 
-You can request the processor you like with `format = 'markdown|discount|lunamark|plain|backticks'`, and
+You can request the processor you like with `format = 'markdown|discount|lunamark|commonmark|plain|backticks'`, and
 LDoc will attempt to use it.  If it can't find it, it will look for one of the other
 markdown processors; the original `markdown.lua` ships with LDoc, although it's slow
 for larger documents.
