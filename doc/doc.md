@@ -1199,6 +1199,7 @@ template. In `config.ld` they may also be `true`, meaning use the same directory
 configuration file.
   - `merge` allow documentation from different files to be merged into modules without
 explicit **@submodule** tag
+  - `icon` an image that will be displayed under the project name on all pages
 
 _These only appear in the configuration file:_
 
