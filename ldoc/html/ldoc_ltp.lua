@@ -1,9 +1,9 @@
 return [==[
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html>
-<meta http-equiv="Content-Type" content="text/html; charset=$(ldoc.doc_charset)"/>
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=$(ldoc.doc_charset)"/>
     <title>$(ldoc.title)</title>
     <link rel="stylesheet" href="$(ldoc.css)" type="text/css" />
 # if ldoc.custom_css then -- add custom CSS file if configured.
@@ -68,7 +68,7 @@ return [==[
 # for kind, mods, type in ldoc.kinds() do
 #  if ldoc.allowed_in_contents(type,module) then
 <h2>$(kind)</h2>
-<ul class="$(kind=='Topics' and '' or 'nowrap')">
+<ul class="$(kind=='Topics' and '' or nowrap)">
 #  for mod in mods() do local name = display_name(mod)
 #   if mod.name == this_mod then
   <li><strong>$(name)</strong></li>
@@ -128,7 +128,7 @@ return [==[
 <table class="function_list">
 #  for item in items() do
 	<tr>
-	<td class="name" $(nowrap)><a href="#$(item.name)">$(display_name(item))</a></td>
+	<td class="name $(nowrap)"><a href="#$(item.name)">$(display_name(item))</a></td>
 	<td class="summary">$(M(item.summary,item))</td>
 	</tr>
 #  end -- for items
@@ -182,8 +182,8 @@ return [==[
 #      for value in iter(tag) do
          $(li)$(custom.format and custom.format(value) or M(value))$(il)
 #      end -- for
+    </ul "@todo">
 #     end -- if tag
-    </ul>
 #    end -- iter tags
 #   end
 
@@ -217,7 +217,8 @@ return [==[
         </li>
 #     end
 #     if sublist then
-        </li></ul>
+        </ul>
+        </li>
 #     end
 #   end -- for
     </ul>
@@ -226,7 +227,9 @@ return [==[
 #  if show_return and item.retgroups then local groups = item.retgroups
     <h3>Returns:</h3>
 #   for i,group in ldoc.ipairs(groups) do local li,il = use_li(group)
+#   if #group > 1 then
     <ol>
+#   end
 #   for r in group:iter() do local type, ctypes = item:return_type(r); local rt = ldoc.typename(type)
         $(li)
 #     if rt ~= '' then
@@ -243,7 +246,9 @@ return [==[
         </ul>
 #    end -- if ctypes
 #     end -- for r
+#   if #group > 1 then
     </ol>
+#   end
 #   if i < #groups then
      <h3>Or</h3>
 #   end
@@ -295,7 +300,7 @@ return [==[
 <table class="module_list">
 # for m in mods() do
 	<tr>
-		<td class="name"  $(nowrap)><a href="$(no_spaces(kind))/$(m.name).html">$(m.name)</a></td>
+		<td class="name $(nowrap)"><a href="$(no_spaces(kind))/$(m.name).html">$(m.name)</a></td>
 		<td class="summary">$(M(ldoc.strip_header(m.summary),m))</td>
 	</tr>
 #  end -- for modules
