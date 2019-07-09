@@ -825,9 +825,10 @@ else
   ldoc.updatetime = os.date("!%Y-%m-%d %H:%M:%S",source_date_epoch)
 end
 
-local html = require 'ldoc.html'
+local rst = require 'ldoc.rst'
+print 'writing rst'
 
-html.generate_output(ldoc, args, project)
+rst.generate_output(ldoc, args, project)
 
 if args.verbose then
    print 'modules'
