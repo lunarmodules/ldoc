@@ -39,6 +39,7 @@ app.require_here()
 local usage = [[
 ldoc, a documentation generator for Lua, vs ]]..version..[[
 
+  -e,--type (default html) output content format
   -d,--dir (default doc) output directory
   -o,--output  (default 'index') output name
   -v,--verbose          verbose
@@ -231,7 +232,7 @@ end
 
 local ldoc_contents = {
    'alias','add_language_extension','custom_tags','new_type','add_section', 'tparam_alias',
-   'file','project','title','package','format','output','dir','ext', 'topics',
+   'file','project','title','package','format','output','dir','ext', 'topics', 'type',
    'one','style','template','description','examples', 'pretty', 'charset', 'plain',
    'readme','all','manual_url', 'ignore', 'colon', 'sort', 'module_file','vars',
    'boilerplate','merge', 'wrap', 'not_luadoc', 'template_escape','merge_error_groups',
@@ -826,9 +827,20 @@ else
 end
 
 local rst = require 'ldoc.rst'
-print 'writing rst'
+local html = require 'ldoc.html'
 
-rst.generate_output(ldoc, args, project)
+local output_types = {rst=rst, html=html}
+local output_type
+
+if args.type ~= nil then
+   output_type = output_types[args.type]
+end
+
+if output_type == nil then
+   output_type = html
+end
+
+output_type.generate_output(ldoc, args, project)
 
 if args.verbose then
    print 'modules'

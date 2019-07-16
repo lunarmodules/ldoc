@@ -55,6 +55,21 @@ local function get_module_info(m)
    end
 end
 
+local function md_2_rst(text)
+   for header, sign in pairs({["^#"] = "=", ["\n##"] = "-", ["\n###"] = "~"}) do
+      text = text:gsub(""..header.." (.-)[\r\n]", "\n" .. string.rep(sign, 79).."\n%1\n" .. string.rep(sign, 79) .. "\n\n")
+   end
+   local function tab_block(code_block)
+      return code_block:gsub("\n", "\n    ")
+   end
+
+   for code_lang in List {"lua", "yaml", "bash"}:iter() do
+      text = text:gsub("```("..code_lang..")(.-)```",
+              function(lang, code) return "\n.. code-block:: "..lang.." \n"..tab_block(code).."\n" end)
+   end
+   return text
+end
+
 local escape_table = { ["'"] = "&apos;", ["\""] = "&quot;", ["<"] = "&lt;", [">"] = "&gt;", ["&"] = "&amp;" }
 
 function rst.generate_output(ldoc, args, project)
@@ -206,14 +221,16 @@ function rst.generate_output(ldoc, args, project)
 
       local types = {}
       for name in tp:gmatch("[^|]+") do
-         print(name)
+         -- print(name)
          local sym = name:match '([%w%.%:]+)'
          local ref,err = markup.process_reference(sym,true)
          if ref then
             if ref.label and sym == name then
                name = ref.label
             end
-            types[#types+1] = ('`%s <%s_>`_'):format(name, ldoc.href(ref))
+            local link_template = '`%s <%s_>`_'
+            if ref.href then link_template = '`%s <%s>`_' end
+            types[#types+1] = (link_template):format(name, ldoc.href(ref))
          else
             types[#types+1] = name
          end
@@ -270,7 +287,6 @@ function rst.generate_output(ldoc, args, project)
       return cleanup_whitespaces(out)
    end
 
-   local css, custom_css = ldoc.css, ldoc.custom_css
    ldoc.output = args.output
    ldoc.ipairs = ipairs
    ldoc.pairs = pairs
@@ -299,14 +315,6 @@ function rst.generate_output(ldoc, args, project)
 
    args.dir = args.dir .. path.sep
 
-   if css then -- has CSS been copied?
-      check_file(args.dir..css, path.join(args.style,css))
-   end
-
-   if custom_css then -- has custom CSS been copied?
-      check_file(args.dir..custom_css, custom_css)
-   end
-
    -- write out the module index
    out = cleanup_whitespaces(out)
    writefile(args.dir..args.output..args.ext,out)
@@ -324,12 +332,6 @@ function rst.generate_output(ldoc, args, project)
    -- write out the per-module documentation
    -- note that we reset the internal ordering of the 'kinds' so that
    -- e.g. when reading a topic the other Topics will be listed first.
-   if css then
-      ldoc.css = '../'..css
-   end
-   if custom_css then
-      ldoc.custom_css = '../'..custom_css
-   end
    for m in mods:iter() do
       local kind, lkind, modules = unpack(m)
       check_directory(args.dir..lkind)
@@ -344,7 +346,7 @@ function rst.generate_output(ldoc, args, project)
          set_charset(ldoc)
          m.info = get_module_info(m)
          if ldoc.body and m.postprocess then
-            ldoc.body = m.postprocess(ldoc.body)
+            ldoc.body = md_2_rst(ldoc.body)
          end
          local out = templatize(module_template, ldoc, m)
          writefile(args.dir..lkind..'/'..m.name..args.ext,out)

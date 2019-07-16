@@ -15,10 +15,6 @@
 # local function rem_enters(s) return s:gsub("[\r\n]", "") end
 # local nowrap = ldoc.wrap and '' or 'nowrap'
 # if ldoc.body then -- verbatim HTML as contents; 'non-code' entries
-===============================================================================
-$(ldoc.module_typename(module)) *$(module.name)*
-===============================================================================
-
 $(ldoc.body)
 # elseif module then -- module documentation
 ===============================================================================
@@ -26,39 +22,40 @@ $(ldoc.module_typename(module)) *$(module.name)*
 ===============================================================================
 
 $(M(module.summary,module))
+
 $(rem_enters(trim(M(module.description,module))))
 
-#   if module.tags.include then
-        $(M(ldoc.include_file(module.tags.include)))
-#   end
-#   if module.see then
+# if module.tags.include then
+$(M(ldoc.include_file(module.tags.include)))
+# end
+# if module.see then
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 See also:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# for see in iter(module.see) do
-    - $(ldoc.href(see)) $(see.label)
-# end -- for
+#   for see in iter(module.see) do
+- $(ldoc.href(see)) $(see.label)
+#   end -- for
 
-#   end -- if see
-#   if module.usage then
+# end -- if see
+# if module.usage then
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Usage:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# for usage in iter(module.usage) do
+#   for usage in iter(module.usage) do
     - $(ldoc.escape(usage))
-# end -- for
+#   end -- for
 
-#   end -- if usage
+# end -- if usage
 # if module.info then
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Info:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-# for tag, value in module.info:iter() do
+#   for tag, value in module.info:iter() do
 - **$(tag)**: $(M(value,module))
-# end
+#   end
 
 # end -- if module.info
 
@@ -74,21 +71,21 @@ $(kind)
 -------------------------------------------------------------------------------
 $(M(module.kinds:get_section_description(kind),nil))
 #   if kitem then
-#       if has_description then
+#     if has_description then
 $(trim(rem_enters(M(ldoc.descript(kitem),kitem))))
 
-#       end
-#       if kitem.usage then
+#     end -- if has_description
+#     if kitem.usage then
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Usage:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 $(ldoc.prettify(kitem.usage[1]))
 
-#        end
-#   end
+#     end -- if kitem.usage
+#   end -- if kitem
 
-#  for item in items() do
+#   for item in items() do
 .. _$(module.name).$(display_name(item)):
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -97,99 +94,101 @@ $(display_name(item))
 
 $(trim(rem_enters(M(ldoc.descript(item),item))))
 
-#   if ldoc.custom_tags then
-#    for custom in iter(ldoc.custom_tags) do
-#     local tag = item.tags[custom[1]]
-#     if tag and not custom.hidden then
+#     if ldoc.custom_tags then
+#       for custom in iter(ldoc.custom_tags) do
+#         local tag = item.tags[custom[1]]
+#         if tag and not custom.hidden then
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 $(custom.title or custom[1]): custom
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-#      for value in iter(tag) do
+#           for value in iter(tag) do
 - $(custom.format and custom.format(value) or M(value))
-#      end -- for
-#     end -- if tag
-#    end -- iter tags
-#   end
-#  if show_parms and item.params and #item.params > 0 then
-#    local subnames = module.kinds:type_of(item).subnames
-#    if subnames then
+#           end -- for
+#         end -- if tag
+#       end -- iter tags
+#     end
+#     if show_parms and item.params and #item.params > 0 then
+#       local subnames = module.kinds:type_of(item).subnames
+#       if subnames then
 **$(subnames):**
 
-#    end
-#   for parm in iter(item.params) do
-#     local param,sublist = item:subparam(parm)
-#     local tab = ''
-#     if sublist then tab = '  '
+#       end
+#       for parm in iter(item.params) do
+#         local param,sublist = item:subparam(parm)
+#         local tab = ''
+#         if sublist then tab = '  '
 - *$(sublist):* $(M(item.params.map[sublist],item))
 
-#     end
-#     for p in iter(param) do
-#        local name,tp,def = item:display_name_of(p), ldoc.typename(item:type_of_param(p)), item:default_of_param(p)
-#        local prop_type = ''
-#        if def == true then
-#          prop_type = '(optional)'
-#        elseif def then
-#          prop_type = '(default $(def))'
-#        end
-#        local read_only = ''
-#        if item:readonly(p) then
-#          read_only = 'readonly'
-#        end
+#         end
+#         for p in iter(param) do
+#           local name,tp,def = item:display_name_of(p), ldoc.typename(item:type_of_param(p)), item:default_of_param(p)
+#           local prop_type = ''
+#           if def == true then
+#             prop_type = '(optional)'
+#           elseif def then
+#             prop_type = '(default $(def))'
+#           end
+#           local read_only = ''
+#           if item:readonly(p) then
+#             read_only = 'readonly'
+#           end
 $(tab)- *$(name):* $(tp) $(rem_enters(M(item.params.map[p],item))) $(trim(prop_type)) $(trim(read_only))
-#     end
-#     if sublist then
+#         end
+#         if sublist then
 
-#     end
-#   end -- for
-#   end -- if params
+#         end
+#       end -- for
+#     end -- if params
 
-#  if show_return and item.retgroups then local groups = item.retgroups
+#     if show_return and item.retgroups then local groups = item.retgroups
 **Returns**:
 
-#   for i,group in ldoc.ipairs(groups) do
-#   for r in group:iter() do local type, ctypes = item:return_type(r); local rt = ldoc.typename(type)
-#   local prop_type = ''
-#   if rt ~= '' then
-#       rt = rt..' '
-#   end
+#       for i,group in ldoc.ipairs(groups) do
+#         for r in group:iter() do local type, ctypes = item:return_type(r); local rt = ldoc.typename(type)
+#           local prop_type = ''
+#           if rt ~= '' then
+#             rt = rt..' '
+#           end
 $(rt)$(ldoc.escape(M(r.text,item)))
-#   if ctypes then
-#   for c in ctypes:iter() do
+#           if ctypes then
+#             for c in ctypes:iter() do
    - $(c.name) $(ldoc.typename(c.type)) $(M(c.comment,item))
-#   end
-#   end -- if ctypes
-#   end -- for r
-#   if i < #groups then
+#             end
+#           end -- if ctypes
+#         end -- for r
+#         if i < #groups then
 
 **Or**
 
-#   end
-#   end -- for group
-#   end -- if returns
+#         end
+#       end -- for group
+#     end -- if returns
 
-#   if show_return and item.raise then
+#     if show_return and item.raise then
 **Raises:**
 
 $(M(item.raise,item))
-#   end
-#   if item.see then
+#     end
+#     if item.see then
 **See also:**
 
-#     for see in iter(item.see) do
+#       for see in iter(item.see) do
 - $(ldoc.href(see))
-#    end -- for
+#       end -- for
 
-#   end -- if see
-#   if item.usage then
+#     end -- if see
+#     if item.usage then
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Usage:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#     for usage in iter(item.usage) do
-    - $(ldoc.prettify(usage))
-#     end -- for
-#   end -- if usage
-# end -- for items
+
+#       for usage in iter(item.usage) do
+- $(ldoc.prettify(usage))
+#       end -- for
+
+#     end -- if usage
+#   end -- for items
 # end -- for kinds
 # else -- if module; project-level contents
 # if ldoc.description then
@@ -205,14 +204,13 @@ Table of contents
 ===============================================================================
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 3
 
 # for kind, mods in ldoc.kinds() do
-# kind = kind:lower()
-# for m in mods() do
+#   kind = kind:lower()
+#   for m in mods() do
    $(kind)/$(m.name)
-#  end -- for modules
+#   end -- for modules
 
-# end -- for kinds
+# end -- for kind
 # end -- if module
-
