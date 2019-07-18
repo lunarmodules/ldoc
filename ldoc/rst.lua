@@ -159,10 +159,6 @@ function rst.generate_output(ldoc, args, project)
       return (ldoc.single and "" or "../").."source/"..name..'.lua.html#'..fun.lineno
    end
 
-   function ldoc.use_li(ls)
-      if #ls > 1 then return '<li>','</li>' else return '','' end
-   end
-
    function ldoc.default_display_name(item)
       -- Project-level items:
       if doc.project_level(item.type) then
@@ -280,9 +276,6 @@ function rst.generate_output(ldoc, args, project)
          quit(("template failed for %s: %s"):format(
                module and module.name or ldoc.output or "index",
                err))
-      end
-      if ldoc.postprocess_html then
-         out = ldoc.postprocess_html(out, module)
       end
       return cleanup_whitespaces(out)
    end

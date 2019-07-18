@@ -39,7 +39,6 @@ app.require_here()
 local usage = [[
 ldoc, a documentation generator for Lua, vs ]]..version..[[
 
-  -e,--type (default html) output content format
   -d,--dir (default doc) output directory
   -o,--output  (default 'index') output name
   -v,--verbose          verbose
@@ -512,7 +511,12 @@ end
 
 -- create the function that renders text (descriptions and summaries)
 -- (this also will initialize the code prettifier used)
-override ('format','plain')
+if args.ext == "rst" then
+   args.format = "plain"
+else
+   override ('format','plain')
+end
+
 override 'pretty'
 ldoc.markup = markup.create(ldoc, args.format, args.pretty, ldoc.user_keywords)
 
@@ -761,6 +765,24 @@ end
 -- containing config.ld contains a ldoc.css and a ldoc.ltp respectively. Otherwise
 -- they must be a valid subdirectory.
 
+local function load_output_generator (output_format)
+   local loaded, gen
+   if output_format == "rst" then
+      loaded, gen = pcall(function() return require 'ldoc.rst' end)
+      args.format = 'plain'
+   elseif output_format == "html" then
+      loaded, gen = pcall(function() return require 'ldoc.html' end)
+   end
+   if loaded then
+      return gen
+   else
+      print(("Format %s is not supported"):format(output_format))
+      os.exit(1)
+   end
+end
+
+local output_gen = load_output_generator(args.ext)
+
 style_dir 'style'
 style_dir 'template'
 
@@ -781,7 +803,7 @@ if builtin_style or builtin_template then
       lfs.mkdir(tmpdir)
    end
    local function tmpwrite (name)
-      local ok,text = pcall(require,'ldoc.html.'..name:gsub('%.','_'))
+      local ok,text = pcall(require,'ldoc'..args.ext..'.'..name:gsub('%.','_'))
       if not ok then
          quit("cannot find builtin template "..name.." ("..text..")")
       end
@@ -789,7 +811,7 @@ if builtin_style or builtin_template then
          quit("cannot write to temp directory "..tmpdir)
       end
    end
-   if builtin_style then
+   if args.ext ~= ".rst" and builtin_style then
       if builtin_style ~= '' then
          ldoc.css = 'ldoc_'..builtin_style..'.css'
       end
@@ -826,21 +848,12 @@ else
   ldoc.updatetime = os.date("!%Y-%m-%d %H:%M:%S",source_date_epoch)
 end
 
-local rst = require 'ldoc.rst'
-local html = require 'ldoc.html'
-
-local output_types = {rst=rst, html=html}
-local output_type
-
-if args.type ~= nil then
-   output_type = output_types[args.type]
+if output_gen ~= nil then
+   output_gen.generate_output(ldoc, args, project)
+else
+   print(args.ext .. " output format is not supported")
+   os.exit(1)
 end
-
-if output_type == nil then
-   output_type = html
-end
-
-output_type.generate_output(ldoc, args, project)
 
 if args.verbose then
    print 'modules'

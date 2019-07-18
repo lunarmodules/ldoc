@@ -1,3 +1,4 @@
+return [==[
 # local no_spaces = ldoc.no_spaces
 # local use_li = ldoc.use_li
 # local display_name = ldoc.display_name
@@ -214,3 +215,4 @@ Table of contents
 
 # end -- for kind
 # end -- if module
+]==]
