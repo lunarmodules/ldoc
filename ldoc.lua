@@ -512,7 +512,8 @@ end
 -- create the function that renders text (descriptions and summaries)
 -- (this also will initialize the code prettifier used)
 if args.ext == "rst" then
-   args.format = "plain"
+   args.format = "backtick"
+   ldoc.rst = true
 else
    override ('format','plain')
 end

@@ -48,7 +48,13 @@ local function resolve_inline_references (ldoc, txt, item, plain)
       end
       local html = ldoc.href(ref) or '#'
       label = ldoc.escape(label or qname)
-      local res = ('<a href="%s">%s</a>'):format(html,label)
+      local res
+      if ldoc.rst == true then
+         res = ('`%s <%s_>`_'):format(label, html)
+      else
+         res = ('<a href="%s">%s</a>'):format(html,label)
+      end
+
       return res
    end))
    if backtick_references then
@@ -59,10 +65,20 @@ local function resolve_inline_references (ldoc, txt, item, plain)
             label = name:gsub('_', '\\_')
          end
          label = ldoc.escape(label)
-         if ref then
-            return ('<a href="%s">%s</a>'):format(ldoc.href(ref),label)
+         if ldoc.rst == true then
+            if ref and string.match(label, '.') then
+               return ('``%s``'):format(label)
+            elseif ref then
+               return (':ref:`%s <%s>`'):format(label,label)
+            else
+               return label
+            end
          else
-            return '<code>'..label..'</code>'
+            if ref then
+               return ('<a href="%s">%s</a>'):format(ldoc.href(ref),label)
+            else
+               return '<code>'..label..'</code>'
+            end
          end
       end)
    end
@@ -299,7 +315,9 @@ local function text_processor(ldoc)
    return function(txt,item)
       if txt == nil then return '' end
       -- hack to separate paragraphs with blank lines
-      txt = txt:gsub('\n\n','\n<p>')
+      if ldoc.rst ~= true then
+         txt = txt:gsub('\n\n','\n<p>')
+      end
       return resolve_inline_references(ldoc, txt, item, true)
    end
 end

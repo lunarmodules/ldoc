@@ -1,14 +1,7 @@
 return [==[
-# local no_spaces = ldoc.no_spaces
-# local use_li = ldoc.use_li
-# local display_name = ldoc.display_name
-# local iter = ldoc.modules.iter
-# local function M(txt,item) return ldoc.markup(txt,item,ldoc.plain) end
-# local nowrap = ldoc.wrap and '' or 'nowrap'
 # -------- contents of project ----------
 # local this_mod = module and module.name
 # local no_spaces = ldoc.no_spaces
-# local use_li = ldoc.use_li
 # local display_name = ldoc.display_name
 # local iter = ldoc.modules.iter
 # local function M(txt,item) return ldoc.markup(txt,item,ldoc.plain) end
@@ -18,6 +11,8 @@ return [==[
 # if ldoc.body then -- verbatim HTML as contents; 'non-code' entries
 $(ldoc.body)
 # elseif module then -- module documentation
+.. _$(module.name):
+
 ===============================================================================
 $(ldoc.module_typename(module)) *$(module.name)*
 ===============================================================================
@@ -87,7 +82,9 @@ $(ldoc.prettify(kitem.usage[1]))
 #   end -- if kitem
 
 #   for item in items() do
-.. _$(module.name).$(display_name(item)):
+#     if not item.name:match(" :") then
+.. _$(module.name).$(item.name):
+#     end
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 $(display_name(item))
@@ -205,7 +202,7 @@ Table of contents
 ===============================================================================
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 1
 
 # for kind, mods in ldoc.kinds() do
 #   kind = kind:lower()
