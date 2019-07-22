@@ -70,7 +70,7 @@ local function md_2_rst(text)
    return text
 end
 
-local escape_table = { ["'"] = "&apos;", ["\""] = "&quot;", ["<"] = "&lt;", [">"] = "&gt;", ["&"] = "&amp;" }
+local escape_table = { ["'"] = "&apos;", ["\""] = "&quot;", ["&"] = "&amp;" }
 
 function rst.generate_output(ldoc, args, project)
    local check_directory, check_file, writefile = tools.check_directory, tools.check_file, tools.writefile
@@ -132,8 +132,10 @@ function rst.generate_output(ldoc, args, project)
          return see.href
       elseif doc.Module:class_of(see) then
          return ldoc.ref_to_module(see)..'_'
-      else
+      elseif see.name ~= '' then
          return ldoc.ref_to_module(see.mod)..'.'..see.name
+      else
+         return ldoc.ref_to_module(see.mod)
       end
    end
 

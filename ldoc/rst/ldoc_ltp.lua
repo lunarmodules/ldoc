@@ -9,6 +9,8 @@ return [==[
 # local function rem_enters(s) return s:gsub("[\r\n]", "") end
 # local nowrap = ldoc.wrap and '' or 'nowrap'
 # if ldoc.body then -- verbatim HTML as contents; 'non-code' entries
+.. _$(module.name):
+
 $(ldoc.body)
 # elseif module then -- module documentation
 .. _$(module.name):
@@ -167,6 +169,7 @@ $(rt)$(ldoc.escape(M(r.text,item)))
 **Raises:**
 
 $(M(item.raise,item))
+
 #     end
 #     if item.see then
 **See also:**

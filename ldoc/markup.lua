@@ -50,15 +50,16 @@ local function resolve_inline_references (ldoc, txt, item, plain)
       label = ldoc.escape(label or qname)
       local res
       if ldoc.rst == true then
-         res = ('`%s <%s_>`_'):format(label, html)
+         res = (':ref:`%s <%s>`'):format(label, html)
       else
          res = ('<a href="%s">%s</a>'):format(html,label)
       end
 
       return res
    end))
-   if backtick_references then
+   if backtick_references and not res:match('<') and res:match('%.') then
       res  = res:gsub('`([^`]+)`',function(name)
+         print(name)
          local ref,err = markup.process_reference(name)
          local label = name
          if name and do_escape then
@@ -66,7 +67,7 @@ local function resolve_inline_references (ldoc, txt, item, plain)
          end
          label = ldoc.escape(label)
          if ldoc.rst == true then
-            if ref and string.match(label, '.') then
+            if ref and not string.match(label, '%.') then
                return ('``%s``'):format(label)
             elseif ref then
                return (':ref:`%s <%s>`'):format(label,label)
