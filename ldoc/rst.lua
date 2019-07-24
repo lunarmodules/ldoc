@@ -56,7 +56,7 @@ local function get_module_info(m)
 end
 
 local function md_2_rst(text)
-   for header, sign in pairs({["^#"] = "=", ["\n##"] = "-", ["\n###"] = "~"}) do
+   for header, sign in pairs({["^#"] = "=", ["\n#"] = "=", ["\n##"] = "-", ["\n###"] = "~"}) do
       text = text:gsub(""..header.." (.-)[\r\n]", "\n" .. string.rep(sign, 79).."\n%1\n" .. string.rep(sign, 79) .. "\n\n")
    end
    local function tab_block(code_block)
@@ -103,8 +103,21 @@ function rst.generate_output(ldoc, args, project)
       return (str:gsub("['`&<>\"]", escape_table))
    end
 
+   local function indent(text)
+      return text:gsub('\n', '\n    ')
+   end
+
+   local function lua_code_block(text)
+      return ".. code-block:: lua\n\n    "..text
+   end
+
    function ldoc.prettify(str)
-      return prettify.code('lua','usage',str,0,false)
+      print(ldoc.rst)
+      if ldoc.rst == true then
+         return lua_code_block(indent(str))
+      else
+         return prettify.code('lua','usage',str,0,false)
+      end
    end
 
    -- Item descriptions come from combining the summary and description fields
@@ -219,7 +232,6 @@ function rst.generate_output(ldoc, args, project)
 
       local types = {}
       for name in tp:gmatch("[^|]+") do
-         -- print(name)
          local sym = name:match '([%w%.%:]+)'
          local ref,err = markup.process_reference(sym,true)
          if ref then

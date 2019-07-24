@@ -185,7 +185,7 @@ Usage:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 #       for usage in iter(item.usage) do
-- $(ldoc.prettify(usage))
+$(ldoc.prettify(usage))
 #       end -- for
 
 #     end -- if usage

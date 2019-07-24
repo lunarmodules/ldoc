@@ -59,7 +59,6 @@ local function resolve_inline_references (ldoc, txt, item, plain)
    end))
    if backtick_references and not res:match('<') and res:match('%.') then
       res  = res:gsub('`([^`]+)`',function(name)
-         print(name)
          local ref,err = markup.process_reference(name)
          local label = name
          if name and do_escape then
@@ -318,6 +317,8 @@ local function text_processor(ldoc)
       -- hack to separate paragraphs with blank lines
       if ldoc.rst ~= true then
          txt = txt:gsub('\n\n','\n<p>')
+      elseif ldoc.rst == true then
+         txt = txt:gsub('\n ', '\n')
       end
       return resolve_inline_references(ldoc, txt, item, true)
    end
