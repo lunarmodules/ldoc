@@ -21,7 +21,7 @@ $(ldoc.module_typename(module)) *$(module.name)*
 
 $(M(module.summary,module))
 
-$(rem_enters(trim(M(module.description,module))))
+$(M(module.description,module))
 
 # if module.tags.include then
 $(M(ldoc.include_file(module.tags.include)))
@@ -70,7 +70,7 @@ $(kind)
 $(M(module.kinds:get_section_description(kind),nil))
 #   if kitem then
 #     if has_description then
-$(trim(rem_enters(M(ldoc.descript(kitem),kitem))))
+$(M(ldoc.descript(kitem),kitem))
 
 #     end -- if has_description
 #     if kitem.usage then
@@ -92,7 +92,7 @@ $(ldoc.prettify(kitem.usage[1]))
 $(display_name(item))
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-$(trim(rem_enters(M(ldoc.descript(item),item))))
+$(M(ldoc.descript(item),item))
 
 #     if ldoc.custom_tags then
 #       for custom in iter(ldoc.custom_tags) do
@@ -133,7 +133,7 @@ $(custom.title or custom[1]): custom
 #           if item:readonly(p) then
 #             read_only = 'readonly'
 #           end
-$(tab)- *$(name):* $(tp) $(rem_enters(M(item.params.map[p],item))) $(trim(prop_type)) $(trim(read_only))
+$(tab)- *$(name):* $(tp) $(M(item.params.map[p],item)) $(trim(prop_type)) $(trim(read_only))
 #         end
 #         if sublist then
 

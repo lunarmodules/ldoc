@@ -34,7 +34,8 @@ local quit = utils.quit
 local function cleanup_whitespaces(text)
    local lines = stringx.splitlines(text)
    for i = 1, #lines do
-      lines[i] = stringx.rstrip(lines[i])
+      --print(lines)
+      --lines[i] = stringx.rstrip(lines[i])
    end
    lines[#lines + 1] = "" -- Little trick: file should end with newline
    return table.concat(lines, "\n")
@@ -67,6 +68,16 @@ local function md_2_rst(text)
       text = text:gsub("```("..code_lang..")(.-)```",
               function(lang, code) return "\n.. code-block:: "..lang.." \n"..tab_block(code).."\n" end)
    end
+
+   local function inline_link(label, link)
+      label = label:match("%b[]"):sub(2,-2)
+      local url, title = link:match("%(<?(.-)>?[ \t]*['\"](.+)['\"]")
+      url  = url or  link:match("%(<?(.-)>?%)") or ""
+      return ('`%s <%s>`_'):format(label, url)
+   end
+
+   text = text:gsub("(%b[])(%b())", inline_link)
+
    return text
 end
 
@@ -112,7 +123,6 @@ function rst.generate_output(ldoc, args, project)
    end
 
    function ldoc.prettify(str)
-      print(ldoc.rst)
       if ldoc.rst == true then
          return lua_code_block(indent(str))
       else
@@ -242,7 +252,7 @@ function rst.generate_output(ldoc, args, project)
             if ref.href then link_template = '`%s <%s>`_' end
             types[#types+1] = (link_template):format(name, ldoc.href(ref))
          else
-            types[#types+1] = name
+            types[#types+1] = '**'..name..'**'
          end
       end
       local names = table.concat(types, ", ", 1, math.max(#types-1, 1))
@@ -254,7 +264,7 @@ function rst.generate_output(ldoc, args, project)
             names = "optional"
         end
       end
-      return names
+      return '('..names..')'
    end
 
    -- the somewhat tangled logic that controls whether a type appears in the

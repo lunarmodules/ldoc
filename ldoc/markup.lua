@@ -15,36 +15,40 @@ local backtick_references
 -- inline <references> use same lookup as @see
 local function resolve_inline_references (ldoc, txt, item, plain)
    local do_escape = not plain and not ldoc.dont_escape_underscore
-   local res = (txt:gsub('@{([^}]-)}',function (name)
-      if name:match '^\\' then return '@{'..name:sub(2)..'}' end
-      local qname,label = utils.splitv(name,'%s*|')
+   local res = (txt:gsub('@{([^}]-)}', function(name)
+      if name:match '^\\' then
+         return '@{' .. name:sub(2) .. '}'
+      end
+      local qname, label = utils.splitv(name, '%s*|')
       if not qname then
          qname = name
       end
       local ref, err
-      local custom_ref, refname = utils.splitv(qname,':')
+      local custom_ref, refname = utils.splitv(qname, ':')
       if custom_ref and ldoc.custom_references then
          custom_ref = ldoc.custom_references[custom_ref]
          if custom_ref then
-            ref,err = custom_ref(refname)
+            ref, err = custom_ref(refname)
          end
       end
       if not ref then
-         ref,err = markup.process_reference(qname)
+         ref, err = markup.process_reference(qname)
       end
       if not ref then
          err = err .. ' ' .. qname
-         if item and item.warning then item:warning(err)
+         if item and item.warning then
+            item:warning(err)
          else
-           io.stderr:write('nofile error: ',err,'\n')
+            io.stderr:write('nofile error: ', err, '\n')
          end
          return '???'
       end
       if not label then
          label = ref.label
       end
-      if label and do_escape  then -- a nastiness with markdown.lua and underscores
-         label = label:gsub('_','\\_')
+      if label and do_escape then
+         -- a nastiness with markdown.lua and underscores
+         label = label:gsub('_', '\\_')
       end
       local html = ldoc.href(ref) or '#'
       label = ldoc.escape(label or qname)
@@ -52,14 +56,14 @@ local function resolve_inline_references (ldoc, txt, item, plain)
       if ldoc.rst == true then
          res = (':ref:`%s <%s>`'):format(label, html)
       else
-         res = ('<a href="%s">%s</a>'):format(html,label)
+         res = ('<a href="%s">%s</a>'):format(html, label)
       end
 
       return res
    end))
    if backtick_references and not res:match('<') and res:match('%.') then
-      res  = res:gsub('`([^`]+)`',function(name)
-         local ref,err = markup.process_reference(name)
+      res = res:gsub('`([^`]+)`', function(name)
+         local ref, err = markup.process_reference(name)
          local label = name
          if name and do_escape then
             label = name:gsub('_', '\\_')
@@ -67,17 +71,17 @@ local function resolve_inline_references (ldoc, txt, item, plain)
          label = ldoc.escape(label)
          if ldoc.rst == true then
             if ref and not string.match(label, '%.') then
-               return ('``%s``'):format(label)
+               return (' ``%s`` '):format(label)
             elseif ref then
-               return (':ref:`%s <%s>`'):format(label,label)
+               return (':ref:`%s <%s>`'):format(label, label)
             else
-               return label
+               return (' ``%s`` '):format(label)
             end
          else
             if ref then
-               return ('<a href="%s">%s</a>'):format(ldoc.href(ref),label)
+               return ('<a href="%s">%s</a>'):format(ldoc.href(ref), label)
             else
-               return '<code>'..label..'</code>'
+               return '<code>' .. label .. '</code>'
             end
          end
       end)
@@ -93,23 +97,23 @@ function markup.add_sections(F, txt)
    local lstrip = stringx.lstrip
    for line in stringx.lines(txt) do
       if first then
-         local level,header = line:match '^(#+)%s*(.+)'
+         local level, header = line:match '^(#+)%s*(.+)'
          if level then
             level = level .. '#'
          else
             level = '##'
          end
-         title_pat = '^'..level..'([^#]%s*.+)'
+         title_pat = '^' .. level .. '([^#]%s*.+)'
          title_pat = lstrip(title_pat)
          first = false
          F.display_name = header
       end
-      local title = line:match (title_pat)
+      local title = line:match(title_pat)
       if title then
          --- Windows line endings are the cockroaches of text
-         title = title:gsub('\r$','')
+         title = title:gsub('\r$', '')
          -- Markdown allows trailing '#'...
-         title = title:gsub('%s*#+$','')
+         title = title:gsub('%s*#+$', '')
          sections[L] = F:add_document_section(lstrip(title))
       end
       L = L + 1
@@ -119,9 +123,9 @@ function markup.add_sections(F, txt)
 end
 
 local function indent_line (line)
-   line = line:gsub('\t','    ') -- support for barbarians ;)
+   line = line:gsub('\t', '    ') -- support for barbarians ;)
    local indent = #line:match '^%s*'
-   return indent,line
+   return indent, line
 end
 
 local function blank (line)
@@ -139,8 +143,8 @@ local global_context, local_context
 local function process_multiline_markdown(ldoc, txt, F, filename, deflang)
    local res, L, append = {}, 0, table.insert
    local err_item = {
-      warning = function (self,msg)
-         io.stderr:write(filename..':'..L..': '..msg,'\n')
+      warning = function(self, msg)
+         io.stderr:write(filename .. ':' .. L .. ': ' .. msg, '\n')
       end
    }
    local get = stringx.lines(txt)
@@ -149,21 +153,21 @@ local function process_multiline_markdown(ldoc, txt, F, filename, deflang)
       return get()
    end
    local function pretty_code (code, lang)
-      code = concat(code,'\n')
+      code = concat(code, '\n')
       if code ~= '' then
          local err
          -- If we omit the following '\n', a '--' (or '//') comment on the
          -- last line won't be recognized.
-         code, err = prettify.code(lang,filename,code..'\n',L,false)
-         code = resolve_inline_references(ldoc, code, err_item,true)
-         append(res,'<pre>')
+         code, err = prettify.code(lang, filename, code .. '\n', L, false)
+         code = resolve_inline_references(ldoc, code, err_item, true)
+         append(res, '<pre>')
          append(res, code)
-         append(res,'</pre>')
+         append(res, '</pre>')
       else
-         append(res,code)
+         append(res, code)
       end
    end
-   local indent,start_indent
+   local indent, start_indent
    local_context = nil
    local line = getline()
    while line do
@@ -174,23 +178,26 @@ local function process_multiline_markdown(ldoc, txt, F, filename, deflang)
       end
       local fence = line:match '^```(.*)'
       if fence then
-         local plain = fence==''
+         local plain = fence == ''
          line = getline()
          local code = {}
          while not line:match '^```' do
             if not plain then
                append(code, line)
             else
-               append(res, '     '..line)
+               append(res, '     ' .. line)
             end
             line = getline()
          end
-         pretty_code (code,fence)
+         pretty_code(code, fence)
          line = getline() -- skip fence
-         if not line then break end
+         if not line then
+            break
+         end
       end
       indent, line = indent_line(line)
-      if indent >= 4 then -- indented code block
+      if indent >= 4 then
+         -- indented code block
          local code = {}
          local plain
          while indent >= 4 or blank(line) do
@@ -202,30 +209,33 @@ local function process_multiline_markdown(ldoc, txt, F, filename, deflang)
                end
             end
             if not plain then
-               append(code,line:sub(start_indent + 1))
+               append(code, line:sub(start_indent + 1))
             else
-               append(res,line)
+               append(res, line)
             end
             line = getline()
-            if line == nil then break end
+            if line == nil then
+               break
+            end
             indent, line = indent_line(line)
          end
          start_indent = nil
-         while #code > 1 and blank(code[#code]) do  -- trim blank lines.
-           table.remove(code)
+         while #code > 1 and blank(code[#code]) do
+            -- trim blank lines.
+            table.remove(code)
          end
-         pretty_code (code,deflang)
+         pretty_code(code, deflang)
       else
          local section = F and F.sections[L]
          if section then
-            append(res,('<a name="%s"></a>'):format(section))
+            append(res, ('<a name="%s"></a>'):format(section))
          end
          line = resolve_inline_references(ldoc, line, err_item)
-         append(res,line)
+         append(res, line)
          line = getline()
       end
    end
-   res = concat(res,'\n')
+   res = concat(res, '\n')
    return res
 end
 
@@ -239,9 +249,7 @@ local function generic_formatter(format)
    return ok and f
 end
 
-
-local formatters =
-{
+local formatters = {
    markdown = function(format)
       local ok, markdown = pcall(require, 'markdown')
       if not ok then
@@ -269,7 +277,7 @@ local formatters =
                      return result.body
                   end
                else
-                  io.stderr:write('LDoc discount failed with error ',errmsg)
+                  io.stderr:write('LDoc discount failed with error ', errmsg)
                   io.exit(1)
                end
             end
@@ -288,21 +296,23 @@ local formatters =
       if ok then
          local writer = lunamark.writer.html.new()
          local parse = lunamark.reader.markdown.new(writer,
-                                                    { smart = true })
-         return function(text) return parse(text) end
+            { smart = true })
+         return function(text)
+            return parse(text)
+         end
       end
    end
 }
 
-
 local function get_formatter(format)
    local used_format = format
    local formatter = (formatters[format] or generic_formatter)(format)
-   if not formatter then -- try another equivalent processor
+   if not formatter then
+      -- try another equivalent processor
       for name, f in pairs(formatters) do
          formatter = f(name)
          if formatter then
-            print('format: '..format..' not found, using '..name)
+            print('format: ' .. format .. ' not found, using ' .. name)
             used_format = name
             break
          end
@@ -312,14 +322,458 @@ local function get_formatter(format)
 end
 
 local function text_processor(ldoc)
-   return function(txt,item)
-      if txt == nil then return '' end
+   return function(txt, item)
+      if txt == nil then
+         return ''
+      end
       -- hack to separate paragraphs with blank lines
       if ldoc.rst ~= true then
-         txt = txt:gsub('\n\n','\n<p>')
+         txt = txt:gsub('\n\n', '\n<p>')
       elseif ldoc.rst == true then
-         txt = txt:gsub('\n ', '\n')
+         txt = txt:gsub('^\n ', '\n')
       end
+
+      -- Converts tabs to spaces
+      local function detab(text)
+         local tab_width = 4
+         local function rep(match)
+            local spaces = -match:len()
+            while spaces < 1 do
+               spaces = spaces + tab_width
+            end
+            return match .. string.rep(" ", spaces)
+         end
+         text = text:gsub("([^\n]-)\t", rep)
+         return text
+      end
+
+      local function map(t, f)
+         local out = {}
+         for k, v in pairs(t) do
+            out[k] = f(v, k)
+         end
+         return out
+      end
+
+      local function is_ruler_of(line, char)
+         if not line:match("^[ %" .. char .. "]*$") then
+            return false
+         end
+         if not line:match("%" .. char .. ".*%" .. char .. ".*%" .. char) then
+            return false
+         end
+         return true
+      end
+
+      -- Identifies the block level formatting present in the line
+      local function classify(line)
+         local info = { line = line, text = line }
+
+         if line:match("^    ") then
+            info.type = "indented"
+            info.outdented = line:sub(5)
+            return info
+         end
+
+         for _, c in ipairs({ '*', '-', '_', '=' }) do
+            if is_ruler_of(line, c) then
+               info.type = "ruler"
+               info.ruler_char = c
+               return info
+            end
+         end
+
+         if line == "" then
+            info.type = "blank"
+            return info
+         end
+
+         if line:match("^(#+)[ \t]*(.-)[ \t]*#*[ \t]*$") then
+            local m1, m2 = line:match("^(#+)[ \t]*(.-)[ \t]*#*[ \t]*$")
+            info.type = "header"
+            info.level = m1:len()
+            info.text = m2
+            return info
+         end
+
+         if line:match("^ ? ? ?(%d+)%.[ \t]+(.+)") then
+            local number, text = line:match("^ ? ? ?(%d+)%.[ \t]+(.+)")
+            info.type = "list_item"
+            info.list_type = "numeric"
+            info.number = 0 + number
+            info.text = text
+            return info
+         end
+
+         if line:match("^ ? ? ?([%*%+%-])[ \t]+(.+)") then
+            local bullet, text = line:match("^ ? ? ?([%*%+%-])[ \t]+(.+)")
+            info.type = "list_item"
+            info.list_type = "bullet"
+            info.bullet = bullet
+            info.text = text
+            return info
+         end
+
+         if line:match("^>[ \t]?(.*)") then
+            info.type = "blockquote"
+            info.text = line:match("^>[ \t]?(.*)")
+            return info
+         end
+
+         info.type = "normal"
+         info.text = info.text
+
+         return info
+      end
+
+      local function split(text, sep)
+         sep = sep or "\n"
+         text = text:gsub('\n\n', '$separator$')
+         local lines = {}
+         local pos = 1
+         while true do
+            local b, e = text:find(sep, pos)
+            if not b then
+               table.insert(lines, text:sub(pos))
+               break
+            end
+            table.insert(lines, text:sub(pos, b - 1))
+            pos = e + 1
+         end
+         return lines
+      end
+
+      local function codeblocks(lines)
+         local function find_codeblock(lines)
+            local start
+            for i, line in ipairs(lines) do
+               if line.type == "indented" then
+                  start = i
+                  break
+               end
+            end
+            if not start then
+               return nil
+            end
+
+            local stop = #lines
+            for i = start + 1, #lines do
+               if lines[i].type ~= "indented" and lines[i].type ~= "blank" then
+                  stop = i - 1
+                  break
+               end
+            end
+            while lines[stop].type == "blank" do
+               stop = stop - 1
+            end
+            return start, stop
+         end
+
+         local function outdent(text)
+            text = "\n" .. text
+            text = text:gsub("\n  ? ? ?", "\n")
+            text = text:sub(2)
+            return text
+         end
+
+         local function process_codeblock(lines)
+            local raw = detab(outdent(lines[1].line))
+            for i = 2, #lines do
+               raw = raw .. "\n" .. detab(outdent(lines[i].line))
+            end
+            return "\n\n.. code-block:: lua \n\n   " .. raw .. "\n"
+         end
+
+         local function splice(array, start, stop, replacement)
+            if replacement then
+               local n = stop - start + 1
+               while n > 0 do
+                  table.remove(array, start)
+                  n = n - 1
+               end
+               for i, v in ipairs(replacement) do
+                  table.insert(array, start, v)
+               end
+               return array
+            else
+               local res = {}
+               for i = start, stop do
+                  table.insert(res, array[i])
+               end
+               return res
+            end
+         end
+
+         while true do
+            local start, stop = find_codeblock(lines)
+            if not start then
+               break
+            end
+            local text = process_codeblock(splice(lines, start, stop))
+            local info = {
+               line = text,
+               type = "raw",
+               html = text
+            }
+            lines = splice(lines, start, stop, { info })
+         end
+         return lines
+      end
+      local function blocks_to_rst(lines)
+         local out = {}
+         local i = 1
+         while i <= #lines do
+            local line = lines[i]
+            if line.type == "ruler" then
+               table.insert(out, "--------")
+            elseif line.type == "normal" then
+               local s = line.line
+
+               while i + 1 <= #lines and lines[i + 1].type == "normal" do
+                  i = i + 1
+                  s = s .. ' ' .. lines[i].line
+               end
+
+               table.insert(out, s)
+            elseif line.type == "header" then
+               local s = ' **' .. line.text '** '
+               table.insert(out, s)
+            else
+               table.insert(out, line.line)
+            end
+            i = i + 1
+         end
+         return out
+      end
+
+
+      -- If a replacement array is specified, the range [start, stop] in the array is replaced
+      -- with the replacement array and the resulting array is returned. Without a replacement
+      -- array the section of the array between start and stop is returned.
+      local function splice(array, start, stop, replacement)
+         if replacement then
+            local n = stop - start + 1
+            while n > 0 do
+               table.remove(array, start)
+               n = n - 1
+            end
+            for i,v in ipairs(replacement) do
+               table.insert(array, start, v)
+            end
+            return array
+         else
+            local res = {}
+            for i = start,stop do
+               table.insert(res, array[i])
+            end
+            return res
+         end
+      end
+
+      -- Indents the text one step.
+      local function indent(text)
+         text = text:gsub("\n", "\n    ")
+         return text
+      end
+
+      local block_transform
+
+      local function lists(array, sublist)
+         -- TODO make this method return rst
+         local function process_list(arr)
+            local function any_blanks(arr)
+               for i = 1, #arr do
+                  if arr[i].type == "blank" then return true end
+               end
+               return false
+            end
+
+            local function split_list_items(arr)
+               local acc = {arr[1]}
+               local res = {}
+               for i=2,#arr do
+                  if arr[i].type == "list_item" then
+                     table.insert(res, acc)
+                     acc = {arr[i]}
+                  else
+                     table.insert(acc, arr[i])
+                  end
+               end
+               table.insert(res, acc)
+               return res
+            end
+
+            local function process_list_item(lines, block)
+               while lines[#lines].type == "blank" do
+                  table.remove(lines)
+               end
+
+               local itemtext = lines[1].text
+               for i=2,#lines do
+                  itemtext = itemtext .. "\n" .. outdent(lines[i].line)
+               end
+               if block then
+                  itemtext = block_transform(itemtext, true)
+                  if not itemtext:find("<pre>") then itemtext = indent(itemtext) end
+                  return "    <li>" .. itemtext .. "</li>"
+               else
+                  local lines = split(itemtext)
+                  lines = map(lines, classify)
+                  lines = lists(lines, true)
+                  lines = blocks_to_rst(lines, true)
+                  itemtext = table.concat(lines, "\n")
+                  if not itemtext:find("<pre>") then itemtext = indent(itemtext) end
+                  return "    <li>" .. itemtext .. "</li>"
+               end
+            end
+
+            local block_list = any_blanks(arr)
+            local items = split_list_items(arr)
+            local out = ""
+            for _, item in ipairs(items) do
+               out = out .. process_list_item(item, block_list) .. "\n"
+            end
+            if arr[1].list_type == "numeric" then
+               return "<ol>\n" .. out .. "</ol>"
+            else
+               return "<ul>\n" .. out .. "</ul>"
+            end
+         end
+
+         -- Finds the range of lines composing the first list in the array. A list
+         -- starts with (^ list_item) or (blank list_item) and ends with
+         -- (blank* $) or (blank normal).
+         --
+         -- A sublist can start with just (list_item) does not need a blank...
+         local function find_list(array, sublist)
+            local function find_list_start(array, sublist)
+               if array[1].type == "list_item" then return 1 end
+               if sublist then
+                  for i = 1,#array do
+                     if array[i].type == "list_item" then return i end
+                  end
+               else
+                  for i = 1, #array-1 do
+                     if array[i].type == "blank" and array[i+1].type == "list_item" then
+                        return i+1
+                     end
+                  end
+               end
+               return nil
+            end
+            local function find_list_end(array, start)
+               local pos = #array
+               for i = start, #array-1 do
+                  if array[i].type == "blank" and array[i+1].type ~= "list_item"
+                     and array[i+1].type ~= "indented" and array[i+1].type ~= "blank" then
+                     pos = i-1
+                     break
+                  end
+               end
+               while pos > start and array[pos].type == "blank" do
+                  pos = pos - 1
+               end
+               return pos
+            end
+
+            local start = find_list_start(array, sublist)
+            if not start then return nil end
+            return start, find_list_end(array, start)
+         end
+
+         while true do
+            local start, stop = find_list(array, sublist)
+            if not start then break end
+            local text = process_list(splice(array, start, stop))
+            local info = {
+               line = text,
+               type = "raw",
+               html = text
+            }
+            array = splice(array, start, stop, {info})
+         end
+
+         -- Convert any remaining list items to normal
+         for _,line in ipairs(array) do
+            if line.type == "list_item" then line.type = "normal" end
+         end
+
+         return array
+      end
+
+      local link_database
+
+      -- Strips link definitions from the text and stores the data in a lookup table.
+      local function strip_link_definitions(text)
+         local linkdb = {}
+
+         local function link_def(id, url, title)
+            id = id:match("%[(.+)%]"):lower()
+            linkdb[id] = linkdb[id] or {}
+            linkdb[id].url = url or linkdb[id].url
+            linkdb[id].title = title or linkdb[id].title
+            return ""
+         end
+
+         local def_no_title = "\n ? ? ?(%b[]):[ \t]*\n?[ \t]*<?([^%s>]+)>?[ \t]*"
+         local def_title1 = def_no_title .. "[ \t]+\n?[ \t]*[\"'(]([^\n]+)[\"')][ \t]*"
+         local def_title2 = def_no_title .. "[ \t]*\n[ \t]*[\"'(]([^\n]+)[\"')][ \t]*"
+         local def_title3 = def_no_title .. "[ \t]*\n?[ \t]+[\"'(]([^\n]+)[\"')][ \t]*"
+
+         text = text:gsub(def_title1, link_def)
+         text = text:gsub(def_title2, link_def)
+         text = text:gsub(def_title3, link_def)
+         text = text:gsub(def_no_title, link_def)
+         return text, linkdb
+      end
+
+      link_database = {}
+
+      -- Handle anchor references
+      local function anchors(text)
+         local function reference_link(text, id)
+            text = text:match("%b[]"):sub(2,-2)
+            id = id:match("%b[]"):sub(2,-2):lower()
+            if id == "" then id = text:lower() end
+            link_database[id] = link_database[id] or {}
+            if not link_database[id].url then return nil end
+            local url = link_database[id].url or id
+            --url = encode_alt(url)
+            local title = link_database[id].title
+            if title then title = " title=\"" .. title .. "\"" else title = "" end
+            return url .. title .. text
+         end
+
+         local function inline_link(text, link)
+            text = text:match("%b[]"):sub(2,-2)
+            local url, title = link:match("%(<?(.-)>?[ \t]*['\"](.+)['\"]")
+            url  = url or  link:match("%(<?(.-)>?%)") or ""
+            if title then
+               return url .. title .. text
+            else
+               return url .. text
+            end
+         end
+
+         text = text:gsub("(%b[])[ \t]*\n?[ \t]*(%b[])", reference_link)
+         text = text:gsub("(%b[])(%b())", inline_link)
+         return text
+      end
+
+      local function block_transform(text, sublist)
+         local lines = split(text)
+         lines = map(lines, classify)
+         lines = codeblocks(lines)
+         --lines = lists(lines, sublist)
+         lines = blocks_to_rst(lines)
+         local tx = table.concat(lines, "")
+         tx = tx:gsub('$separator$ ', '\n\n')
+         return tx
+      end
+
+      txt = anchors(txt)
+      txt, link_database = strip_link_definitions(txt)
+      txt = block_transform(txt)
       return resolve_inline_references(ldoc, txt, item, true)
    end
 end
@@ -327,39 +781,43 @@ end
 local plain_processor
 
 local function markdown_processor(ldoc, formatter)
-   return function (txt,item,plain)
-      if txt == nil then return '' end
+   return function(txt, item, plain)
+      if txt == nil then
+         return ''
+      end
       if plain then
          if not plain_processor then
             plain_processor = text_processor(ldoc)
          end
-         return plain_processor(txt,item)
+         return plain_processor(txt, item)
       end
-      local is_file = utils.is_type(item,doc.File)
+      local is_file = utils.is_type(item, doc.File)
       local is_module = not file and item and doc.project_level(item.type)
       if is_file or is_module then
-        local deflang = 'lua'
-        if ldoc.parse_extra and ldoc.parse_extra.C then
+         local deflang = 'lua'
+         if ldoc.parse_extra and ldoc.parse_extra.C then
             deflang = 'c'
-        end
-        if is_module then
+         end
+         if is_module then
             txt = process_multiline_markdown(ldoc, txt, nil, item.file.filename, deflang)
-        else
+         else
             txt = process_multiline_markdown(ldoc, txt, item, item.filename, deflang)
-        end
+         end
       else
          txt = resolve_inline_references(ldoc, txt, item)
       end
       txt = formatter(txt)
       -- We will add our own paragraph tags, if needed.
-      return (txt:gsub('^%s*<p>(.+)</p>%s*$','%1'))
+      return (txt:gsub('^%s*<p>(.+)</p>%s*$', '%1'))
    end
 end
 
 local function get_processor(ldoc, format)
-   if format == 'plain' then return text_processor(ldoc) end
+   if format == 'plain' then
+      return text_processor(ldoc)
+   end
 
-   local formatter,actual_format = get_formatter(format)
+   local formatter, actual_format = get_formatter(format)
    if formatter then
       markup.plain = false
       -- AFAIK only markdown.lua has underscore-in-identifier problem...
@@ -369,10 +827,9 @@ local function get_processor(ldoc, format)
       return markdown_processor(ldoc, formatter)
    end
 
-   print('format: '..format..' not found, falling back to text')
+   print('format: ' .. format .. ' not found, falling back to text')
    return text_processor(ldoc)
 end
-
 
 function markup.create (ldoc, format, pretty, user_keywords)
    local processor
@@ -386,25 +843,31 @@ function markup.create (ldoc, format, pretty, user_keywords)
    prettify.set_prettifier(pretty)
    prettify.set_user_keywords(user_keywords)
 
-   markup.process_reference = function(name,istype)
+   markup.process_reference = function(name, istype)
       if local_context == 'none.' and not name:match '%.' then
-         return nil,'not found'
+         return nil, 'not found'
       end
       local mod = ldoc.single or ldoc.module or ldoc.modules[1]
-      local ref,err = mod:process_see_reference(name, ldoc.modules, istype)
-      if ref then return ref end
+      local ref, err = mod:process_see_reference(name, ldoc.modules, istype)
+      if ref then
+         return ref
+      end
       if global_context then
          local qname = global_context .. name
          ref = mod:process_see_reference(qname, ldoc.modules, istype)
-         if ref then return ref end
+         if ref then
+            return ref
+         end
       end
       if local_context then
          local qname = local_context .. name
          ref = mod:process_see_reference(qname, ldoc.modules, istype)
-         if ref then return ref end
+         if ref then
+            return ref
+         end
       end
       -- note that we'll return the original error!
-      return ref,err
+      return ref, err
    end
 
    markup.href = function(ref)
