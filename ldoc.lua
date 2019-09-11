@@ -241,7 +241,8 @@ local ldoc_contents = {
    'dont_escape_underscore','global_lookup','prettify_files','convert_opt', 'user_keywords',
    'postprocess_html',
    'custom_css','version',
-   'no_args_infer'
+   'no_args_infer',
+   'without_source'
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
@@ -468,7 +469,9 @@ local function process_all_files(files)
    for f in files:iter() do
       process_file(f, file_list)
    end
-   if #file_list == 0 then quit "no source files found" end
+   if #file_list == 0 and not ldoc.without_source then
+      quit "no source files found"
+   end
 end
 
 if type(args.file) == 'table' then
@@ -503,7 +506,9 @@ elseif path.isfile(args.file) then
       end
    end
    process_file(args.file, file_list)
-   if #file_list == 0 then quit "unsupported file extension" end
+   if #file_list == 0 and not ldoc.without_source then
+      quit "unsupported file extension"
+   end
 else
    quit ("file or directory does not exist: "..quote(args.file))
 end
