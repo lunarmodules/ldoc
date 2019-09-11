@@ -469,9 +469,7 @@ local function process_all_files(files)
    for f in files:iter() do
       process_file(f, file_list)
    end
-   if #file_list == 0 and not ldoc.without_source then
-      quit "no source files found"
-   end
+   if #file_list == 0 then quit "no source files found" end
 end
 
 if type(args.file) == 'table' then
@@ -492,9 +490,9 @@ elseif path.isdir(args.file) then
          end
       end
    end
-
-   process_all_files({args.file})
-
+   if not ldoc.without_source then
+     process_all_files({args.file})
+   end
 elseif path.isfile(args.file) then
    -- a single file may be accompanied by a config.ld in the same dir
    if not config_dir then
