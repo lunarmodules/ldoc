@@ -573,11 +573,13 @@ if ldoc.prettify_files then
    for F in file_list:iter() do
       files:append(F.filename)
       local mod = F.modules[1]
-      local ls = List()
-      for item in mod.items:iter() do
-         ls:append(item.lineno)
+      if mod then
+        local ls = List()
+        for item in mod.items:iter() do
+           ls:append(item.lineno)
+        end
+        linemap[F.filename] = ls
       end
-      linemap[F.filename] = ls
    end
 
    if type(ldoc.prettify_files) == 'table' then
