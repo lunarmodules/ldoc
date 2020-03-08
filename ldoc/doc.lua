@@ -27,7 +27,8 @@ local known_tags = {
    class = 'id', name = 'id', pragma = 'id', alias = 'id',
    copyright = 'S', summary = 'S', description = 'S', release = 'S', license = 'S',
    fixme = 'S', todo = 'S', warning = 'S', raise = 'S', charset = 'S', within = 'S',
-   ['local'] = 'N', export = 'N', private = 'N', constructor = 'N', static = 'N',include = 'S',
+   ['local'] = 'N', export = 'N', private = 'N', constructor = 'N', static = 'N', classmethod = 'N',
+   include = 'S',
    -- project-level
    module = 'T', script = 'T', example = 'T', topic = 'T', submodule='T', classmod='T', file='T',
    -- module-level
@@ -344,6 +345,7 @@ function File:finish()
                      -- a class is either a @type section or a @classmod module. Is this a _method_?
                      local class = classmod and this_mod.name or this_section.name
                      local static = item.tags.constructor or item.tags.static or item.type ~= 'function'
+                     local classmethod = item.tags.classmethod
                      -- methods and metamethods go into their own special sections...
                      if classmod and item.type == 'function' then
                         local inferred_section
@@ -357,7 +359,8 @@ function File:finish()
                         end
                      end
                      -- Whether to use '.' or the language's version of ':' (e.g. \ for Moonscript)
-                     item.name = class..(not static and this_mod.file.lang.method_call or '.')..item.name
+                     class_name = classmethod and class or class:lower()
+                     item.name = class_name..(not static and this_mod.file.lang.method_call or '.')..item.name
                    end
                   if stype == 'factory'  then
                      if item.tags.private then to_be_removed = true
@@ -407,7 +410,7 @@ function File:finish()
       -- luacheck: pop
       item.names_hierarchy = require('pl.utils').split(
         item.name,
-        '[.:]'
+        '[.:\\]'
       )
    end
 end
@@ -1184,7 +1187,7 @@ function Module:get_fun_ref(s)
    local fun_ref = self.items.by_name[s]
    -- did not get an exact match, so try to match by the unqualified fun name
    if not fun_ref then
-      local patt = '[.:]'..s..'$'
+      local patt = '[.:\\]'..s..'$'
       for qname,ref in pairs(self.items.by_name) do
          if qname:match(patt) then
             fun_ref = ref

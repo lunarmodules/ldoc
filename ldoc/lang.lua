@@ -301,7 +301,6 @@ function CC:item_follows (t,v,tok)
          name = v
          t,v = tnext(tok)
       end
-      --print ('got',name,t,v,return_type)
       return function(tags,tok)
          if not tags.name then
             tags:add('name',name)
@@ -339,7 +338,12 @@ function Moon:extract_arg (tl,idx)
 end
 
 function Moon:item_follows (t,v,tok)
+   local classmethod = false
    if t == '.' then -- enclosed in with statement
+      t,v = tnext(tok)
+   end
+   if t == '@' then -- static member declaration
+      classmethod = true
       t,v = tnext(tok)
    end
    if t == 'iden' then
@@ -353,8 +357,7 @@ function Moon:item_follows (t,v,tok)
             tags:add('name',name)
          end
       elseif t == '=' or t == ':' then -- function/method
-         local _
-         t,_ = tnext(tok)
+         t,v = tnext(tok)
          return function(tags,tok)
             if not tags.name then
                tags:add('name',name)
@@ -364,10 +367,16 @@ function Moon:item_follows (t,v,tok)
             else
                tags.formal_args = List()
             end
-            t,_ = tnext(tok)
+            if t == '-' then
+               tags:add('static')
+            end
+            if classmethod then
+               tags:add('classmethod')
+            end
+            t,v = tnext(tok)
             tags:add('class','function')
             if t ~= '>' then
-               tags.static = true
+               tags:add('static')
             end
          end
       else
