@@ -754,8 +754,9 @@ Niklas Frykholm. For convenience, LDoc comes with a copy of markdown.lua.
 more features than the pure Lua version, such as PHP-Extra style tables.
   - [lunamark](http://jgm.github.com/lunamark/), another pure Lua processor,  faster than
 markdown, and with extra features (`luarocks install lunamark`).
+  - [pandoc](https://pandoc.org/), a Markdown processor with an extensive feature set (see [here](https://pandoc.org/installing.html) for installation and make sure `pandoc` is on `PATH`).
 
-You can request the processor you like with `format = 'markdown|discount|lunamark|plain|backticks'`, and
+You can request the processor you like with `format = 'markdown|discount|lunamark|pandoc|plain|backticks'`, and
 LDoc will attempt to use it.  If it can't find it, it will look for one of the other
 markdown processors; the original `markdown.lua` ships with LDoc, although it's slow
 for larger documents.
@@ -1184,7 +1185,7 @@ of files and directories.
   - `title` page title, default 'Reference'
   - `package ` explicit base package name; also used for resolving references in documents
   - `all` show local functions, etc as well in the docs
-  - `format` markup processor, can be 'plain' (default), 'markdown' or 'discount'
+  - `format` markup processor, can be 'plain' (default), 'markdown', 'discount', 'lunamark' or 'pandoc'
   - `output` output name (default 'index')
   - `dir` directory for output files (default 'doc')
   - `colon` use colon style, instead of @ tag style
