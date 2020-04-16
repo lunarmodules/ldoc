@@ -275,6 +275,20 @@ local formatters =
                                                     { smart = true })
          return function(text) return parse(text) end
       end
+   end,
+   pandoc = function(format)
+     return function(text)
+       local out_filename = os.tmpname()
+       local in_file = io.popen("pandoc -f markdown -t html -o " .. out_filename .. " -", "w")
+       in_file:write(text)
+       in_file:close()
+
+       local out_file = io.open(out_filename, "rb")
+       local out_content = out_file:read("*all")
+       out_file:close()
+       os.remove(out_filename)
+       return out_content
+     end
    end
 }
 
