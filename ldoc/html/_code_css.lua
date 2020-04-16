@@ -16,4 +16,13 @@ pre .user-keyword { color: #800080; }
 pre .prompt { color: #558817; }
 pre .url { color: #272fc2; text-decoration: underline; }
 
+/* same, for Pandoc code highlighting */
+code span.co { color: #558817; }
+code span.cn { color: #a8660d; }
+code span.kw, code span.cf { color: #aa5050; font-weight: bold; }
+code span.st { color: #8080ff; }
+code span.dv { color: #f8660d; }
+code span.pp { color: #a33243; }
+code span.va { color: #800080; }
+
 ]]
