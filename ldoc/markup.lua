@@ -316,7 +316,7 @@ local function markdown_processor(ldoc, formatter)
          return plain_processor(txt,item)
       end
       local is_file = utils.is_type(item,doc.File)
-      local is_module = not file and item and doc.project_level(item.type)
+      local is_module = not is_file and item and doc.project_level(item.type)
       if is_file or is_module then
         local deflang = 'lua'
         if ldoc.parse_extra and ldoc.parse_extra.C then
