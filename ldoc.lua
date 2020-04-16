@@ -171,7 +171,6 @@ doc.ldoc = ldoc
 
 -- if the corresponding argument was the default, then any ldoc field overrides
 local function override (field,defval)
-   defval = defval or false
    if args[field] == defval and ldoc[field] ~= nil then args[field] = ldoc[field] end
 end
 

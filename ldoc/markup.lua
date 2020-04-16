@@ -157,7 +157,7 @@ local function process_multiline_markdown(ldoc, txt, F, filename, deflang)
          line = getline()
       end
       local fence = line:match '^```(.*)'
-      if fence then
+      if prettify.prettifier ~= 'none' and fence then
          local plain = fence==''
          line = getline()
          local code = {}
@@ -174,7 +174,7 @@ local function process_multiline_markdown(ldoc, txt, F, filename, deflang)
          if not line then break end
       end
       indent, line = indent_line(line)
-      if indent >= 4 then -- indented code block
+      if prettify.prettifier ~= 'none' and indent >= 4 then -- indented code block
          local code = {}
          local plain
          while indent >= 4 or blank(line) do

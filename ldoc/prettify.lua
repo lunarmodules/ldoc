@@ -88,14 +88,16 @@ function prettify.lua (lang, fname, code, initial_lineno, pre, linenos)
    return res:join ()
 end
 
+prettify.prettifier = nil
+
 local lxsh
 
 local lxsh_highlighers = {bib=true,c=true,lua=true,sh=true}
 
 function prettify.code (lang,fname,code,initial_lineno,pre)
-   if not lxsh then
+   if prettify.prettifier == 'lua' then
       return prettify.lua (lang,fname, code, initial_lineno, pre)
-   else
+   elseif prettify.prettifier == 'lxsh' then
       if not lxsh_highlighers[lang] then
          lang = 'lua'
       end
@@ -111,12 +113,14 @@ function prettify.code (lang,fname,code,initial_lineno,pre)
 end
 
 function prettify.set_prettifier (pretty)
+   prettify.prettifier = pretty
    local ok
    if pretty == 'lxsh' then
       ok,lxsh = pcall(require,'lxsh')
       if not ok then
          print('pretty: '..pretty..' not found, using built-in Lua')
          lxsh = nil
+         prettify.prettifier = 'lua'
       end
    end
 end
