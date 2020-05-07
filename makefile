@@ -1,27 +1,26 @@
-LUA= $(shell echo `which lua`)
-LUA_BINDIR= $(shell echo `dirname $(LUA)`)
-LUA_PREFIX= $(shell echo `dirname $(LUA_BINDIR)`)
-LUA_SHAREDIR=$(LUA_PREFIX)/share/lua/5.1
+LUA := $(shell echo `which lua`)
+LUA_BINDIR := $(shell echo `dirname $(LUA)`)
+LUA_PREFIX := $(shell echo `dirname $(LUA_BINDIR)`)
+LUA_VER := $(shell lua -v | sed 's/Lua \([0-9]\{1,\}\.[0-9]\{1,\}\)\..*/\1/')
+LUA_SHAREDIR := $(LUA_PREFIX)/share/lua/$(LUA_VER)
 
 ldoc:
 
 install: install_parts
-	echo "lua $(LUA_SHAREDIR)/ldoc.lua \$$*" > $(DESTDIR)$(LUA_BINDIR)/ldoc
-	chmod +x $(DESTDIR)$(LUA_BINDIR)/ldoc
+	echo "lua $(LUA_SHAREDIR)/ldoc/ldoc.lua \$$*" > $(LUA_BINDIR)/ldoc
+	chmod +x $(LUA_BINDIR)/ldoc
 
 install_luajit: install_parts
-	echo "luajit $(LUA_SHAREDIR)/ldoc.lua \$$*" > $(DESTDIR)$(LUA_BINDIR)/ldoc
-	chmod +x $(DESTDIR)$(LUA_BINDIR)/ldoc
+	echo "luajit $(LUA_SHAREDIR)/ldoc/ldoc.lua \$$*" > $(LUA_BINDIR)/ldoc
+	chmod +x $(LUA_BINDIR)/ldoc
 
 install_parts:
-	mkdir -p $(DESTDIR)$(LUA_SHAREDIR)
-	cp ldoc.lua $(DESTDIR)$(LUA_SHAREDIR)
-	cp -r ldoc $(DESTDIR)$(LUA_SHAREDIR)
+	cp -r ldoc $(LUA_SHAREDIR)
+	cp ldoc.lua $(LUA_SHAREDIR)/ldoc
 
 uninstall:
-	-rm $(DESTDIR)$(LUA_SHAREDIR)/ldoc.lua
-	-rm -r $(DESTDIR)$(LUA_SHAREDIR)/ldoc
-	-rm $(DESTDIR)$(LUA_BINDIR)/ldoc
+	-rm -r $(LUA_SHAREDIR)/ldoc
+	-rm $(LUA_BINDIR)/ldoc
 
 test: test-basic test-example test-md test-tables
 
