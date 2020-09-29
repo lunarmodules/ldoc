@@ -152,7 +152,7 @@ function html.generate_output(ldoc, args, project)
       end
       return base..name..'.html'
    end
-   
+
    function ldoc.include_file (file)
       local text,e = utils.readfile(file)
       if not text then quit("unable to include "..file)
@@ -161,14 +161,16 @@ function html.generate_output(ldoc, args, project)
       end
    end
 
--- these references are never from the index...?
-function ldoc.source_ref (fun)
+   -- these references are never from the index...?
+   function ldoc.source_ref (fun)
       local modname = fun.module.name
+      local path, ext
+      path, ext = tools.split_dotted_name(fun.module.file.filename)
       local pack,name = tools.split_dotted_name(modname)
       if not pack then
          name = modname
       end
-      return (ldoc.single and "" or "../").."source/"..name..'.lua.html#'..fun.lineno
+      return (ldoc.single and "" or "../").."source/"..name..'.'..ext..'.html#'..fun.lineno
    end
 
    function ldoc.use_li(ls)
@@ -212,7 +214,7 @@ function ldoc.source_ref (fun)
    function ldoc.is_list (t)
       return type(t) == 'table' and t.append
    end
-   
+
    function ldoc.strip_header (s)
       if not s then return s end
       return s:gsub('^%s*#+%s+','')

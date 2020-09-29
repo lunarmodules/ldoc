@@ -30,7 +30,7 @@ utils.unpack = utils.unpack or unpack or table.unpack
 local append = table.insert
 local lapp = require 'pl.lapp'
 
-local version = '1.4.6'
+local version = '1.4.6-u_dev'
 
 -- so we can find our private modules
 app.require_here()
@@ -585,6 +585,7 @@ if ldoc.prettify_files then
    local files = List()
    local linemap = {}
    for F in file_list:iter() do
+      print("Pretty Print file: ", F.filename)
       files:append(F.filename)
       local mod = F.modules[1]
       if mod then

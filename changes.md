@@ -1,3 +1,13 @@
+## Version 1.4.6-u_dev
+This version is a fork of Steve Donovan's LDoc that:
+
+-  Fixes [issue 301](https://github.com/stevedonovan/LDoc/issues/301 "Source code links wiht add_language_extension() are incorrect.")
+- Adds the following tags:
+	- **@contributor** Someone's Name
+	- **@curator** SomeOne's Name
+
+Both of the above tags are processed similar to the **@author** tag
+
 ## Version 1.4.4
 
 ### Features
