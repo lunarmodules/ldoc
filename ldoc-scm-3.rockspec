@@ -1,5 +1,5 @@
 package = "ldoc"
-version = "scm-2"
+version = "scm-3"
 
 source = {
   dir="LDoc",
@@ -42,6 +42,7 @@ build = {
     ["ldoc.html._reset_css"] = "ldoc/html/_reset_css.lua",
     ["ldoc.html.ldoc_one_css"] = "ldoc/html/ldoc_one_css.lua",
     ["ldoc.html.ldoc_pale_css"] = "ldoc/html/ldoc_pale_css.lua",
+    ["ldoc.html.ldoc_new_css"] = "ldoc/html/ldoc_new_css.lua",
     ["ldoc.html.ldoc_fixed_css"] = "ldoc/html/ldoc_fixed_css.lua",
     ["ldoc.builtin.globals"] = "ldoc/builtin/globals.lua",
     ["ldoc.builtin.coroutine"] = "ldoc/builtin/coroutine.lua",

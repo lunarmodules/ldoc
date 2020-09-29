@@ -6,7 +6,7 @@ backtick_references=false
 file='../ldoc.lua'
 dir='../out'
 readme='doc.md'
-style='!pale'
+style='!new'
 kind_names={topic='Manual',script='Programs'}
 examples = {
     '../tests/styles/colon.lua',
