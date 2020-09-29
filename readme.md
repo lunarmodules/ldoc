@@ -5,10 +5,10 @@ Copyright (C) 2011-2012 Steve Donovan.
 ## Rationale
 
 This project grew out of the documentation needs of
-[Penlight](https://github.com/stevedonovan/Penlight) (and not always getting satisfaction
-with LuaDoc) and depends on Penlight itself.(This allowed me to _not_ write a lot of code.)
+[Penlight](https://github.com/lunarmodules/Penlight) (and not always getting satisfaction
+with LuaDoc) and depends on Penlight itself. (This allowed me to _not_ write a lot of code.)
 
-The [API documentation](http://stevedonovan.github.com/Penlight/api/index.html) of Penlight
+The [API documentation](http://lunarmodules.github.com/Penlight/api/index.html) of Penlight
 is an example of a project using plain LuaDoc markup processed using LDoc.
 
 LDoc is intended to be compatible with [LuaDoc](http://keplerproject.github.io/luadoc/) and
@@ -40,13 +40,13 @@ documentation](http://stevedonovan.github.com/winapi/api.html); this is generate
 ## Installation
 
 This is straightforward; the only external dependency is
-[Penlight](https://github.com/stevedonovan/Penlight), which in turn needs
+[Penlight](https://github.com/lunarmodules/Penlight), which in turn needs
 [LuaFileSystem](http://keplerproject.github.com/luafilesystem/). These are already present
-in Lua for Windows, and Penlight is also available through LuaRocks as `luarocks install
+in [Lua for Windows](https://github.com/rjpcomputing/luaforwindows), and Penlight is also available through [LuaRocks](https://luarocks.org/) as `luarocks install
 penlight`.
 
 Unpack the sources somewhere and make an alias to `ldoc.lua` on your path. That is, either
-an excutable script called 'ldoc' like so:
+an executable script called 'ldoc' like so:
 
     lua /path/to/ldoc/ldoc.lua $*
 
