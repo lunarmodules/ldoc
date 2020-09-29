@@ -49,7 +49,7 @@ ldoc, a documentation generator for Lua, vs ]]..version..[[
   -l,--template (default !) directory for template (ldoc.ltp)
   -p,--project (default ldoc) project name
   -t,--title (default Reference) page title
-  -f,--format (default plain) formatting - can be markdown, discount or plain
+  -f,--format (default plain) formatting - can be markdown, discount, lunamark, commonmark, backticks, or plain
   -b,--package  (default .) top-level package basename (needed for module(...))
   -x,--ext (default html) output file extension
   -c,--config (default config.ld) configuration name
@@ -573,11 +573,13 @@ if ldoc.prettify_files then
    for F in file_list:iter() do
       files:append(F.filename)
       local mod = F.modules[1]
-      local ls = List()
-      for item in mod.items:iter() do
-         ls:append(item.lineno)
+      if mod then
+        local ls = List()
+        for item in mod.items:iter() do
+           ls:append(item.lineno)
+        end
+        linemap[F.filename] = ls
       end
-      linemap[F.filename] = ls
    end
 
    if type(ldoc.prettify_files) == 'table' then
