@@ -1180,6 +1180,10 @@ function Module:process_see_reference (s,modules,istype)
       end
       mod_ref = modules.by_name[self.package..'.'..s]
       if ismod(mod_ref) then return reference(s, mod_ref,nil) end
+
+      fun_ref = self.items.by_name[self.name..'.'..s]
+      if fun_ref then return reference(self.name..'.'..s,self,fun_ref) end
+
       fun_ref = self:get_fun_ref(s)
       if fun_ref then return reference(s,self,fun_ref)
       else
