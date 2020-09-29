@@ -735,7 +735,7 @@ if args.ext == 'md' then
    if #module_list ~= 1 then
       quit("can currently only generate Markdown output from one module only")
    end
-   if ldoc.template == '!' then
+   if not ldoc.template or ldoc.template == '!' then
       ldoc.template = '!md'
    end
    args.output = module_list[1].name
