@@ -44,7 +44,6 @@ ldoc, a documentation generator for Lua, v]]..version..[[
     ldoc --version
 
   Options:
-    -V,--version	show version information
     -d,--dir		(default doc) output directory
     -o,--output		(default 'index') output name
     -v,--verbose	verbose
@@ -69,6 +68,7 @@ ldoc, a documentation generator for Lua, v]]..version..[[
     -M,--merge		allow module merging
     -S,--simple		no return or params, no summary
     -O,--one		one-column output layout
+    -V,--version	show version information
     --date		(default system) use this date in generated doc
     --dump		debug output dump
     --filter		(default none) filter output as Lua data (e.g pl.pretty.dump)
@@ -76,7 +76,7 @@ ldoc, a documentation generator for Lua, v]]..version..[[
     --fatalwarnings	non-zero exit status on any warning
     --testing		reproducible build; no date or version on output
 
-  <file> (optional string) source file or directory containing source
+  <file> (string) source file or directory containing source
 
   `ldoc .` reads options from an `config.ld` file in same directory;
   `ldoc -c path/to/myconfig.ld <file>` reads options from `path/to/myconfig.ld`
