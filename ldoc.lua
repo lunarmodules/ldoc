@@ -49,7 +49,7 @@ ldoc, a documentation generator for Lua, vs ]]..version..[[
   -l,--template (default !) directory for template (ldoc.ltp)
   -p,--project (default ldoc) project name
   -t,--title (default Reference) page title
-  -f,--format (default plain) formatting - can be markdown, discount or plain
+  -f,--format (default plain) formatting - can be markdown, discount, lunamark, commonmark, backticks, or plain
   -b,--package  (default .) top-level package basename (needed for module(...))
   -x,--ext (default html) output file extension
   -c,--config (default config.ld) configuration name

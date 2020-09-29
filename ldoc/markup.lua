@@ -275,6 +275,15 @@ local formatters =
                                                     { smart = true })
          return function(text) return parse(text) end
       end
+   end,
+   commonmark = function(format)
+     local ok, cmark = pcall(require, 'cmark')
+     if ok then
+       return function(text)
+         local doc = cmark.parse_document(text, string.len(text), cmark.OPT_DEFAULT)
+         return cmark.render_html(doc, cmark.OPT_DEFAULT)
+       end
+     end
    end
 }
 
