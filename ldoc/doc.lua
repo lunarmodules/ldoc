@@ -251,9 +251,9 @@ function File:finish()
                end
             end
          elseif item.type == 'submodule' then
-            local mf
+            local _
             submodule = true
-            this_mod,mf = self:find_module_in_files(item.name)
+            this_mod,_ = self:find_module_in_files(item.name)
             if this_mod == nil then
                self:error("'"..item.name.."' not found for submodule")
             end
@@ -489,7 +489,6 @@ function Item:set_tag (tag,value)
       end
       self.tags[tag] = value
    elseif ttype == TAG_ID then
-      local modifiers
       if type(value) == 'table' then
          if value.append then -- it was a List!
             -- such tags are _not_ multiple, e.g. name
@@ -500,7 +499,6 @@ function Item:set_tag (tag,value)
             end
          end
          value = value[1]
-         modifiers = value.modifiers
       end
       if value == nil then self:error("Tag without value: "..tag) end
       local id, rest = tools.extract_identifier(value)
@@ -1050,8 +1048,6 @@ function Module:hunt_for_reference (packmod, modules)
    return mod_ref
 end
 
-local err = io.stderr
-
 local function custom_see_references (s)
    for pat, action in pairs(see_reference_handlers) do
       if s:match(pat) then
@@ -1087,7 +1083,7 @@ end
 
 function Module:process_see_reference (s,modules,istype)
    if s == nil then return nil end
-   local mod_ref,fun_ref,name,packmod
+   local fun_ref
    local ref = custom_see_references(s)
    if ref then return ref end
    if not s:match '^[%w_%.\\%:%-]+$' or not s:match '[%w_]$' then
@@ -1289,7 +1285,6 @@ function File:dump(verbose)
 end
 
 function Item:dump(verbose)
-   local tags = self.tags
    local name = self.name
    if self.type == 'function' then
       name = name .. self.args

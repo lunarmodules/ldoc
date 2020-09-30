@@ -90,7 +90,7 @@ local global = require 'ldoc.builtin.globals'
 local markup = require 'ldoc.markup'
 local parse = require 'ldoc.parse'
 local KindMap = tools.KindMap
-local Item,File,Module = doc.Item,doc.File,doc.Module
+local Item,File = doc.Item,doc.File
 local quit = utils.quit
 
 if args.version then

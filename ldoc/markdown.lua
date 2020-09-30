@@ -1218,7 +1218,7 @@ local function run_command_line(arg)
 	local function run(s, options)
 		s = markdown(s)
 		if not options.wrap_header then return s end
-		local header = ""
+		local header
 		if options.header then
 			local f = io.open(options.header) or error("Could not open file: " .. options.header)
 			header = f:read("*a")

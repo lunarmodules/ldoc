@@ -171,7 +171,7 @@ function lexer.scan (s,matches,filter,options)
         end
         matches = plain_matches
     end
-    local i1,i2,idx,res1,res2,tok,pat,fun,capt
+    local i1,i2,tok,pat,fun
     local line = 1
     if file then
         s = file:read()

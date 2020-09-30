@@ -170,7 +170,6 @@ end
 -- module if there isn't an explicit module name specified.
 
 local function parse_file(fname, lang, package, args)
-   local line,f = 1
    local F = File(fname)
    local module_found, first_comment = false,true
    local current_item, module_item
@@ -187,7 +186,6 @@ local function parse_file(fname, lang, package, args)
    end
 
    function F:warning (msg,kind,line)
-      kind = kind or 'warning'
       line = line or lineno()
       Item.had_warning = true
       io.stderr:write(fname..':'..line..': '..msg,'\n')
@@ -299,7 +297,7 @@ local function parse_file(fname, lang, package, args)
                   module_found = tags.name
                   -- might be a module returning a single function!
                   if tags.param or tags['return'] then
-                     local parms, ret, summ = tags.param, tags['return'],tags.summary
+                     local parms, ret = tags.param, tags['return']
                      local name = tags.name
                      tags.param = nil
                      tags['return'] = nil

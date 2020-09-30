@@ -154,7 +154,7 @@ function html.generate_output(ldoc, args, project)
    end
 
    function ldoc.include_file (file)
-      local text,e = utils.readfile(file)
+      local text,_ = utils.readfile(file)
       if not text then quit("unable to include "..file)
       else
          return text
@@ -234,7 +234,7 @@ function ldoc.source_ref (fun)
       local types = {}
       for name in tp:gmatch("[^|]+") do
          local sym = name:match '([%w%.%:]+)'
-         local ref,err = markup.process_reference(sym,true)
+         local ref,_ = markup.process_reference(sym,true)
          if ref then
             if ref.label and sym == name then
                name = ref.label
@@ -273,7 +273,7 @@ function ldoc.source_ref (fun)
       ldoc.doc_charset = (m and m.tags.charset) or ldoc.charset
    end
 
-   local module_template,err = utils.readfile (path.join(args.template,ldoc.templ))
+   local module_template,_ = utils.readfile (path.join(args.template,ldoc.templ))
    if not module_template then
       quit("template not found at '"..args.template.."' Use -l to specify directory containing ldoc.ltp")
    end
