@@ -30,7 +30,7 @@ uninstall:
 
 test: test-basic test-example test-md test-tables
 
-RUN=&& lua $(_REPODIR)/ldoc.lua . && diff -r docs cdocs && echo ok
+RUN=&& lua $(_REPODIR)/ldoc.lua . && diff -r doc cdocs && echo ok
 
 test-prep:
 	find -type d -name doc -execdir rsync -av --del {}/ cdocs/ \;
@@ -49,7 +49,7 @@ test-tables:
 
 test-clean: clean-basic clean-example clean-md clean-tables
 
-CLEAN=&& lua $(_REPODIR)/ldoc.lua . && rd /S /Q cdocs && cp -rf docs cdocs
+CLEAN=&& lua $(_REPODIR)/ldoc.lua . && rd /S /Q cdocs && cp -rf doc cdocs
 
 clean-basic:
 	cd tests $(CLEAN)
