@@ -2,7 +2,7 @@
 
 local utils = require 'pl.utils'
 local List = require 'pl.List'
-local Map = require 'pl.Map'
+-- local Map = require 'pl.Map'
 local stringio = require 'pl.stringio'
 local lexer = require 'ldoc.lexer'
 local tools = require 'ldoc.tools'
