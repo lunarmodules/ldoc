@@ -30,17 +30,20 @@ test: test-basic test-example test-md test-tables
 
 RUN=&&  ldoc . && diff -r docs cdocs && echo ok
 
+test-prep:
+	find -type d -name doc -execdir rsync -av --del {}/ cdocs/ \;
+
 test-basic:
 	cd tests $(RUN)
 
 test-example:
-	cd tests && cd example $(RUN)
+	cd tests/example $(RUN)
 
 test-md:
-	cd tests && cd md-test $(RUN)
+	cd tests/md-test $(RUN)
 
 test-tables:
-	cd tests && cd simple $(RUN)
+	cd tests/simple $(RUN)
 
 test-clean: clean-basic clean-example clean-md clean-tables
 
