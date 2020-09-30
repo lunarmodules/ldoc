@@ -192,12 +192,6 @@ function File:export_item (name)
    self:warning('no docs '..tools.quote(name))
 end
 
-
-local function has_prefix (name,prefix)
-   local i1,i2 = name:find(prefix)
-   return i1 == 1 and i2 == #prefix
-end
-
 local function mod_section_type (this_mod)
    return this_mod and this_mod.section and this_mod.section.type
 end
@@ -543,17 +537,13 @@ function Item.check_tag(tags,tag, value, modifiers)
          if avalue then value = avalue..' '..value end
          if amod then
             modifiers = modifiers or {}
-            local value_tokens = utils.split(value)
             for m,v in pairs(amod) do
                local idx = tonumber(v:match('^%$(%d+)'))
                if idx then
                   v, value = value:match('(%S+)(.*)')
-               --   v = value_tokens[idx]
-               --   value_tokens[idx] = ''
                end
                modifiers[m] = v
             end
-            -- value = table.concat(value_tokens, ' ')
          end
       else -- has to be a function that at least returns tag, value
          return alias(tags,value,modifiers)
@@ -926,8 +916,6 @@ function Item:return_type(r)
    if not r.type then return '' end
    return r.type, r.ctypes
 end
-
-local struct_return_type = '*'
 
 function Item:build_return_groups()
    local quote = tools.quote

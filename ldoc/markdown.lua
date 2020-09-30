@@ -149,9 +149,6 @@ local function map(t, f)
 	return out
 end
 
--- The identity function, useful as a placeholder.
-local function identity(text) return text end
-
 -- Functional style if statement. (NOTE: no short circuit evaluation)
 local function iff(t, a, b) if t then return a else return b end end
 
@@ -764,14 +761,6 @@ function block_transform(text, sublist)
 	lines = blocks_to_html(lines)
 	local text = table.concat(lines, "\n")
 	return text
-end
-
--- Debug function for printing a line array to see the result
--- of partial transforms.
-local function print_lines(lines)
-	for i, line in ipairs(lines) do
-		print(i, line.type, line.text or line.line)
-	end
 end
 
 ----------------------------------------------------------------------

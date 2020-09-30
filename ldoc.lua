@@ -27,7 +27,6 @@ local tablex = require 'pl.tablex'
 
 -- Penlight compatibility
 utils.unpack = utils.unpack or unpack or table.unpack
-local append = table.insert
 local lapp = require 'pl.lapp'
 
 local version = '1.4.6'
@@ -176,7 +175,6 @@ local function setup_kinds ()
 end
 
 
-local add_language_extension
 -- hacky way for doc module to be passed options...
 doc.ldoc = ldoc
 
@@ -277,7 +275,7 @@ local function read_ldoc_config (fname)
    if directory == '' then
       directory = '.'
    end
-   local chunk, err, ok
+   local chunk, err, _
    if args.filter == 'none' then
       print('reading configuration from '..fname)
    end
@@ -286,7 +284,7 @@ local function read_ldoc_config (fname)
       chunk, err = loadstr(ldoc,txt)
       if chunk then
          if args.define ~= 'none' then ldoc[args.define] = true end
-         ok,err = pcall(chunk)
+         _,err = pcall(chunk)
       end
     end
    if err then quit('error loading config file '..fname..': '..err) end
@@ -301,7 +299,6 @@ end
 local quote = tools.quote
 --- processing command line and preparing for output ---
 
-local F
 local file_list = List()
 File.list = file_list
 local config_dir
@@ -316,7 +313,7 @@ if args.module then
    if args.file:match '^%a+$' and global.functions[args.file] then
       args.file = 'global.'..args.file
    end
-   local fullpath,mod,on_docpath = tools.lookup_existing_module_or_function (args.file, doc_path)
+   local fullpath,mod,_ = tools.lookup_existing_module_or_function (args.file, doc_path)
    if not fullpath then
       quit(mod)
    else
@@ -337,7 +334,6 @@ if args.file == '.' then
       print('changing to directory',config_path)
       lfs.chdir(config_path)
    end
-   config_is_read = true
    args.file = ldoc.file or '.'
    if args.file == '.' then
       args.file = lfs.currentdir()

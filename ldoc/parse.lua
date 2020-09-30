@@ -161,12 +161,6 @@ local function extract_tags (s,args)
    return tags --Map(tags)
 end
 
-local _xpcall = xpcall
-if true then
-   _xpcall = function(f) return true, f() end
-end
-
-
 
 -- parses a Lua or C file, looking for ldoc comments. These are like LuaDoc comments;
 -- they start with multiple '-'. (Block commments are allowed)
@@ -191,8 +185,6 @@ local function parse_file(fname, lang, package, args)
    local function lineno ()
       return tok:lineno()
    end
-
-   local function filename () return fname end
 
    function F:warning (msg,kind,line)
       kind = kind or 'warning'

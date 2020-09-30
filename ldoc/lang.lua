@@ -362,10 +362,7 @@ function Moon:item_follows (t,v,tok)
             end
             t,v = tnext(tok)
             tags:add('class','function')
-            if t == '>' then
---~                tags.formal_args:insert(1,'self')
---~                tags.formal_args.comments = {self=''}
-            else
+            if t ~= '>' then
                tags.static = true
             end
          end
