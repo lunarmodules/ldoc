@@ -363,6 +363,11 @@ function File:finish()
                      end
                      -- Whether to use '.' or the language's version of ':' (e.g. \ for Moonscript)
                      item.name = class..(not static and this_mod.file.lang.method_call or '.')..item.name
+                     item.names_hierarchy = require('pl.utils').split(
+                        item.name,
+                        not static and this_mod.file.lang.method_call or '.',
+                        true
+                     )
                    end
                   if stype == 'factory'  then
                      if item.tags.private then to_be_removed = true
@@ -409,10 +414,6 @@ function File:finish()
             -- must be a free-standing function (sometimes a problem...)
          end
       end
-      item.names_hierarchy = require('pl.utils').split(
-        item.name,
-        '[.:]'
-      )
    end
 end
 
@@ -620,6 +621,10 @@ function Item:finish()
    local tags = self.tags
    local quote = tools.quote
    self.name = read_del(tags,'name')
+   self.names_hierarchy = require('pl.utils').split(
+      self.name,
+      "[:.]"
+   )
    self.type = read_del(tags,'class')
    self.modifiers = extract_tag_modifiers(tags)
    self.usage = read_del(tags,'usage')
@@ -639,6 +644,12 @@ function Item:finish()
       self.sections = List()
       self.items.by_name = {}
       self.sections.by_name = {}
+      if self.type == "example" or self.type == "topic" then
+        filename = self.names_hierarchy[#self.names_hierarchy - 1]
+        extension = self.names_hierarchy[#self.names_hierarchy]
+        self.names_hierarchy[#self.names_hierarchy] = nil
+        self.names_hierarchy[#self.names_hierarchy] = filename .. "." .. extension
+      end
       setmetatable(self,Module)
    elseif not doc.section_tag(self.type) then
       -- params are either a function's arguments, or a table's fields, etc.
