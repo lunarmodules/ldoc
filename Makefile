@@ -3,6 +3,8 @@ LUA_BINDIR= $(shell echo `dirname $(LUA)`)
 LUA_PREFIX= $(shell echo `dirname $(LUA_BINDIR)`)
 LUA_SHAREDIR=$(LUA_PREFIX)/share/lua/5.1
 
+_REPODIR != cd "$(shell dirname $(firstword $(MAKEFILE_LIST)))/" && pwd
+
 ldoc:
 
 install: install_parts
@@ -28,7 +30,7 @@ uninstall:
 
 test: test-basic test-example test-md test-tables
 
-RUN=&&  ldoc . && diff -r docs cdocs && echo ok
+RUN=&& lua $(_REPODIR)/ldoc.lua . && diff -r docs cdocs && echo ok
 
 test-prep:
 	find -type d -name doc -execdir rsync -av --del {}/ cdocs/ \;
@@ -47,7 +49,7 @@ test-tables:
 
 test-clean: clean-basic clean-example clean-md clean-tables
 
-CLEAN=&& ldoc . && rd /S /Q cdocs && cp -rf docs cdocs
+CLEAN=&& lua $(_REPODIR)/ldoc.lua . && rd /S /Q cdocs && cp -rf docs cdocs
 
 clean-basic:
 	cd tests $(CLEAN)
