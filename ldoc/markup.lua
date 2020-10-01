@@ -254,7 +254,7 @@ local formatters =
                   end
                else
                   io.stderr:write('LDoc discount failed with error ',errmsg)
-                  io.exit(1)
+                  os.exit(1)
                end
             end
          else
