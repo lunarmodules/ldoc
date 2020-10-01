@@ -93,6 +93,7 @@ function Lua:grab_block_comment(v,tok)
 end
 
 
+-- luacheck: push ignore 312
 function Lua:parse_module_call(tok,t,v)
    t,v = tnext(tok)
    if t == '(' then t,v = tnext(tok) end
@@ -102,6 +103,7 @@ function Lua:parse_module_call(tok,t,v)
       return '...',t,v
    end
 end
+-- luacheck: pop
 
 -- If a module name was not provided, then we look for an explicit module()
 -- call. However, we should not try too hard; if we hit a doc comment then

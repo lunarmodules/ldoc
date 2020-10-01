@@ -39,6 +39,8 @@ function table.pack (···) end
 -- is not given, then the '<' operator will be used.
 function table.sort(table , comp) end
 
+-- luacheck: ignore 121
+
 ---
 -- Returns the elements from the given table. This function is equivalent to
 --   return list[i], list[i+1], ..., list[j]

@@ -237,6 +237,7 @@ local formatters =
    discount = function(format)
       local ok, markdown = pcall(require, 'discount')
       if ok then
+         -- luacheck: push ignore 542
          if 'function' == type(markdown) then
             -- lua-discount by A.S. Bradbury, https://luarocks.org/modules/luarocks/lua-discount
          elseif 'table' == type(markdown) and ('function' == type(markdown.compile) or 'function' == type(markdown.to_html)) then
@@ -260,6 +261,7 @@ local formatters =
          else
             ok = false
          end
+         -- luacheck: pop
       end
       if not ok then
          print('format: using built-in markdown')

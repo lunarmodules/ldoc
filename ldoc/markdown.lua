@@ -638,12 +638,14 @@ local function blockquotes(lines)
 
 		local stop = #lines
 		for i = start+1, #lines do
+			-- luacheck: push ignore 542
 			if lines[i].type == "blank" or lines[i].type == "blockquote" then
 			elseif lines[i].type == "normal" then
 				if lines[i-1].type == "blank" then stop = i-1 break end
 			else
 				stop = i-1 break
 			end
+			-- luacheck: pop
 		end
 		while lines[stop].type == "blank" do stop = stop - 1 end
 		return start, stop
@@ -869,7 +871,6 @@ local function code_spans(s)
 			pos = stop + 1
 		end
 	end
-	return s
 end
 
 -- Encode alt text... enodes &, and ".
@@ -1166,10 +1167,12 @@ function OptionParser:run(args)
 	while pos <= #args do
 		local arg = args[pos]
 		if arg == "--" then
+			-- luacheck: push ignore 512
 			for i=pos+1,#args do
 				if self.arg then self.arg(args[i]) end
 				return true
 			end
+			-- luacheck: pop
 		end
 		if arg:match("^%-%-") then
 			local info = self.long[arg:sub(3)]

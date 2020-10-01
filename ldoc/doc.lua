@@ -230,6 +230,7 @@ function File:finish()
       end
       item:finish()
       -- the default is not to show local functions in the documentation.
+      -- luacheck: push ignore 542
       if not self.args.all and (item.type=='lfunction' or (item.tags and item.tags['local'])) then
          -- don't add to the module --
       elseif doc.project_level(item.type) then
@@ -403,6 +404,7 @@ function File:finish()
             -- must be a free-standing function (sometimes a problem...)
          end
       end
+      -- luacheck: pop
       item.names_hierarchy = require('pl.utils').split(
         item.name,
         '[.:]'

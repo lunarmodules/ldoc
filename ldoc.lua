@@ -263,7 +263,9 @@ local function loadstr (ldoc,txt)
       load = load or utils.load
       chunk,err = load(txt,'config',nil,ldoc)
    else
+      -- luacheck: push ignore 113
       chunk,err = loadin(ldoc,txt)
+      -- luacheck: pop
    end
    return chunk, err
 end

@@ -2,6 +2,8 @@
 
 module 'global'
 
+-- luacheck: ignore 121
+
 ---
 -- Issues an error when  its argument `v` is false.
 -- That is, nil or false. otherwise, returns all its arguments.
