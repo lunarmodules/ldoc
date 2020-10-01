@@ -7,7 +7,7 @@ local doc = require 'ldoc.doc'
 local utils = require 'pl.utils'
 local stringx = require 'pl.stringx'
 local prettify = require 'ldoc.prettify'
-local quit, concat, lstrip = utils.quit, table.concat, stringx.lstrip
+local concat = table.concat
 local markup = {}
 
 local backtick_references
@@ -53,7 +53,7 @@ local function resolve_inline_references (ldoc, txt, item, plain)
    end))
    if backtick_references then
       res  = res:gsub('`([^`]+)`',function(name)
-         local ref,err = markup.process_reference(name)
+         local ref,_ = markup.process_reference(name)
          local label = name
          if name and do_escape then
             label = name:gsub('_', '\\_')
@@ -135,10 +135,10 @@ local function process_multiline_markdown(ldoc, txt, F, filename, deflang)
    local function pretty_code (code, lang)
       code = concat(code,'\n')
       if code ~= '' then
-         local err
+         local _
          -- If we omit the following '\n', a '--' (or '//') comment on the
          -- last line won't be recognized.
-         code, err = prettify.code(lang,filename,code..'\n',L,false)
+         code, _ = prettify.code(lang,filename,code..'\n',L,false)
          code = resolve_inline_references(ldoc, code, err_item,true)
          append(res,'<pre>')
          append(res, code)
@@ -237,6 +237,7 @@ local formatters =
    discount = function(format)
       local ok, markdown = pcall(require, 'discount')
       if ok then
+         -- luacheck: push ignore 542
          if 'function' == type(markdown) then
             -- lua-discount by A.S. Bradbury, https://luarocks.org/modules/luarocks/lua-discount
          elseif 'table' == type(markdown) and ('function' == type(markdown.compile) or 'function' == type(markdown.to_html)) then
@@ -254,12 +255,13 @@ local formatters =
                   end
                else
                   io.stderr:write('LDoc discount failed with error ',errmsg)
-                  io.exit(1)
+                  os.exit(1)
                end
             end
          else
             ok = false
          end
+         -- luacheck: pop
       end
       if not ok then
          print('format: using built-in markdown')

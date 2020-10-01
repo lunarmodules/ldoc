@@ -79,7 +79,7 @@ end
 
 function KindMap:put_kind_first (kind)
    -- find this kind in our kind list
-   local kinds = self.klass.kinds,kind
+   local kinds = self.klass.kinds
    local idx = tablex.find(kinds,kind)
    -- and swop with the start!
    if idx then
@@ -232,8 +232,9 @@ end
 function M.check_file (f,original)
    if not path.exists(f) or path.getmtime(original) > path.getmtime(f) then
       local text,err = utils.readfile(original)
+      local _
       if text then
-         text,err = utils.writefile(f,text)
+         _,err = utils.writefile(f,text)
       end
       if err then
          quit("Could not copy "..original.." to "..f)
@@ -250,13 +251,12 @@ function M.writefile(name,text)
 end
 
 function M.name_of (lpath)
-   local ext
-   lpath,ext = path.splitext(lpath)
+   local _
+   lpath,_ = path.splitext(lpath)
    return lpath
 end
 
 function M.this_module_name (basename,fname)
-   local ext
    if basename == '' then
       return M.name_of(fname)
    end
@@ -429,7 +429,7 @@ end
 -- Set `colon` to be the secondary separator, '' for none.
 function M.get_fun_name (tok,first,colon)
    local res = {}
-   local t,name,sep
+   local t,name,sep,_
    colon = colon or ':'
    if not first then
       t,name = tnext(tok)
@@ -441,7 +441,7 @@ function M.get_fun_name (tok,first,colon)
    while sep == '.' or sep == colon do
       append(res,name)
       append(res,sep)
-      t,name = tnext(tok)
+      _,name = tnext(tok)
       t,sep = tnext(tok)
    end
    append(res,name)

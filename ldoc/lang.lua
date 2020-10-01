@@ -93,6 +93,7 @@ function Lua:grab_block_comment(v,tok)
 end
 
 
+-- luacheck: push ignore 312
 function Lua:parse_module_call(tok,t,v)
    t,v = tnext(tok)
    if t == '(' then t,v = tnext(tok) end
@@ -102,6 +103,7 @@ function Lua:parse_module_call(tok,t,v)
       return '...',t,v
    end
 end
+-- luacheck: pop
 
 -- If a module name was not provided, then we look for an explicit module()
 -- call. However, we should not try too hard; if we hit a doc comment then
@@ -150,7 +152,7 @@ function Lua:item_follows(t,v,tok)
       case = 1
       parser = parse_lua_function_header
    elseif t == 'iden' then
-      local name,t,v = tools.get_fun_name(tok,v)
+      local name,t,_ = tools.get_fun_name(tok,v)
       if t ~= '=' then return nil,"not  'name = function,table or value'" end
       t,v = tnext(tok)
       if t == 'keyword' and v == 'function' then -- case [2]
@@ -229,7 +231,7 @@ function Lua:parse_module_modifier (tags, tok, F)
       if tags.class ~= 'field' then return nil,"cannot deduce @usage" end
       local t1= tnext(tok)
       if t1 ~= '[' then return nil, t1..' '..': not a long string' end
-      local t, v = tools.grab_block_comment('',tok,'%]%]')
+      local _, v = tools.grab_block_comment('',tok,'%]%]')
       return true, v, 'usage'
    elseif tags.export then
       if tags.class ~= 'table' then return nil, "cannot deduce @export" end
@@ -285,12 +287,13 @@ function CC:item_follows (t,v,tok)
       return false
    end
    if t == 'iden' or t == 'keyword' then --
+      local _
       if v == self.extra.export then -- this is not part of the return type!
-         t,v = tnext(tok)
+         _,v = tnext(tok)
       end
       -- types may have multiple tokens: example, const char *bonzo(...)
       local return_type, name = v
-      t,v = tnext(tok)
+      _,v = tnext(tok)
       name = v
       t,v = tnext(tok)
       while t ~= '(' do
@@ -305,7 +308,7 @@ function CC:item_follows (t,v,tok)
          end
          tags:add('class','function')
          if t == '(' then
-            tags.formal_args,t,v = tools.get_parameters(tok,')',',',self)
+            tags.formal_args,t,_ = tools.get_parameters(tok,')',',',self)
             if return_type ~= 'void' then
                tags.formal_args.return_type = return_type
             end
@@ -342,30 +345,28 @@ function Moon:item_follows (t,v,tok)
    if t == 'iden' then
       local name,t,v = tools.get_fun_name(tok,v,'')
       if name == 'class' then
-         name,t,v = tools.get_fun_name(tok,v,'')
+         local _
+         name,_,_ = tools.get_fun_name(tok,v,'')
          -- class!
          return function(tags,tok)
             tags:add('class','type')
             tags:add('name',name)
          end
       elseif t == '=' or t == ':' then -- function/method
-         local fat = false
-         t,v = tnext(tok)
+         local _
+         t,_ = tnext(tok)
          return function(tags,tok)
             if not tags.name then
                tags:add('name',name)
             end
             if t == '(' then
-               tags.formal_args,t,v = tools.get_parameters(tok,')',',',self)
+               tags.formal_args,t,_ = tools.get_parameters(tok,')',',',self)
             else
                tags.formal_args = List()
             end
-            t,v = tnext(tok)
+            t,_ = tnext(tok)
             tags:add('class','function')
-            if t == '>' then
---~                tags.formal_args:insert(1,'self')
---~                tags.formal_args.comments = {self=''}
-            else
+            if t ~= '>' then
                tags.static = true
             end
          end

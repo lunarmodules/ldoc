@@ -149,9 +149,6 @@ local function map(t, f)
 	return out
 end
 
--- The identity function, useful as a placeholder.
-local function identity(text) return text end
-
 -- Functional style if statement. (NOTE: no short circuit evaluation)
 local function iff(t, a, b) if t then return a else return b end end
 
@@ -252,7 +249,7 @@ local function tokenize_html(html)
 		end
 		if not stop then
 			-- error("Could not match html tag " .. html:sub(start,start+30))
-		 	table.insert(tokens, {type="text", text=html:sub(start, start)})
+			table.insert(tokens, {type="text", text=html:sub(start, start)})
 			pos = start + 1
 		else
 			table.insert(tokens, {type="tag", text=html:sub(start, stop)})
@@ -641,12 +638,14 @@ local function blockquotes(lines)
 
 		local stop = #lines
 		for i = start+1, #lines do
+			-- luacheck: push ignore 542
 			if lines[i].type == "blank" or lines[i].type == "blockquote" then
 			elseif lines[i].type == "normal" then
 				if lines[i-1].type == "blank" then stop = i-1 break end
 			else
 				stop = i-1 break
 			end
+			-- luacheck: pop
 		end
 		while lines[stop].type == "blank" do stop = stop - 1 end
 		return start, stop
@@ -766,14 +765,6 @@ function block_transform(text, sublist)
 	return text
 end
 
--- Debug function for printing a line array to see the result
--- of partial transforms.
-local function print_lines(lines)
-	for i, line in ipairs(lines) do
-		print(i, line.type, line.text or line.line)
-	end
-end
-
 ----------------------------------------------------------------------
 -- Span transform
 ----------------------------------------------------------------------
@@ -880,7 +871,6 @@ local function code_spans(s)
 			pos = stop + 1
 		end
 	end
-	return s
 end
 
 -- Encode alt text... enodes &, and ".
@@ -1177,10 +1167,12 @@ function OptionParser:run(args)
 	while pos <= #args do
 		local arg = args[pos]
 		if arg == "--" then
+			-- luacheck: push ignore 512
 			for i=pos+1,#args do
 				if self.arg then self.arg(args[i]) end
 				return true
 			end
+			-- luacheck: pop
 		end
 		if arg:match("^%-%-") then
 			local info = self.long[arg:sub(3)]
@@ -1229,7 +1221,7 @@ local function run_command_line(arg)
 	local function run(s, options)
 		s = markdown(s)
 		if not options.wrap_header then return s end
-		local header = ""
+		local header
 		if options.header then
 			local f = io.open(options.header) or error("Could not open file: " .. options.header)
 			header = f:read("*a")

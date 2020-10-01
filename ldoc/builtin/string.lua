@@ -21,7 +21,7 @@ function string.char(...) end
 -- Returns a string containing a binary representation of the given
 -- function, so that a later `loadstring` on this string returns a copy of
 -- the function. `function` must be a Lua function without upvalues.
-function string.dump(function) end
+function string.dump(func) end
 
 ---
 -- Looks for the first match of `pattern` in the string `s`. If it finds a
@@ -174,10 +174,10 @@ function string.upper(s) end
 ---
 -- (5.3) Returns a binary string containing the values v1, v2, etc. packed (that is, serialized in binary form)
 --- according to the format string fmt (see 6.4.2).
-function string.pack (fmt, v1, v2, ···) end
+function string.pack (fmt, v1, v2, ...) end
 
 ---
--- (5.3) Returns the size of a string resulting from string.pack with the given format. 
+-- (5.3) Returns the size of a string resulting from string.pack with the given format.
 -- The format string cannot have the variable-length options 's' or 'z' (see 6.4.2).
 function string.packsize (fmt) end
 
@@ -185,7 +185,7 @@ function string.packsize (fmt) end
 -- (5.3) Returns the values packed in string s (see string.pack) according to the format string fmt (see 6.4.2).
 -- An optional pos marks where to start reading in s (default is 1)
 -- After the read values, this function also returns the index of the first unread byte in s.
-function string.unpack (fmt, s [, pos]) end
+function string.unpack (fmt, s , pos) end
 
 return string
 

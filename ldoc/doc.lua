@@ -192,12 +192,6 @@ function File:export_item (name)
    self:warning('no docs '..tools.quote(name))
 end
 
-
-local function has_prefix (name,prefix)
-   local i1,i2 = name:find(prefix)
-   return i1 == 1 and i2 == #prefix
-end
-
 local function mod_section_type (this_mod)
    return this_mod and this_mod.section and this_mod.section.type
 end
@@ -236,6 +230,7 @@ function File:finish()
       end
       item:finish()
       -- the default is not to show local functions in the documentation.
+      -- luacheck: push ignore 542
       if not self.args.all and (item.type=='lfunction' or (item.tags and item.tags['local'])) then
          -- don't add to the module --
       elseif doc.project_level(item.type) then
@@ -257,9 +252,9 @@ function File:finish()
                end
             end
          elseif item.type == 'submodule' then
-            local mf
+            local _
             submodule = true
-            this_mod,mf = self:find_module_in_files(item.name)
+            this_mod,_ = self:find_module_in_files(item.name)
             if this_mod == nil then
                self:error("'"..item.name.."' not found for submodule")
             end
@@ -409,6 +404,7 @@ function File:finish()
             -- must be a free-standing function (sometimes a problem...)
          end
       end
+      -- luacheck: pop
       item.names_hierarchy = require('pl.utils').split(
         item.name,
         '[.:]'
@@ -495,7 +491,6 @@ function Item:set_tag (tag,value)
       end
       self.tags[tag] = value
    elseif ttype == TAG_ID then
-      local modifiers
       if type(value) == 'table' then
          if value.append then -- it was a List!
             -- such tags are _not_ multiple, e.g. name
@@ -506,7 +501,6 @@ function Item:set_tag (tag,value)
             end
          end
          value = value[1]
-         modifiers = value.modifiers
       end
       if value == nil then self:error("Tag without value: "..tag) end
       local id, rest = tools.extract_identifier(value)
@@ -543,17 +537,13 @@ function Item.check_tag(tags,tag, value, modifiers)
          if avalue then value = avalue..' '..value end
          if amod then
             modifiers = modifiers or {}
-            local value_tokens = utils.split(value)
             for m,v in pairs(amod) do
                local idx = tonumber(v:match('^%$(%d+)'))
                if idx then
                   v, value = value:match('(%S+)(.*)')
-               --   v = value_tokens[idx]
-               --   value_tokens[idx] = ''
                end
                modifiers[m] = v
             end
-            -- value = table.concat(value_tokens, ' ')
          end
       else -- has to be a function that at least returns tag, value
          return alias(tags,value,modifiers)
@@ -927,8 +917,6 @@ function Item:return_type(r)
    return r.type, r.ctypes
 end
 
-local struct_return_type = '*'
-
 function Item:build_return_groups()
    local quote = tools.quote
    local modifiers = self.modifiers
@@ -1062,8 +1050,6 @@ function Module:hunt_for_reference (packmod, modules)
    return mod_ref
 end
 
-local err = io.stderr
-
 local function custom_see_references (s)
    for pat, action in pairs(see_reference_handlers) do
       if s:match(pat) then
@@ -1099,7 +1085,7 @@ end
 
 function Module:process_see_reference (s,modules,istype)
    if s == nil then return nil end
-   local mod_ref,fun_ref,name,packmod
+   local fun_ref
    local ref = custom_see_references(s)
    if ref then return ref end
    if not s:match '^[%w_%.\\%:%-]+$' or not s:match '[%w_]$' then
@@ -1301,7 +1287,6 @@ function File:dump(verbose)
 end
 
 function Item:dump(verbose)
-   local tags = self.tags
    local name = self.name
    if self.type == 'function' then
       name = name .. self.args

@@ -3,6 +3,9 @@
 
 local io = {}
 
+-- luacheck: ignore 241
+local file = {}
+
 ---
 -- Equivalent to `file:close()`. Without a `file`, closes the default
 -- output file.

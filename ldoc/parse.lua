@@ -2,7 +2,7 @@
 
 local utils = require 'pl.utils'
 local List = require 'pl.List'
-local Map = require 'pl.Map'
+-- local Map = require 'pl.Map'
 local stringio = require 'pl.stringio'
 local lexer = require 'ldoc.lexer'
 local tools = require 'ldoc.tools'
@@ -161,12 +161,6 @@ local function extract_tags (s,args)
    return tags --Map(tags)
 end
 
-local _xpcall = xpcall
-if true then
-   _xpcall = function(f) return true, f() end
-end
-
-
 
 -- parses a Lua or C file, looking for ldoc comments. These are like LuaDoc comments;
 -- they start with multiple '-'. (Block commments are allowed)
@@ -176,7 +170,6 @@ end
 -- module if there isn't an explicit module name specified.
 
 local function parse_file(fname, lang, package, args)
-   local line,f = 1
    local F = File(fname)
    local module_found, first_comment = false,true
    local current_item, module_item
@@ -192,10 +185,7 @@ local function parse_file(fname, lang, package, args)
       return tok:lineno()
    end
 
-   local function filename () return fname end
-
    function F:warning (msg,kind,line)
-      kind = kind or 'warning'
       line = line or lineno()
       Item.had_warning = true
       io.stderr:write(fname..':'..line..': '..msg,'\n')
@@ -307,7 +297,7 @@ local function parse_file(fname, lang, package, args)
                   module_found = tags.name
                   -- might be a module returning a single function!
                   if tags.param or tags['return'] then
-                     local parms, ret, summ = tags.param, tags['return'],tags.summary
+                     local parms, ret = tags.param, tags['return']
                      local name = tags.name
                      tags.param = nil
                      tags['return'] = nil

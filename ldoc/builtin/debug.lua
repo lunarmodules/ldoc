@@ -43,18 +43,18 @@ function debug.gethook(thread) end
 -- with a name for the current function, if a reasonable name can be found,
 -- and the expression `debug.getinfo(print)` returns a table with all available
 -- information about the `print` function.
-function debug.getinfo(thread, function , what) end
+function debug.getinfo(thread, func , what) end
 
 ---
 -- This function returns the name and the value of the local variable with
--- index `local` of the function at level `level` of the stack. (The first
+-- index `loc` of the function at level `level` of the stack. (The first
 -- parameter or local variable has index 1, and so on, until the last active
 -- local variable.) The function returns nil if there is no local variable
 -- with the given index, and raises an error when called with a `level` out
 -- of range. (You can call `debug.getinfo` to check whether the level is valid.)
 -- Variable names starting with '`(`' (open parentheses) represent internal
 -- variables (loop control variables, temporaries, and C function locals).
-function debug.getlocal(thread, level, local) end
+function debug.getlocal(thread, level, loc) end
 
 ---
 -- Returns the metatable of the given `object` or nil if it does not have
@@ -103,12 +103,12 @@ function debug.sethook(thread, hook, mask , count) end
 
 ---
 -- This function assigns the value `value` to the local variable with
--- index `local` of the function at level `level` of the stack. The function
+-- index `loc` of the function at level `level` of the stack. The function
 -- returns nil if there is no local variable with the given index, and raises
 -- an error when called with a `level` out of range. (You can call `getinfo`
 -- to check whether the level is valid.) Otherwise, it returns the name of
 -- the local variable.
-function debug.setlocal(thread, level, local, value) end
+function debug.setlocal(thread, level, loc, value) end
 
 ---
 -- Sets the metatable for the given `object` to the given `table` (which

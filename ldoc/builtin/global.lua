@@ -2,9 +2,11 @@
 
 module 'global'
 
+-- luacheck: ignore 121
+
 ---
 -- Issues an error when  its argument `v` is false.
--- That is, nil or false. otherwise, returns all its arguments. 
+-- That is, nil or false. otherwise, returns all its arguments.
 -- `message` is an error when absent, it defaults to "assertion failed!"
 function assert(v , message) end
 
@@ -71,7 +73,7 @@ function ipairs(t) end
 ---
 -- Loads a chunk.
 -- If `ld` is a string, the chunk is this string.
--- If `ld` is a function, load calls it repeatedly to get the chunk pieces. Each call to `ld` must return a 
+-- If `ld` is a function, load calls it repeatedly to get the chunk pieces. Each call to `ld` must return a
 -- string that concatenates with previous results. A return of an empty string, nil, or no value
 -- signals the end of the chunk.
 -- If there are no syntactic errors, returns the compiled chunk as a function;
@@ -83,12 +85,12 @@ function ipairs(t) end
 -- The string `mode` controls whether the chunk can be text or binary (that is, a precompiled chunk).
 -- It may be the string "b" (only binary chunks), "t" (only text chunks), or "bt" (both binary and text).
 -- The default is "bt"
-function load (ld [, source [, mode [, env]]]) end
+function load (ld , source , mode , env) end
 
 ---
 -- Similar to `load`, but gets the chunk from file `filename`. Or from the
 -- standard input, if no file name is given.
-function loadfile (filename [, mode [, env]]]) end
+function loadfile (filename , mode , env) end
 
 ---
 -- Allows a program to traverse all fields of a table. Its first argument is
@@ -178,7 +180,7 @@ function setmetatable(table, metatable) end
 -- 11, and so forth, with '`Z`' representing 35. In base 10 (the default),
 -- the number can have a decimal part, as well as an optional exponent part
 -- (see 2.1). In other bases, only unsigned integers are accepted.
-function tonumber(e [, base]) end
+function tonumber(e , base) end
 
 ---
 -- Converts any value to a string in a reasonable format.
