@@ -29,7 +29,7 @@ function table.remove(table , pos) end
 ---
 -- Returns a new table with all parameters stored into keys 1, 2, etc. and with a field "n" with
 -- the total number of parameters. Note that the resulting table may not be a sequence.
-function table.pack (···) end
+function table.pack (...) end
 ---
 -- Sorts table elements in a given order,
 -- *in-place*, from `table[1]` to `table[n]`, where `n` is the length of the
