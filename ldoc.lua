@@ -256,11 +256,10 @@ ldoc_contents = tablex.makeset(ldoc_contents)
 
 local function loadstr (ldoc,txt)
    local chunk, err
-   local load
    -- Penlight's Lua 5.2 compatibility has wobbled over the years...
    if not rawget(_G,'loadin') then -- Penlight 0.9.5
        -- Penlight 0.9.7; no more global load() override
-      load = load or utils.load
+      local load = load or utils.load
       chunk,err = load(txt,'config',nil,ldoc)
    else
       -- luacheck: push ignore 113
