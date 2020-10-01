@@ -252,7 +252,7 @@ local function tokenize_html(html)
 		end
 		if not stop then
 			-- error("Could not match html tag " .. html:sub(start,start+30))
-		 	table.insert(tokens, {type="text", text=html:sub(start, start)})
+			table.insert(tokens, {type="text", text=html:sub(start, start)})
 			pos = start + 1
 		else
 			table.insert(tokens, {type="tag", text=html:sub(start, stop)})

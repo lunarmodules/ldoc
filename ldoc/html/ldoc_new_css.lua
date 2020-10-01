@@ -1,5 +1,5 @@
 return [[
-body { 
+body {
     color: #47555c;
     font-size: 16px;
     font-family: "Open Sans", sans-serif;
