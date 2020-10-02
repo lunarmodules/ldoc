@@ -1,5 +1,5 @@
 package = "ldoc"
-version = "scm-3"
+version = "dev-1"
 
 source = {
   dir="LDoc",
