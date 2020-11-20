@@ -127,6 +127,7 @@ local file_types = {
    ['.cxx'] = cc,
    ['.C'] = cc,
    ['.mm'] = cc,
+   ['.cs'] = cc,
    ['.moon'] = lang.moon,
 }
 ------- ldoc external API ------------
