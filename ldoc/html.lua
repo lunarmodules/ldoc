@@ -327,6 +327,7 @@ function ldoc.source_ref (fun)
    if ldoc.icon then
       local dir_data = args.dir .. '/data'
       if not path.isdir(dir_data) then
+          local lfs = require 'lfs'
           lfs.mkdir(dir_data)
       end
       local file = require 'pl.file'
