@@ -74,7 +74,7 @@ ldoc, a documentation generator for Lua, v]]..version..[[
     --tags		(default none) show all references to given tags, comma-separated
     --fatalwarnings	non-zero exit status on any warning
     --testing		reproducible build; no date or version on output
-    --icon (default none) an image that will be displayed under the project name on all pages
+    --icon		(default none) an image that will be displayed under the project name on all pages
 
   <file> (string) source file or directory containing source
 
