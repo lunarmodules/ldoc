@@ -74,6 +74,7 @@ ldoc, a documentation generator for Lua, v]]..version..[[
     --tags		(default none) show all references to given tags, comma-separated
     --fatalwarnings	non-zero exit status on any warning
     --testing		reproducible build; no date or version on output
+    --icon		(default none) an image that will be displayed under the project name on all pages
 
   <file> (string) source file or directory containing source
 
@@ -241,7 +242,7 @@ end
 
 local ldoc_contents = {
    'alias','add_language_extension','custom_tags','new_type','add_section', 'tparam_alias',
-   'file','project','title','package','format','output','dir','ext', 'topics',
+   'file','project','title','package', 'icon','format','output','dir','ext', 'topics',
    'one','style','template','description','examples', 'pretty', 'charset', 'plain',
    'readme','all','manual_url', 'ignore', 'colon', 'sort', 'module_file','vars',
    'boilerplate','merge', 'wrap', 'not_luadoc', 'template_escape','merge_error_groups',
@@ -818,12 +819,16 @@ if builtin_style or builtin_template then
    end
 end
 
+-- default icon to nil
+if args.icon == 'none' then args.icon = nil end
+
 ldoc.log = print
 ldoc.kinds = project
 ldoc.modules = module_list
 ldoc.title = ldoc.title or args.title
 ldoc.project = ldoc.project or args.project
 ldoc.package = args.package:match '%a+' and args.package or nil
+ldoc.icon = ldoc.icon or args.icon
 
 local source_date_epoch = os.getenv("SOURCE_DATE_EPOCH")
 if args.testing then

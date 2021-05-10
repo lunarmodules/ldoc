@@ -323,6 +323,18 @@ function ldoc.source_ref (fun)
 
    check_directory(args.dir) -- make sure output directory is ok
 
+   -- project icon
+   if ldoc.icon then
+      local dir_data = args.dir .. '/data'
+      if not path.isdir(dir_data) then
+          -- luacheck: push ignore lfs
+          lfs.mkdir(dir_data)
+          -- luacheck: pop
+      end
+      local file = require 'pl.file'
+      file.copy(ldoc.icon, dir_data)
+   end
+
    args.dir = args.dir .. path.sep
 
    if css then -- has CSS been copied?

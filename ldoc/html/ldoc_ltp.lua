@@ -36,6 +36,14 @@ return [==[
 <br/>
 <h1>$(ldoc.project)</h1>
 
+# if ldoc.icon then
+#   if module then
+<img src="../data/$(ldoc.icon)" />
+#   else
+<img src="data/$(ldoc.icon)" />
+#   end
+# end
+
 # if not ldoc.single and module then -- reference back to project index
 <ul>
   <li><a href="../$(ldoc.output).html">Index</a></li>
