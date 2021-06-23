@@ -7,9 +7,9 @@
 --
 -- C/C++ support for Lua extensions is provided.
 --
--- Available from LuaRocks as 'ldoc' and as a [Zip file](http://stevedonovan.github.com/files/ldoc-1.4.3.zip)
+-- Available from LuaRocks as 'ldoc' and as a [Zip file](https://github.com/lunarmodules/LDoc/archive/refs/tags/1.4.6.zip)
 --
--- [Github Page](https://github.com/stevedonovan/ldoc)
+-- [Github Page](https://github.com/lunarmodules/LDoc)
 --
 -- @author Steve Donovan
 -- @copyright 2011

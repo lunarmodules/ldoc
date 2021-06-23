@@ -101,7 +101,7 @@ local file_methods = {
 local xlibs = {
    lfs='lfs.html', lpeg='lpeg.html',
 }
-local xlib_url = 'http://stevedonovan.github.io/lua-stdlibs/modules/'
+local xlib_url = 'http://stevedonovan.github.io/lua-stdlibs/'
 
 local tables = globals.tables
 

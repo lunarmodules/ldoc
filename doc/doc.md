@@ -311,7 +311,7 @@ They can be documented just like 'public' functions:
     --- we need to give a hint here for foo
     -- @local here
     function foo(...) .. end
-    
+
 ### Alternative way of specifying tags
 
 Since 1.3, LDoc allows the use of _colons_ instead of @.
@@ -327,7 +327,7 @@ However, you must either use the `--colon` flag or set `colon=true` in your `con
 
 In this style, types may be used directly if prefixed with '!' or '?' (for type-or-nil)
 
-(see @{colon.lua}, rendered [here](http://stevedonovan.github.io/ldoc/examples/colon))
+(see @{colon.lua}, rendered [here](http://lunarmodules.github.io/LDoc/examples/colon.lua))
 
 ## Sections
 
@@ -362,7 +362,7 @@ the new section title, and the description will be output at the start of the fu
 details for that section; the name is not used, but must be unique.
 
 Sections appear under 'Contents' on the left-hand side. See the
-[winapi](http://stevedonovan.github.com/winapi/api.html) documentation for an example of how
+[winapi](http://stevedonovan.github.io/winapi/api.html) documentation for an example of how
 this looks.
 
 Arguably a module writer should not write such very long modules, but it is not the job of
@@ -548,7 +548,7 @@ is presented formatted as-is in a code font. If you look at the script `ldoc` in
 this documentation, you can see how the command-line usage is shown. Since coding
 is all about avoiding repetition and the out-of-sync issues that arise,
 the **@usage** tag can appear later in the module, before a long string. For instance,
-the main script of LDoc is [ldoc.lua](https://github.com/stevedonovan/LDoc/blob/master/ldoc.lua)
+the main script of LDoc is [ldoc.lua](https://github.com/lunarmodules/LDoc/blob/master/ldoc.lua)
 and you will see that the usage tag appears on line 36 before the usage string
 presented as help.
 
@@ -878,7 +878,7 @@ set of `.luadoc` files for all the standard tables, plus
 
 ## Anatomy of a LDoc-generated Page
 
-[winapi](http://stevedonovan.github.com/winapi/api.html) can be used as a good example of a
+[winapi](http://stevedonovan.github.io/winapi/api.html) can be used as a good example of a
 module that uses extended LDoc features.
 
 The _navigation section_ down the left has several parts:
@@ -898,9 +898,9 @@ the subtitles become the sections shown here.
 
 **Modules** will appear for any project providing Lua libraries; there may also be a 'Scripts'
 section if the project contains Lua scripts. For example,
-[LuaMacro](http://stevedonovan.github.com/LuaMacro/docs/api.html) has a driver script `luam`
+[LuaMacro](http://stevedonovan.github.io/LuaMacro/docs/api.html) has a driver script `luam`
 in this section. The
-[builtin](http://stevedonovan.github.com/LuaMacro/docs/modules/macro.builtin.html) module
+[builtin](http://stevedonovan.github.io/LuaMacro/docs/modules/macro.builtin.html) module
 only defines macros, which are defined as a _custom tag type[?]_.
 
 The _content section_ on the right shows:
@@ -973,7 +973,7 @@ and they like looking at examples.  Previously I found myself dealing with sourc
 and writer-generated documentation using different tools, and having to match these up.
 
 LDoc allows for source examples to be included in the documentation. For example, see the
-online documentation for [winapi](http://stevedonovan.github.com/winapi/api.html). The
+online documentation for [winapi](http://stevedonovan.github.io/winapi/api.html). The
 function `utf8_expand` has a **@see** reference to 'testu.lua' and following that link gives
 you a pretty-printed version of the code.
 
@@ -1146,7 +1146,7 @@ This modifier can also be used with typed param aliases.
     end
     ----> displayed as: one (name, age [, calender='gregorian' [, offset=0]])
 
-(See @{four.lua}, rendered [here](http://stevedonovan.github.io/ldoc/examples/four))
+(See @{four.lua}, rendered [here](http://lunarmodules.github.io/LDoc/examples/four.lua))
 
 An experimental feature in 1.4 allows different 'return groups' to be defined. There may be
 multiple **@return** tags, and the meaning of this is well-defined, since Lua functions may

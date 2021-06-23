@@ -14,7 +14,7 @@ The [API documentation](http://lunarmodules.github.com/Penlight/api/index.html) 
 is an example of a project using plain LuaDoc markup processed using LDoc.
 
 LDoc is intended to be compatible with [LuaDoc](http://keplerproject.github.io/luadoc/) and
-thus follows the pattern set by the various *Doc tools:
+thus follows the pattern set by the various \*Doc tools:
 
     --- Summary ends with a period.
     -- Some description, can be over several lines.
@@ -36,7 +36,7 @@ having to embed HTML in commments by using Markdown.
 LDoc will also work with Lua C extension code, and provides some convenient shortcuts.
 
 An example showing the support for named sections and 'classes' is the [Winapi
-documentation](http://stevedonovan.github.com/winapi/api.html); this is generated from
+documentation](http://stevedonovan.github.io/winapi/api.html); this is generated from
 [winapi.l.c](https://github.com/stevedonovan/winapi/blob/master/winapi.l.c).
 
 ## Installation
