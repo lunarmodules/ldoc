@@ -75,6 +75,7 @@ ldoc, a documentation generator for Lua, v]]..version..[[
     --fatalwarnings	non-zero exit status on any warning
     --testing		reproducible build; no date or version on output
     --icon		(default none) an image that will be displayed under the project name on all pages
+    --multimodule	allow using @module, @script, @file, etc. multiple times in a file
 
   <file> (string) source file or directory containing source
 
@@ -252,7 +253,7 @@ local ldoc_contents = {
    'dont_escape_underscore','global_lookup','prettify_files','convert_opt', 'user_keywords',
    'postprocess_html',
    'custom_css','version',
-   'no_args_infer'
+   'no_args_infer', 'multimodule'
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
@@ -446,6 +447,7 @@ override 'not_luadoc'
 override 'module_file'
 override 'boilerplate'
 override 'all'
+override 'multimodule'
 
 setup_kinds()
 
@@ -829,6 +831,7 @@ ldoc.title = ldoc.title or args.title
 ldoc.project = ldoc.project or args.project
 ldoc.package = args.package:match '%a+' and args.package or nil
 ldoc.icon = ldoc.icon or args.icon
+ldoc.multimodule = ldoc.multimodule or args.multimodule
 
 local source_date_epoch = os.getenv("SOURCE_DATE_EPOCH")
 if args.testing then
