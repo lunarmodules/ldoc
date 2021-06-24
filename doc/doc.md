@@ -9,7 +9,7 @@ out of source code comments (doc comments). It is mainly targeted at Lua and doc
 Lua APIs, but it can also parse C with according doc comments for documenting Lua modules
 implemented in C.
 
-It is mostly compatible with [LuaDoc](http://keplerproject.github.com/luadoc/),
+It is mostly compatible with [LuaDoc](http://keplerproject.github.io/luadoc/),
 except that certain workarounds are no longer needed.
 For instance, it is not so married to the idea that Lua modules should be defined using the
 `module` function; this is not only a matter of taste since this has been deprecated in Lua
@@ -17,7 +17,7 @@ For instance, it is not so married to the idea that Lua modules should be define
 
 Otherwise, the output is very similar, which is no accident since the HTML templates are
 based directly on LuaDoc. You can ship your own customized templates and style sheets with
-your [own project](http://nilnor.github.com/textui/docs/) (also see Graham Hannington's
+your [own project](https://nilnor.github.io/textui/docs/) (also see Graham Hannington's
 documentation for [Lua for z/OS](http://lua4z.com/doc/)). LDoc comes with three extra themes; 'pale'
 for those who like whitespace, 'one' for one-column output, and 'fixed' for a fixed navigation
 bar down the left side.
@@ -327,7 +327,7 @@ However, you must either use the `--colon` flag or set `colon=true` in your `con
 
 In this style, types may be used directly if prefixed with '!' or '?' (for type-or-nil)
 
-(see @{colon.lua}, rendered [here](http://stevedonovan.github.io/ldoc/examples/colon))
+(see @{colon.lua})
 
 ## Sections
 
@@ -362,7 +362,7 @@ the new section title, and the description will be output at the start of the fu
 details for that section; the name is not used, but must be unique.
 
 Sections appear under 'Contents' on the left-hand side. See the
-[winapi](http://stevedonovan.github.com/winapi/api.html) documentation for an example of how
+[winapi](https://stevedonovan.github.io/winapi/api.html) documentation for an example of how
 this looks.
 
 Arguably a module writer should not write such very long modules, but it is not the job of
@@ -687,7 +687,7 @@ See @{mylib.c} for the full example.
 
 ## Moonscript Support
 
-1.4 introduces basic support for [Moonscript](http://moonscript.org). Moonscript module
+1.4 introduces basic support for [Moonscript](https://moonscript.org). Moonscript module
 conventions are just the same as Lua, except for an explicit class construct.
 @{List.moon} shows how **@classmod** can declare modules that export one class, with metamethods
 and methods put implicitly into a separate section.
@@ -746,13 +746,13 @@ line. This is useful if you have some defaults you wish to apply to all of your 
 and descriptions; you can also use the `-f` flag. This requires a markdown processor.
 LDoc knows how to use:
 
-  - [markdown.lua](http://www.frykholm.se/files/markdown.lua) a pure Lua processor by
+  - [markdown.lua](https://www.frykholm.se/files/markdown.lua) a pure Lua processor by
 Niklas Frykholm. For convenience, LDoc comes with a copy of markdown.lua.
   - [lua-discount](http://asbradbury.org/projects/lua-discount/), a faster alternative
 (installed with `luarocks install lua-discount`).  lua-discount uses the C
-[discount](http://www.pell.portland.or.us/~orc/Code/discount/) Markdown processor which has
+[discount](https://www.pell.portland.or.us/~orc/Code/discount/) Markdown processor which has
 more features than the pure Lua version, such as PHP-Extra style tables.
-  - [lunamark](http://jgm.github.com/lunamark/), another pure Lua processor,  faster than
+  - [lunamark](https://jgm.github.io/lunamark/), another pure Lua processor,  faster than
 markdown, and with extra features (`luarocks install lunamark`).
   - commonmark via [cmark-lua](https://github.com/jgm/cmark-lua), a Lua wrapper
 around the fast [libcmark](https://github.com/jgm/cmark) C library (`luarocks
@@ -854,9 +854,9 @@ LDoc knows about the basic Lua libraries, so that it can be used as a handy cons
     v
     message
 
-Thanks to Mitchell's [Textadept](http://foicica.com/textadept/) project, LDoc has a
+Thanks to Mitchell's [Textadept](https://orbitalquark.github.io/textadept/) project, LDoc has a
 set of `.luadoc` files for all the standard tables, plus
-[LuaFileSystem](http://keplerproject.github.com/luafilesystem/) and
+[LuaFileSystem](https://keplerproject.github.io/luafilesystem/) and
 [LPeg](http://www.inf.puc-rio.br/~roberto/lpeg/lpeg.html).
 
     @plain
@@ -878,7 +878,7 @@ set of `.luadoc` files for all the standard tables, plus
 
 ## Anatomy of a LDoc-generated Page
 
-[winapi](http://stevedonovan.github.com/winapi/api.html) can be used as a good example of a
+[winapi](https://stevedonovan.github.io/winapi/api.html) can be used as a good example of a
 module that uses extended LDoc features.
 
 The _navigation section_ down the left has several parts:
@@ -898,9 +898,9 @@ the subtitles become the sections shown here.
 
 **Modules** will appear for any project providing Lua libraries; there may also be a 'Scripts'
 section if the project contains Lua scripts. For example,
-[LuaMacro](http://stevedonovan.github.com/LuaMacro/docs/api.html) has a driver script `luam`
+[LuaMacro](https://stevedonovan.github.io/LuaMacro/docs/api.html) has a driver script `luam`
 in this section. The
-[builtin](http://stevedonovan.github.com/LuaMacro/docs/modules/macro.builtin.html) module
+[builtin](https://stevedonovan.github.io/LuaMacro/docs/modules/macro.builtin.html) module
 only defines macros, which are defined as a _custom tag type[?]_.
 
 The _content section_ on the right shows:
@@ -946,7 +946,7 @@ Markdown in a stylized way to specify arguments:
 Here I've chosen to italicise parameter names; the main thing is to be consistent.
 
 This style is close to the Python [documentation
-standard](http://docs.python.org/library/array.html#module-array), especially when used with
+standard](https://docs.python.org/library/array.html#module-array), especially when used with
 `no_summary`.
 
 It is also very much how the Lua documentation is ordered. For instance, this configuration
@@ -962,7 +962,7 @@ to the original:
 
 Generally, using Markdown gives you the opportunity to structure your documentation in any
 way you want; particularly if using lua-discount and its [table
-syntax](http://michelf.com/projects/php-markdown/extra/#table); the desired result can often
+syntax](https://michelf.com/projects/php-markdown/extra/#table); the desired result can often
 be achieved then by using a custom style sheet.
 
 ## Examples
@@ -973,7 +973,7 @@ and they like looking at examples.  Previously I found myself dealing with sourc
 and writer-generated documentation using different tools, and having to match these up.
 
 LDoc allows for source examples to be included in the documentation. For example, see the
-online documentation for [winapi](http://stevedonovan.github.com/winapi/api.html). The
+online documentation for [winapi](https://stevedonovan.github.io/winapi/api.html). The
 function `utf8_expand` has a **@see** reference to 'testu.lua' and following that link gives
 you a pretty-printed version of the code.
 
@@ -1146,7 +1146,7 @@ This modifier can also be used with typed param aliases.
     end
     ----> displayed as: one (name, age [, calender='gregorian' [, offset=0]])
 
-(See @{four.lua}, rendered [here](http://stevedonovan.github.io/ldoc/examples/four))
+(See @{four.lua})
 
 An experimental feature in 1.4 allows different 'return groups' to be defined. There may be
 multiple **@return** tags, and the meaning of this is well-defined, since Lua functions may
@@ -1166,8 +1166,7 @@ as a group:
     -- @return[2] error message
     function mul1() ... end
 
-This is the first function in @{multiple.lua}, and the [output](http://stevedonovan.github.io/ldoc/examples/multiple)
-shows how return groups are presented, with an **Or** between the groups.
+This is the first function in @{multiple.lua}, and the output shows how return groups are presented, with an **Or** between the groups.
 
 This is rather clumsy, and so there is a shortcut, the **@error** tag which achieves the same result,
 with helpful type information.
