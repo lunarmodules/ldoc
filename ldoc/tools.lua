@@ -537,6 +537,14 @@ function M.files_from_list (list, mask)
    return excl
 end
 
+function M.trim_path_slashes (st)
+	while st:sub(#st, #st) == "/" do
+		st = st:sub(1, #st-1)
+	end
+
+	return st
+end
+
 
 
 return tools

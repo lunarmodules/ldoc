@@ -329,9 +329,7 @@ local abspath = tools.abspath
 
 -- trim trailing forward slash
 if args.file then
-	while args.file:sub(#args.file, #args.file) == "/" do
-		args.file = args.file:sub(1, #args.file-1)
-	end
+	args.file = tools.trim_path_slashes(args.file)
 end
 
 -- a special case: 'ldoc .' can get all its parameters from config.ld
