@@ -368,6 +368,13 @@ else
    args.file = abspath(args.file)
 end
 
+local source_dir = args.file
+
+-- override "file" from config
+if ldoc.file then
+	args.file = ldoc.file
+end
+
 if type(ldoc.custom_tags) == 'table' then -- custom tags
   for i, custom in ipairs(ldoc.custom_tags) do
     if type(custom) == 'string' then
@@ -378,7 +385,6 @@ if type(ldoc.custom_tags) == 'table' then -- custom tags
   end
 end -- custom tags
 
-local source_dir = args.file
 if type(source_dir) == 'table' then
    source_dir = source_dir[1]
 end
