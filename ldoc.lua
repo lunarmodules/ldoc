@@ -99,6 +99,13 @@ if args.version then
    os.exit(0)
 end
 
+local isdir_old = path.isdir
+path.isdir = function(p)
+	p = tools.trim_path_slashes(p)
+
+	return isdir_old(p)
+end
+
 
 local ModuleMap = class(KindMap)
 doc.ModuleMap = ModuleMap
