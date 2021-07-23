@@ -1255,7 +1255,7 @@ The string this function returns will be what's actually gets written out.
 
 _Available functions are:_
 
-  - `import(obj)` exposes Lua object `obj` to config.ld
+  - `import(obj)` exposes Lua object `obj` to config.ld (enabled with `--UNSAFE_NO_SANDBOX`)
   - `alias(a,tag)` provide an alias `a` for the tag `tag`, for instance `p` as short for
 `param`
   - `add_language_extension(ext,lang)` here `lang` may be either 'c' or 'lua', and `ext` is

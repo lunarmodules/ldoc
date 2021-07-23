@@ -76,6 +76,7 @@ ldoc, a documentation generator for Lua, v]]..version..[[
     --testing		reproducible build; no date or version on output
     --icon		(default none) an image that will be displayed under the project name on all pages
     --multimodule	allow using @module, @script, @file, etc. multiple times in a file
+    --UNSAFE_NO_SANDBOX	disables sandbox and allows using `import` command in config.ld
 
   <file> (string) source file or directory containing source
 
@@ -248,10 +249,6 @@ function ldoc.custom_see_handler(pat, handler)
    doc.add_custom_see_handler(pat, handler)
 end
 
-function ldoc.import(t)
-	return (_G[t])
-end
-
 local ldoc_contents = {
    'alias','add_language_extension','custom_tags','new_type','add_section', 'tparam_alias',
    'file','project','title','package', 'icon','format','output','dir','ext', 'topics',
@@ -266,6 +263,16 @@ local ldoc_contents = {
    'custom_css','version',
    'no_args_infer', 'multimodule', 'import'
 }
+
+if args.UNSAFE_NO_SANDBOX then
+   function ldoc.import(t)
+      return (_G[t])
+   end
+
+   table.insert(ldoc_contents, 'import')
+end
+
+
 ldoc_contents = tablex.makeset(ldoc_contents)
 
 local function loadstr (ldoc,txt)
