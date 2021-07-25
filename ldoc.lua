@@ -266,7 +266,7 @@ local ldoc_contents = {
 
 if args.UNSAFE_NO_SANDBOX then
    function ldoc.import(t)
-      return (_G[t])
+      return _G[t]
    end
 
    table.insert(ldoc_contents, 'import')
