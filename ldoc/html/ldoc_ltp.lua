@@ -9,6 +9,9 @@ return [==[
 # if ldoc.custom_css then -- add custom CSS file if configured.
     <link rel="stylesheet" href="$(ldoc.custom_css)" type="text/css" />
 # end
+# if ldoc.favicon then
+    <link rel="icon" href="$(ldoc.favicon)" type="image/png" />
+# end
 </head>
 <body>
 

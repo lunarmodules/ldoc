@@ -250,7 +250,7 @@ end
 
 local ldoc_contents = {
    'alias','add_language_extension','custom_tags','new_type','add_section', 'tparam_alias',
-   'file','project','title','package', 'icon','format','output','dir','ext', 'topics',
+   'file','project','title','package','icon','favicon','format','output','dir','ext', 'topics',
    'one','style','template','description','examples', 'pretty', 'charset', 'plain',
    'readme','all','manual_url', 'ignore', 'colon', 'sort', 'module_file','vars',
    'boilerplate','merge', 'wrap', 'not_luadoc', 'template_escape','merge_error_groups',
