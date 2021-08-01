@@ -830,6 +830,10 @@ ldoc.project = ldoc.project or args.project
 ldoc.package = args.package:match '%a+' and args.package or nil
 ldoc.icon = ldoc.icon or args.icon
 
+if ldoc.icon then
+   ldoc.icon_basename = path.basename(ldoc.icon)
+end
+
 local source_date_epoch = os.getenv("SOURCE_DATE_EPOCH")
 if args.testing then
    ldoc.updatetime = "2015-01-01 12:00:00"
