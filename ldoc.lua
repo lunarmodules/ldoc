@@ -265,8 +265,21 @@ local ldoc_contents = {
 }
 
 if args.UNSAFE_NO_SANDBOX then
-   function ldoc.import(t)
-      return _G[t]
+   local select_locals = {
+      ["args"] = args,
+   }
+
+   function ldoc.import(t, env)
+      local retval = select_locals[t]
+      if not retval then
+         retval = _G[t]
+      end
+
+      if env then
+         env[t] = retval
+      end
+
+      return retval
    end
 
    table.insert(ldoc_contents, 'import')
