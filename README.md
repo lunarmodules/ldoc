@@ -28,7 +28,7 @@ thus follows the pattern set by the various *Doc tools:
 Tags such as `see` and `usage` are supported, and generally the names of functions and
 modules can be inferred from the code.
 
-LDoc is designed to give better diagnostics: if a `@see` reference cannot be found, then the
+LDoc is designed to give better diagnostics: if an `@see` reference cannot be found, then the
 line number of the reference is given.  LDoc knows about modules which do not use `module()`
 - this is important since this function has become deprecated in Lua 5.2. And you can avoid
 having to embed HTML in commments by using Markdown.
