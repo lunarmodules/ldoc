@@ -1060,7 +1060,7 @@ particular param tag. A shorthand has been introduced for this common case, whic
 This is useful for larger projects where you want to provide the argument and return value
 types for your API, in a structured way that can be easily extracted later.
 
-These types can be combined, so that "?string|number" means "ether a string or a number";
+These types can be combined, so that "?string|number" means "either a string or a number";
 "?string" is short for "?|nil|string". However, for this last case you should usually use the
 `opt` modifier discussed below.
 
