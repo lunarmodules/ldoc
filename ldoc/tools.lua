@@ -230,7 +230,9 @@ function M.check_directory(d)
 end
 
 function M.check_file (f,original)
-   if not path.exists(f) or path.getmtime(original) > path.getmtime(f) then
+   if not path.exists(f)
+       or not path.exists(original)
+       or path.getmtime(original) > path.getmtime(f) then
       local text,err = utils.readfile(original)
       local _
       if text then
