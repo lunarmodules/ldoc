@@ -319,7 +319,7 @@ local function type_of (tok) return tok and tok[1] or 'end' end
 local function value_of (tok) return tok[2] end
 
 -- This parses Lua formal argument lists. It will return a list of argument
--- names, which also has a comments field, which will contain any commments
+-- names, which also has a comments field, which will contain any comments
 -- following the arguments. ldoc will use these in addition to explicit
 -- param tags.
 

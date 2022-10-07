@@ -44,7 +44,7 @@ modules, functions, tables and types ("classes") of your API.
 ### Doc comments
 
 Only 'doc comments' are parsed; these can be started with at least 3 hyphens, or by a empty
-comment line with at least 3 hypens:
+comment line with at least 3 hyphens:
 
     --- summary.
     -- Description; this can extend over
@@ -259,7 +259,7 @@ can still start your modules the Lua 5.1 way:
 
 However, the 'module' function is deprecated in Lua 5.2 and it is increasingly
 common to see less 'magic' ways of creating modules, as seen in the description
-of the 'module' tag previously with the explicitely returned module table.
+of the 'module' tag previously with the explicitly returned module table.
 
 ### Repeating tags
 
@@ -931,7 +931,7 @@ with `kind_names` in `config.ld`. For instance, in Penlight I use `kind_names={t
 ## Customizing the Page
 
 A basic customization is to override the default UTF-8 encoding using `charset`. For instance,
-Brazillian software would find it useful to put `charset='ISO-8859-1'` in `config.ld`, or use
+Brazilian software would find it useful to put `charset='ISO-8859-1'` in `config.ld`, or use
 the **@charset** tag for individual files.
 
 Setting `no_return_or_parms` to `true` will suppress the display of 'param' and 'return'
@@ -1042,7 +1042,7 @@ Remember that the default is for references in backticks to be resolved; unlike 
 references, it is not an error if the reference cannot be found.
 
 The _sections_ of a document (the second-level headings) are also references. This
-particular section you are reading can be refered to as `@{\doc.md.Readme_files}` - the
+particular section you are reading can be referred to as `@{\doc.md.Readme_files}` - the
 rule is that any non-alphabetic character is replaced by an underscore.
 
 Any indented blocks are assumed to be Lua, unless their first line is `@plain`. New
@@ -1139,12 +1139,12 @@ This modifier can also be used with typed param aliases.
     -- you may document an indefinite number of extra arguments!
     -- @string name person's name
     -- @int age
-    -- @string[opt='gregorian'] calender optional calendar
+    -- @string[opt='gregorian'] calendar optional calendar
     -- @int[opt=0] offset optional offset
     -- @treturn string
     function one (name,age,...)
     end
-    ----> displayed as: one (name, age [, calender='gregorian' [, offset=0]])
+    ----> displayed as: one (name, age [, calendar='gregorian' [, offset=0]])
 
 (See @{four.lua})
 
@@ -1345,7 +1345,7 @@ and presentation makes this kind of new application possible with LDoc.
 
 From 1.4, LDoc has some limited support for generating Markdown output, although only
 for single files currently. Use `--ext md` for this.  'ldoc/html/ldoc_md_ltp.lua' defines
-the template for Markdown, but this can be overriden with `template` as above. It's another
+the template for Markdown, but this can be overridden with `template` as above. It's another
 example of minimal structure, and provides a better place to learn about these templates than the
 rather elaborate default HTML template.
 

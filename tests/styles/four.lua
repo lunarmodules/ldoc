@@ -13,7 +13,7 @@
 -- you may document an indefinite number of extra arguments!
 -- @tparam ?string|Person name person's name
 -- @int age
--- @string[opt='gregorian'] calender optional calendar
+-- @string[opt='gregorian'] calendar optional calendar
 -- @int[opt=0] offset optional offset
 -- @treturn string
 -- @see file:write

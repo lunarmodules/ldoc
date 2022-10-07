@@ -31,7 +31,7 @@ modules can be inferred from the code.
 LDoc is designed to give better diagnostics: if a `@see` reference cannot be found, then the
 line number of the reference is given.  LDoc knows about modules which do not use `module()`
 - this is important since this function has become deprecated in Lua 5.2. And you can avoid
-having to embed HTML in commments by using Markdown.
+having to embed HTML in comments by using Markdown.
 
 LDoc will also work with Lua C extension code, and provides some convenient shortcuts.
 
