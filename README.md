@@ -43,7 +43,7 @@ documentation](https://stevedonovan.github.io/winapi/api.html); this is generate
 
 This is straightforward; the only external dependency is
 [Penlight](https://github.com/lunarmodules/Penlight), which in turn needs
-[LuaFileSystem](https://keplerproject.github.io/luafilesystem/). These are already present
+[LuaFileSystem](https://lunarmodules.github.io/luafilesystem/). These are already present
 in [Lua for Windows](https://github.com/rjpcomputing/luaforwindows), and Penlight is also available through [LuaRocks](https://luarocks.org/) as `luarocks install
 penlight`.
 
