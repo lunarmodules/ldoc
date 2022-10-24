@@ -1,0 +1,4 @@
+cdocs/
+tests/doc/
+tests/*/doc/
+tests/*/cdocs/
