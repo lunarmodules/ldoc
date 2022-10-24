@@ -10,6 +10,13 @@ local prettify = {}
 
 local user_keywords = {}
 
+local function_arg_delimiters = {
+   ['('] = true,
+   ['{'] = true,
+   ['"'] = true,
+   ["'"] = true
+}
+
 local escaped_chars = {
    ['&'] = '&amp;',
    ['<'] = '&lt;',
@@ -51,6 +58,7 @@ function prettify.lua (lang, fname, code, initial_lineno, pre, linenos)
       end
    }
    local last_t, last_val
+   local last_non_space_idx, last_non_space_t, last_non_space_val
    local t,val = tok()
    if not t then return nil,"empty file" end
    while t do
@@ -59,11 +67,12 @@ function prettify.lua (lang, fname, code, initial_lineno, pre, linenos)
          res:append('<a id="'..linenos[ik]..'"></a>')
          ik = ik + 1
       end
+
       if globals.functions[val] or globals.tables[val] then
          t = 'global'
       end
       if user_keywords[val] then
-        res:append(span('user-keyword keyword-' .. val,val))
+         res:append(span('user-keyword keyword-' .. val,val))
       elseif spans[t] then
          if t == 'comment' or t == 'backtick' then -- may contain @{ref} or `..`
             val = prettify.resolve_inline_references(val,error_reporter)
@@ -72,6 +81,17 @@ function prettify.lua (lang, fname, code, initial_lineno, pre, linenos)
       else
          res:append(val)
       end
+
+      if (t == 'string' or function_arg_delimiters[val]) and last_non_space_t == 'iden' then
+         res[last_non_space_idx] = span('function-name',last_non_space_val)
+      end
+      if t ~= 'space' then
+          -- don't replace user-keywords with function-name:
+          last_non_space_t = user_keywords[val] and 'keyword' or t
+          last_non_space_idx = #res
+          last_non_space_val = val
+      end
+
       last_t, last_val = t,val
       t,val = tok()
    end
@@ -128,4 +148,3 @@ function prettify.set_user_keywords(keywords)
 end
 
 return prettify
-
