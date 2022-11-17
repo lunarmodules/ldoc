@@ -68,7 +68,7 @@ ldoc, a documentation generator for Lua, v]]..version..[[
     -S,--simple		no return or params, no summary
     -O,--one		one-column output layout
     -V,--version	show version information
-    --date		(default system) use this date in generated doc
+    --date		(default system) use this date in generated doc, set to empty string to skip the timestamp
     --dump		debug output dump
     --filter		(default none) filter output as Lua data (e.g pl.pretty.dump)
     --tags		(default none) show all references to given tags, comma-separated
