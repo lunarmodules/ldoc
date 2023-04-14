@@ -1227,10 +1227,6 @@ function Module:resolve_references(modules)
    for item in self.items:iter() do
       resolve_item_references(item); -- Resolve item-level see references.
    end
-   -- mark as found, so we don't waste time re-searching
-   for f in found:iter() do
-      f[1].tags.see:remove_value(f[2])
-   end
 end
 
 function Item:dump_tags (taglist)
