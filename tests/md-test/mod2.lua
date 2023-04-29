@@ -1,6 +1,6 @@
 ---------------------
 -- Another test module.
--- This one uses _Markdown_ formating, and
+-- This one uses _Markdown_ formatting, and
 -- so can include goodies such as `code`
 -- and lists:
 --

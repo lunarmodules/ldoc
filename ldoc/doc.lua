@@ -23,11 +23,12 @@ local TAG_MULTI,TAG_ID,TAG_SINGLE,TAG_TYPE,TAG_FLAG,TAG_MULTI_LINE = 'M','id','S
 --  - 'N' tags which have no associated value, like 'local` (TAG_FLAG)
 --  - 'T' tags which represent a type, like 'function' (TAG_TYPE)
 local known_tags = {
-   param = 'M', see = 'M', comment = 'M', usage = 'ML', ['return'] = 'M', field = 'M', author='M',set='M';
+   param = 'ML', see = 'M', comment = 'M', usage = 'ML', ['return'] = 'M', field = 'M', author='M',set='M';
    class = 'id', name = 'id', pragma = 'id', alias = 'id',
    copyright = 'S', summary = 'S', description = 'S', release = 'S', license = 'S',
    fixme = 'S', todo = 'S', warning = 'S', raise = 'S', charset = 'S', within = 'S',
-   ['local'] = 'N', export = 'N', private = 'N', constructor = 'N', static = 'N',include = 'S',
+   ['local'] = 'N', export = 'N', private = 'N', constructor = 'N', static = 'N', classmethod = 'N',
+   include = 'S',
    -- project-level
    module = 'T', script = 'T', example = 'T', topic = 'T', submodule='T', classmod='T', file='T',
    -- module-level
@@ -344,6 +345,7 @@ function File:finish()
                      -- a class is either a @type section or a @classmod module. Is this a _method_?
                      local class = classmod and this_mod.name or this_section.name
                      local static = item.tags.constructor or item.tags.static or item.type ~= 'function'
+                     local classmethod = item.tags.classmethod
                      -- methods and metamethods go into their own special sections...
                      if classmod and item.type == 'function' then
                         local inferred_section
@@ -357,7 +359,8 @@ function File:finish()
                         end
                      end
                      -- Whether to use '.' or the language's version of ':' (e.g. \ for Moonscript)
-                     item.name = class..(not static and this_mod.file.lang.method_call or '.')..item.name
+                     local class_name = classmethod and class or class:lower()
+                     item.name = class_name..(not static and this_mod.file.lang.method_call or '.')..item.name
                    end
                   if stype == 'factory'  then
                      if item.tags.private then to_be_removed = true
@@ -407,7 +410,7 @@ function File:finish()
       -- luacheck: pop
       item.names_hierarchy = require('pl.utils').split(
         item.name,
-        '[.:]'
+        '[.:\\]'
       )
    end
 end
@@ -557,7 +560,7 @@ function Item.check_tag(tags,tag, value, modifiers)
    return tag, value, modifiers
 end
 
--- any tag (except name and classs) may have associated modifiers,
+-- any tag (except name and class) may have associated modifiers,
 -- in the form @tag[m1,...] where  m1 is either name1=value1 or name1.
 -- At this stage, these are encoded
 -- in the tag value table and need to be extracted.
@@ -1184,7 +1187,7 @@ function Module:get_fun_ref(s)
    local fun_ref = self.items.by_name[s]
    -- did not get an exact match, so try to match by the unqualified fun name
    if not fun_ref then
-      local patt = '[.:]'..s..'$'
+      local patt = '[.:\\]'..s..'$'
       for qname,ref in pairs(self.items.by_name) do
          if qname:match(patt) then
             fun_ref = ref
@@ -1226,10 +1229,6 @@ function Module:resolve_references(modules)
    resolve_item_references(self); -- Resolve module-level see references.
    for item in self.items:iter() do
       resolve_item_references(item); -- Resolve item-level see references.
-   end
-   -- mark as found, so we don't waste time re-searching
-   for f in found:iter() do
-      f[1].tags.see:remove_value(f[2])
    end
 end
 

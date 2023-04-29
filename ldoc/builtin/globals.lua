@@ -4,6 +4,7 @@ local tools = require 'ldoc.tools'
 local globals = {}
 local lua52 = _VERSION:match '5.2'
 local lua53 = _VERSION:match '5.3'
+local lua54 = _VERSION:match '5.4'
 
 
 globals.functions = {
@@ -34,7 +35,10 @@ globals.functions = {
 }
 local functions = globals.functions
 
-if lua52 or lua53 then
+if lua54 then
+   functions.warn = true
+   functions.rawlen = true
+elseif lua52 or lua53 then
    functions.rawlen = true
 else
    functions.setfenv = true
@@ -49,7 +53,19 @@ function globals.set_manual_url(url)
    fun_ref = manual..'pdf-'
 end
 
-if lua53 then
+if lua54 then
+   globals.tables = {
+      io = '6.8',
+      package = '6.3',
+      math = '6.7',
+      os = '6.9',
+      string = '6.4',
+      table = '6.6',
+      coroutine = '6.2',
+      debug = '6.10'
+    }
+   globals.set_manual_url 'https://www.lua.org/manual/5.4/manual.html'
+elseif lua53 then
    globals.tables = {
       io = '6.8',
       package = '6.3',

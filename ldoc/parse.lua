@@ -163,7 +163,7 @@ end
 
 
 -- parses a Lua or C file, looking for ldoc comments. These are like LuaDoc comments;
--- they start with multiple '-'. (Block commments are allowed)
+-- they start with multiple '-'. (Block comments are allowed)
 -- If they don't define a name tag, then by default
 -- it is assumed that a function definition follows. If it is the first comment
 -- encountered, then ldoc looks for a call to module() to find the name of the
@@ -402,7 +402,7 @@ local function parse_file(fname, lang, package, args)
                current_item = F:new_item(tags,line)
                current_item.inferred = item_follows ~= nil
                if doc.project_level(tags.class) then
-                  if module_item then
+                  if module_item and not args.multimodule then
                      F:error("Module already declared!")
                   end
                   module_item = current_item

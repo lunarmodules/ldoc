@@ -135,7 +135,7 @@ local function parse_lua_table (tags,tok)
    end)
 end
 
---------------- function and variable inferrence -----------
+--------------- function and variable inference -----------
 -- After a doc comment, there may be a local followed by:
 -- [1] (l)function: function NAME
 -- [2] (l)function: NAME = function
@@ -202,7 +202,7 @@ end
 
 -- we only call the function returned by the item_follows above if there
 -- is not already a name and a type.
--- Otherwise, this is called. Currrently only tries to fill in the fields
+-- Otherwise, this is called. Currently only tries to fill in the fields
 -- of a table from a table definition as identified above
 function Lua:parse_extra (tags,tok,case)
    if tags.class == 'table' and not tags.field and case == 3 then
@@ -301,7 +301,6 @@ function CC:item_follows (t,v,tok)
          name = v
          t,v = tnext(tok)
       end
-      --print ('got',name,t,v,return_type)
       return function(tags,tok)
          if not tags.name then
             tags:add('name',name)
@@ -339,7 +338,12 @@ function Moon:extract_arg (tl,idx)
 end
 
 function Moon:item_follows (t,v,tok)
+   local classmethod = false
    if t == '.' then -- enclosed in with statement
+      t,v = tnext(tok)
+   end
+   if t == '@' then -- static member declaration
+      classmethod = true
       t,v = tnext(tok)
    end
    if t == 'iden' then
@@ -354,20 +358,26 @@ function Moon:item_follows (t,v,tok)
          end
       elseif t == '=' or t == ':' then -- function/method
          local _
-         t,_ = tnext(tok)
+         t, _ = tnext(tok)
          return function(tags,tok)
             if not tags.name then
                tags:add('name',name)
             end
             if t == '(' then
-               tags.formal_args,t,_ = tools.get_parameters(tok,')',',',self)
+               tags.formal_args,t, _ = tools.get_parameters(tok,')',',',self)
             else
                tags.formal_args = List()
             end
-            t,_ = tnext(tok)
+            if t == '-' then
+               tags:add('static')
+            end
+            if classmethod then
+               tags:add('classmethod')
+            end
+            t, _ = tnext(tok)
             tags:add('class','function')
             if t ~= '>' then
-               tags.static = true
+               tags:add('static')
             end
          end
       else

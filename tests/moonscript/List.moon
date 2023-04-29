@@ -25,7 +25,7 @@ class List
     --- string representation
     __tostring: => '['..(concat @ls,',')..']'
 
-    --- return idx of first occurence of `item`
+    --- return idx of first occurrence of `item`
     find: (item) =>
         for i = 1,#@ls
             if @ls[i] == item then return i

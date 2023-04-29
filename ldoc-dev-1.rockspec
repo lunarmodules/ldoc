@@ -1,26 +1,29 @@
+rockspec_format = "3.0"
 package = "ldoc"
-version = "scm-3"
+version = "dev-1"
 
 source = {
-  dir="LDoc",
-  url = "git+https://github.com/stevedonovan/LDoc.git"
+  url = "git+https://github.com/lunarmodules/LDoc.git",
+  branch = "master",
 }
 
 description = {
   summary = "A Lua Documentation Tool",
   detailed = [[
-   LDoc is a LuaDoc-compatible documentation generator which can also
-   process C extension source. Markdown may be optionally used to
-   render comments, as well as integrated readme documentation and
-   pretty-printed example files
-  ]],
-  homepage='http://stevedonovan.github.com/ldoc',
-  maintainer='steve.j.donovan@gmail.com',
+      LDoc is a LuaDoc-compatible documentation generator which can also
+      process C extension source. Markdown may be optionally used to
+      render comments, as well as integrated readme documentation and
+      pretty-printed example files
+    ]],
   license = "MIT/X11",
+  homepage="http://lunarmodules.github.io/LDoc",
+  issues_url = "https://github.com/lunarmodules/LDoc/issues",
+  maintainer="steve.j.donovan@gmail.com",
 }
 
 dependencies = {
-  "penlight","markdown"
+  "markdown",
+  "penlight",
 }
 
 build = {
