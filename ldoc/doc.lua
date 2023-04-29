@@ -359,7 +359,7 @@ function File:finish()
                         end
                      end
                      -- Whether to use '.' or the language's version of ':' (e.g. \ for Moonscript)
-                     class_name = classmethod and class or class:lower()
+                     local class_name = classmethod and class or class:lower()
                      item.name = class_name..(not static and this_mod.file.lang.method_call or '.')..item.name
                    end
                   if stype == 'factory'  then

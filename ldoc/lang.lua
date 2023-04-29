@@ -357,13 +357,14 @@ function Moon:item_follows (t,v,tok)
             tags:add('name',name)
          end
       elseif t == '=' or t == ':' then -- function/method
-         t,v = tnext(tok)
+         local _
+         t, _ = tnext(tok)
          return function(tags,tok)
             if not tags.name then
                tags:add('name',name)
             end
             if t == '(' then
-               tags.formal_args,t,_ = tools.get_parameters(tok,')',',',self)
+               tags.formal_args,t, _ = tools.get_parameters(tok,')',',',self)
             else
                tags.formal_args = List()
             end
@@ -373,7 +374,7 @@ function Moon:item_follows (t,v,tok)
             if classmethod then
                tags:add('classmethod')
             end
-            t,v = tnext(tok)
+            t, _ = tnext(tok)
             tags:add('class','function')
             if t ~= '>' then
                tags:add('static')
