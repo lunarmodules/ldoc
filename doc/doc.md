@@ -1199,6 +1199,7 @@ configuration file.
   - `merge` allow documentation from different files to be merged into modules without
 explicit **@submodule** tag
   - `icon` an image that will be displayed under the project name on all pages
+  - `multimodule` allow using @module, @script, @file, etc. multiple times in a file
 
 _These only appear in the configuration file:_
 
