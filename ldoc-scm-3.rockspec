@@ -14,7 +14,7 @@ description = {
    render comments, as well as integrated readme documentation and
    pretty-printed example files
   ]],
-  homepage='http://stevedonovan.github.com/ldoc',
+  homepage='https://github.com/lunarmodules/LDoc',
   maintainer='steve.j.donovan@gmail.com',
   license = "MIT/X11",
 }

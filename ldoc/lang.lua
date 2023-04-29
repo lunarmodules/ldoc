@@ -135,7 +135,7 @@ local function parse_lua_table (tags,tok)
    end)
 end
 
---------------- function and variable inferrence -----------
+--------------- function and variable inference -----------
 -- After a doc comment, there may be a local followed by:
 -- [1] (l)function: function NAME
 -- [2] (l)function: NAME = function
@@ -202,7 +202,7 @@ end
 
 -- we only call the function returned by the item_follows above if there
 -- is not already a name and a type.
--- Otherwise, this is called. Currrently only tries to fill in the fields
+-- Otherwise, this is called. Currently only tries to fill in the fields
 -- of a table from a table definition as identified above
 function Lua:parse_extra (tags,tok,case)
    if tags.class == 'table' and not tags.field and case == 3 then

@@ -10,7 +10,7 @@
 
 This is an implementation of the popular text markup language Markdown in pure Lua.
 Markdown can convert documents written in a simple and easy to read text format
-to well-formatted HTML. For a more thourough description of Markdown and the Markdown
+to well-formatted HTML. For a more thorough description of Markdown and the Markdown
 syntax, see <http://daringfireball.net/projects/markdown>.
 
 The original Markdown source is written in Perl and makes heavy use of advanced
@@ -128,7 +128,7 @@ setmetatable(M, MT)
 ----------------------------------------------------------------------
 
 -- Locks table t from changes, writes an error if someone attempts to change the table.
--- This is useful for detecting variables that have "accidently" been made global. Something
+-- This is useful for detecting variables that have "accidentally" been made global. Something
 -- I tend to do all too much.
 function M.lock(t)
 	local function lock_new_index(t, k, v)
@@ -854,7 +854,7 @@ local function code_spans(s)
 		local start, stop = s:find("`+", pos)
 		if not start then return s end
 		local count = stop - start + 1
-		-- Find a matching numbert of backticks
+		-- Find a matching number of backticks
 		local estart, estop = s:find(string.rep("`", count), stop+1)
 		local brstart = s:find("\n", stop+1)
 		if estart and (not brstart or estart < brstart) then

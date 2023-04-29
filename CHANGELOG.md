@@ -69,7 +69,7 @@
   * With `export` tag, decide whether method is static or not
   * `classmod` classes now respect custom sections (#113)
   * Minor issues with prettification
-  * Command-line flags set explicitly take precendence over configuration file values.
+  * Command-line flags set explicitly take precedence over configuration file values.
   * Boilerplate Lua block comment ignored properly (#137)
   * Inline links with underscores sorted (#22)
   * Info section ordering is now consistent (#150)
