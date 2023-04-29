@@ -261,8 +261,7 @@ local function loadstr (ldoc,txt)
    -- Penlight's Lua 5.2 compatibility has wobbled over the years...
    if not rawget(_G,'loadin') then -- Penlight 0.9.5
        -- Penlight 0.9.7; no more global load() override
-      local load = load or utils.load
-      chunk,err = load(txt,'config',nil,ldoc)
+      chunk,err = utils.load(txt,'config',nil,ldoc)
    else
       -- luacheck: push ignore 113
       chunk,err = loadin(ldoc,txt)
