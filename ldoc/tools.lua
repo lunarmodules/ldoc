@@ -152,7 +152,7 @@ end
 -- e.g 'pl.utils.split' becomes 'pl.utils' and 'split'. Also
 -- must understand colon notation!
 function M.split_dotted_name (s)
-   local s1,s2 = s:match '^(.+)[%.:](.+)$'
+   local s1,s2 = s:match '^(.+)[%.:\\](.+)$'
    if s1 then -- we can split
       return s1,s2
    else
