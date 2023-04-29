@@ -214,10 +214,10 @@ ldoc.alias ('error',doc.error_macro)
 
 ldoc.tparam_alias 'string'
 ldoc.tparam_alias 'number'
-ldoc.tparam_alias 'int'
-ldoc.tparam_alias 'bool'
-ldoc.tparam_alias 'func'
-ldoc.tparam_alias 'tab'
+ldoc.tparam_alias('int', 'integer')
+ldoc.tparam_alias('bool', 'boolean')
+ldoc.tparam_alias('func', 'function')
+ldoc.tparam_alias('tab', 'table')
 ldoc.tparam_alias 'thread'
 
 function ldoc.add_language_extension(ext, lang)
