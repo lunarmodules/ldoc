@@ -62,8 +62,7 @@ Or a batch file called 'ldoc.bat':
 
 To generate docs for your own lua projects see [doc.yml](.github/workflows/doc.yml).
 
-Instead of `luarocks install --only-deps`, use `luarocks install
-https://raw.githubusercontent.com/lunarmodules/LDoc/master/ldoc-scm-3.rockspec`
+Instead of `luarocks install --only-deps ...`, use `luarocks install ldoc`
 and create your own `doc-site` makefile target that runs `ldoc .` in the
 directory containing your `config.ld`.
 

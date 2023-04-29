@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Setup Lua
       uses: leafo/gh-actions-lua@v8
       with:
@@ -21,7 +21,7 @@ jobs:
     - name: Setup Lua Rocks
       uses: leafo/gh-actions-luarocks@v4
     - name: Setup dependencies
-      run: luarocks install --only-deps https://raw.githubusercontent.com/lunarmodules/LDoc/master/ldoc-scm-3.rockspec
+      run: luarocks install --only-deps ldoc-dev-1.rockspec
     - name: Build docs
       run: make doc-site
     - name: Deploy
