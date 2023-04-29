@@ -36,11 +36,11 @@ return [==[
 <br/>
 <h1>$(ldoc.project)</h1>
 
-# if ldoc.icon then
+# if ldoc.icon_basename then
 #   if module then
-<img src="../data/$(ldoc.icon)" />
+<img src="../data/$(ldoc.icon_basename)" />
 #   else
-<img src="data/$(ldoc.icon)" />
+<img src="data/$(ldoc.icon_basename)" />
 #   end
 # end
 
