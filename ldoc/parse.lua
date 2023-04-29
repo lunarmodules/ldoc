@@ -163,7 +163,7 @@ end
 
 
 -- parses a Lua or C file, looking for ldoc comments. These are like LuaDoc comments;
--- they start with multiple '-'. (Block commments are allowed)
+-- they start with multiple '-'. (Block comments are allowed)
 -- If they don't define a name tag, then by default
 -- it is assumed that a function definition follows. If it is the first comment
 -- encountered, then ldoc looks for a call to module() to find the name of the

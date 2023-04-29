@@ -11,7 +11,7 @@
 -- Like LuaDoc, LDoc puts similar kinds of documentation files in their own directories.
 -- So module docs go into 'modules/', scripts go into 'scripts/', and so forth. LDoc
 -- generalizes the idea of these project-level categories and in fact custom categories
--- can be created (refered to as 'kinds' in the code)
+-- can be created (referred to as 'kinds' in the code)
 
 local List = require 'pl.List'
 local utils = require 'pl.utils'
@@ -112,7 +112,7 @@ function html.generate_output(ldoc, args, project)
 
    -- this generates the internal module/function references
    function ldoc.href(see)
-      if see.href then -- explict reference, e.g. to Lua manual
+      if see.href then -- explicit reference, e.g. to Lua manual
          return see.href
       elseif doc.Module:class_of(see) then
          return ldoc.ref_to_module(see)

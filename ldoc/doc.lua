@@ -557,7 +557,7 @@ function Item.check_tag(tags,tag, value, modifiers)
    return tag, value, modifiers
 end
 
--- any tag (except name and classs) may have associated modifiers,
+-- any tag (except name and class) may have associated modifiers,
 -- in the form @tag[m1,...] where  m1 is either name1=value1 or name1.
 -- At this stage, these are encoded
 -- in the tag value table and need to be extracted.
