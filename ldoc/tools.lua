@@ -152,7 +152,7 @@ end
 -- e.g 'pl.utils.split' becomes 'pl.utils' and 'split'. Also
 -- must understand colon notation!
 function M.split_dotted_name (s)
-   local s1,s2 = s:match '^(.+)[%.:](.+)$'
+   local s1,s2 = s:match '^(.+)[%.:\\](.+)$'
    if s1 then -- we can split
       return s1,s2
    else
@@ -230,7 +230,9 @@ function M.check_directory(d)
 end
 
 function M.check_file (f,original)
-   if not path.exists(f) or path.getmtime(original) > path.getmtime(f) then
+   if not path.exists(f)
+       or not path.exists(original)
+       or path.getmtime(original) > path.getmtime(f) then
       local text,err = utils.readfile(original)
       local _
       if text then
@@ -317,7 +319,7 @@ local function type_of (tok) return tok and tok[1] or 'end' end
 local function value_of (tok) return tok[2] end
 
 -- This parses Lua formal argument lists. It will return a list of argument
--- names, which also has a comments field, which will contain any commments
+-- names, which also has a comments field, which will contain any comments
 -- following the arguments. ldoc will use these in addition to explicit
 -- param tags.
 
@@ -535,6 +537,14 @@ function M.files_from_list (list, mask)
       excl:append(f)
    end)
    return excl
+end
+
+function M.trim_path_slashes (st)
+	while st:sub(#st, #st) == "/" do
+		st = st:sub(1, #st-1)
+	end
+
+	return st
 end
 
 

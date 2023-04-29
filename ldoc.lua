@@ -7,7 +7,7 @@
 --
 -- C/C++ support for Lua extensions is provided.
 --
--- Available from LuaRocks as 'ldoc' and as a [Zip file](http://stevedonovan.github.com/files/ldoc-1.4.3.zip)
+-- Available from LuaRocks as 'ldoc' and as a [Zip file](https://github.com/lunarmodules/LDoc/archive/refs/tags/1.4.6.zip)
 --
 -- [Github Page](https://github.com/stevedonovan/ldoc)
 --
@@ -68,12 +68,14 @@ ldoc, a documentation generator for Lua, v]]..version..[[
     -S,--simple		no return or params, no summary
     -O,--one		one-column output layout
     -V,--version	show version information
-    --date		(default system) use this date in generated doc
+    --date		(default system) use this date in generated doc, set to empty string to skip the timestamp
     --dump		debug output dump
     --filter		(default none) filter output as Lua data (e.g pl.pretty.dump)
     --tags		(default none) show all references to given tags, comma-separated
     --fatalwarnings	non-zero exit status on any warning
     --testing		reproducible build; no date or version on output
+    --icon		(default none) an image that will be displayed under the project name on all pages
+    --multimodule	allow using @module, @script, @file, etc. multiple times in a file
 
   <file> (string) source file or directory containing source
 
@@ -96,6 +98,13 @@ local quit = utils.quit
 if args.version then
    print('LDoc v' .. version)
    os.exit(0)
+end
+
+local isdir_old = path.isdir
+path.isdir = function(p)
+	p = tools.trim_path_slashes(p)
+
+	return isdir_old(p)
 end
 
 
@@ -127,6 +136,7 @@ local file_types = {
    ['.cxx'] = cc,
    ['.C'] = cc,
    ['.mm'] = cc,
+   ['.cs'] = cc,
    ['.moon'] = lang.moon,
 }
 ------- ldoc external API ------------
@@ -240,7 +250,7 @@ end
 
 local ldoc_contents = {
    'alias','add_language_extension','custom_tags','new_type','add_section', 'tparam_alias',
-   'file','project','title','package','format','output','dir','ext', 'topics',
+   'file','project','title','package', 'icon','format','output','dir','ext', 'topics',
    'one','style','template','description','examples', 'pretty', 'charset', 'plain',
    'readme','all','manual_url', 'ignore', 'colon', 'sort', 'module_file','vars',
    'boilerplate','merge', 'wrap', 'not_luadoc', 'template_escape','merge_error_groups',
@@ -250,7 +260,7 @@ local ldoc_contents = {
    'dont_escape_underscore','global_lookup','prettify_files','convert_opt', 'user_keywords',
    'postprocess_html',
    'custom_css','version',
-   'no_args_infer'
+   'no_args_infer', 'multimodule'
 }
 ldoc_contents = tablex.makeset(ldoc_contents)
 
@@ -259,8 +269,7 @@ local function loadstr (ldoc,txt)
    -- Penlight's Lua 5.2 compatibility has wobbled over the years...
    if not rawget(_G,'loadin') then -- Penlight 0.9.5
        -- Penlight 0.9.7; no more global load() override
-      local load = load or utils.load
-      chunk,err = load(txt,'config',nil,ldoc)
+      chunk,err = utils.load(txt,'config',nil,ldoc)
    else
       -- luacheck: push ignore 113
       chunk,err = loadin(ldoc,txt)
@@ -325,6 +334,11 @@ end
 
 local abspath = tools.abspath
 
+-- trim trailing forward slash
+if args.file then
+	args.file = tools.trim_path_slashes(args.file)
+end
+
 -- a special case: 'ldoc .' can get all its parameters from config.ld
 if args.file == '.' then
    local err
@@ -359,6 +373,13 @@ else
    args.file = abspath(args.file)
 end
 
+local source_dir = args.file
+
+-- override "file" from config
+if ldoc.file then
+	args.file = ldoc.file
+end
+
 if type(ldoc.custom_tags) == 'table' then -- custom tags
   for i, custom in ipairs(ldoc.custom_tags) do
     if type(custom) == 'string' then
@@ -369,7 +390,6 @@ if type(ldoc.custom_tags) == 'table' then -- custom tags
   end
 end -- custom tags
 
-local source_dir = args.file
 if type(source_dir) == 'table' then
    source_dir = source_dir[1]
 end
@@ -444,6 +464,7 @@ override 'not_luadoc'
 override 'module_file'
 override 'boilerplate'
 override 'all'
+override 'multimodule'
 
 setup_kinds()
 
@@ -817,12 +838,21 @@ if builtin_style or builtin_template then
    end
 end
 
+-- default icon to nil
+if args.icon == 'none' then args.icon = nil end
+
 ldoc.log = print
 ldoc.kinds = project
 ldoc.modules = module_list
 ldoc.title = ldoc.title or args.title
 ldoc.project = ldoc.project or args.project
 ldoc.package = args.package:match '%a+' and args.package or nil
+ldoc.icon = ldoc.icon or args.icon
+ldoc.multimodule = ldoc.multimodule or args.multimodule
+
+if ldoc.icon then
+   ldoc.icon_basename = path.basename(ldoc.icon)
+end
 
 local source_date_epoch = os.getenv("SOURCE_DATE_EPOCH")
 if args.testing then
