@@ -1,11 +1,21 @@
+local package_name = "ldoc"
+local package_version = "dev"
+local rockspec_revision = "1"
+local github_account_name = "lunarmodules"
+
 rockspec_format = "3.0"
-package = "ldoc"
-version = "dev-1"
+package = package_name
+version = package_version .. "-" .. rockspec_revision
 
 source = {
-  url = "git+https://github.com/lunarmodules/LDoc.git",
-  branch = "master",
+  url = "git+https://github.com/" .. github_account_name .. "/" .. github_repo_name .. ".git"
 }
+
+if package_version == "dev" then
+  source.branch = "master"
+else
+  source.tag = package_version
+end
 
 description = {
   summary = "A Lua Documentation Tool",
@@ -15,10 +25,10 @@ description = {
       render comments, as well as integrated readme documentation and
       pretty-printed example files
     ]],
-  license = "MIT/X11",
   homepage="http://lunarmodules.github.io/LDoc",
   issues_url = "https://github.com/lunarmodules/LDoc/issues",
   maintainer="steve.j.donovan@gmail.com",
+  license = 'MIT <http://opensource.org/licenses/MIT>'
 }
 
 dependencies = {
