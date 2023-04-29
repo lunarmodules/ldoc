@@ -49,6 +49,9 @@ test-tables:
 
 test-clean: clean-basic clean-example clean-md clean-tables
 
+doc-site:
+	cd $(_REPODIR)/doc && lua $(_REPODIR)/ldoc.lua .
+
 CLEAN=&& lua $(_REPODIR)/ldoc.lua . && rd /S /Q cdocs && cp -rf doc cdocs
 
 clean-basic:

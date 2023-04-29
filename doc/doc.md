@@ -311,7 +311,7 @@ They can be documented just like 'public' functions:
     --- we need to give a hint here for foo
     -- @local here
     function foo(...) .. end
-    
+
 ### Alternative way of specifying tags
 
 Since 1.3, LDoc allows the use of _colons_ instead of @.
@@ -548,7 +548,7 @@ is presented formatted as-is in a code font. If you look at the script `ldoc` in
 this documentation, you can see how the command-line usage is shown. Since coding
 is all about avoiding repetition and the out-of-sync issues that arise,
 the **@usage** tag can appear later in the module, before a long string. For instance,
-the main script of LDoc is [ldoc.lua](https://github.com/stevedonovan/LDoc/blob/master/ldoc.lua)
+the main script of LDoc is [ldoc.lua](https://github.com/lunarmodules/LDoc/blob/master/ldoc.lua)
 and you will see that the usage tag appears on line 36 before the usage string
 presented as help.
 

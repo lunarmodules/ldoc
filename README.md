@@ -14,7 +14,7 @@ The [API documentation](https://lunarmodules.github.io/Penlight/) of Penlight
 is an example of a project using plain LuaDoc markup processed using LDoc.
 
 LDoc is intended to be compatible with [LuaDoc](https://keplerproject.github.io/luadoc/) and
-thus follows the pattern set by the various *Doc tools:
+thus follows the pattern set by the various \*Doc tools:
 
     --- Summary ends with a period.
     -- Some description, can be over several lines.
@@ -56,4 +56,21 @@ Or a batch file called 'ldoc.bat':
 
     @echo off
     lua \path\to\ldoc\ldoc.lua %*
+
+
+## Generating LDoc on github
+
+To generate docs for your own lua projects see [doc.yml](.github/workflows/doc.yml).
+
+Instead of `luarocks install --only-deps ...`, use `luarocks install ldoc`
+and create your own `doc-site` makefile target that runs `ldoc .` in the
+directory containing your `config.ld`.
+
+Ensure `publish_dir` in your doc.yml is set to the same location as your
+`config.ld`'s `dir` parameter.
+
+After you've pushed that change to master, you'll see the build cycle on your
+commit (an orange dot or green checkmark). When that completes, a repo owner
+needs to enable gh-pages on the repository: Settings > Pages and set "Source" to
+gh-pages and root.
 
