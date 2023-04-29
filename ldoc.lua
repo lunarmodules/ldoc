@@ -100,6 +100,13 @@ if args.version then
    os.exit(0)
 end
 
+local isdir_old = path.isdir
+path.isdir = function(p)
+	p = tools.trim_path_slashes(p)
+
+	return isdir_old(p)
+end
+
 
 local ModuleMap = class(KindMap)
 doc.ModuleMap = ModuleMap
@@ -327,6 +334,11 @@ end
 
 local abspath = tools.abspath
 
+-- trim trailing forward slash
+if args.file then
+	args.file = tools.trim_path_slashes(args.file)
+end
+
 -- a special case: 'ldoc .' can get all its parameters from config.ld
 if args.file == '.' then
    local err
@@ -361,6 +373,13 @@ else
    args.file = abspath(args.file)
 end
 
+local source_dir = args.file
+
+-- override "file" from config
+if ldoc.file then
+	args.file = ldoc.file
+end
+
 if type(ldoc.custom_tags) == 'table' then -- custom tags
   for i, custom in ipairs(ldoc.custom_tags) do
     if type(custom) == 'string' then
@@ -371,7 +390,6 @@ if type(ldoc.custom_tags) == 'table' then -- custom tags
   end
 end -- custom tags
 
-local source_dir = args.file
 if type(source_dir) == 'table' then
    source_dir = source_dir[1]
 end
