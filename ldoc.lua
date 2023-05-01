@@ -62,6 +62,7 @@ ldoc, a documentation generator for Lua, v]]..version..[[
     -X,--not_luadoc	break LuaDoc compatibility. Descriptions may continue after tags.
     -D,--define		(default none) set a flag to be used in config.ld
     -C,--colon		use colon style
+       --lls		use lua-language-server style
     -N,--no_args_infer	don't infer arguments from source
     -B,--boilerplate	ignore first comment in source files
     -M,--merge		allow module merging

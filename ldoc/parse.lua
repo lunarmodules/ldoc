@@ -72,6 +72,49 @@ local function parse_colon_tags (text)
    return preamble,tag_items
 end
 
+local function parse_lls_tags(text)
+   local lines = stringio.lines(text)
+   local preamble, line = tools.grab_while_not(lines,luadoc_tag)
+   local tag_items = {}
+   local follows
+   while line do
+      local lls_param = '@param%s+([%w_]+)%s([%w_]+)%??%s*#?%s*(.*)'
+      local param_name, param_type, param_desc = line:match(lls_param)
+      local lls_ret = '@return%s+([%w_]+)%s*([%w]*)%s*#?%s*(.*)'
+      local ret_type, ret_name, ret_desc = line:match(lls_ret)
+      if param_type then
+         -- LLS-style: param
+         local modifiers = {['type'] = param_type}
+         follows, line = tools.grab_while_not(lines, luadoc_tag)
+         append(tag_items, {'param',
+                            param_name .. ' ' .. param_desc .. '\n' .. follows,
+                            modifiers})
+      elseif ret_type then
+         -- LLS-style: return
+         local modifiers = {['type'] = ret_type}
+         follows, line = tools.grab_while_not(lines, luadoc_tag)
+         append(tag_items, {'return',
+                            ret_desc .. '\n' .. follows,
+                            modifiers})
+      else
+         -- LDoc-style
+         local tag, mod_string, rest = line :match(luadoc_tag_mod_and_value)
+         if not tag then tag, rest = line :match (luadoc_tag_value) end
+         local modifiers
+         if mod_string then
+            modifiers  = { }
+            for x in mod_string :gmatch "[^,]+" do
+               local k, v = x :match "^([^=]+)=(.*)$"
+               modifiers[k] = v
+            end
+         end
+         follows, line = tools.grab_while_not(lines,luadoc_tag)
+         append(tag_items,{tag, rest .. '\n' .. follows, modifiers})
+      end
+   end
+   return preamble,tag_items
+end
+
 -- Tags are stored as an ordered multi map from strings to strings
 -- If the same key is used, then the value becomes a list
 local Tags = {}
@@ -135,6 +178,8 @@ local function extract_tags (s,args)
    if s:match '^%s*$' then return {} end
    if args.colon then --and s:match ':%s' and not s:match '@%a' then
       preamble,tag_items = parse_colon_tags(s)
+   elseif args.lls then
+      preamble, tag_items = parse_lls_tags(s)
    else
       preamble,tag_items = parse_at_tags(s)
    end
