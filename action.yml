@@ -1,4 +1,4 @@
-name: LDoc
+name: Lua LDoc
 description: LDoc
 inputs:
   args:
