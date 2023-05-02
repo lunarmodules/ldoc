@@ -14,7 +14,7 @@ source = {
 if package_version == "dev" then
   source.branch = "master"
 else
-  source.tag = package_version
+  source.tag = "v" .. package_version
 end
 
 description = {
