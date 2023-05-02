@@ -1,9 +1,8 @@
 local package_name = "ldoc"
-local package_version = "dev"
+local package_version = "1.5.0"
 local rockspec_revision = "1"
 local github_account_name = "lunarmodules"
 
-rockspec_format = "3.0"
 package = package_name
 version = package_version .. "-" .. rockspec_revision
 
@@ -26,7 +25,6 @@ description = {
       pretty-printed example files
     ]],
   homepage="http://lunarmodules.github.io/ldoc",
-  issues_url = "https://github.com/lunarmodules/ldoc/issues",
   maintainer="caleb@alerque.com",
   license = 'MIT <http://opensource.org/licenses/MIT>'
 }

@@ -7,7 +7,7 @@ inputs:
     default: "."
 runs:
   using: docker
-  image: docker://ghcr.io/lunarmodules/ldoc:v1.4.6
+  image: docker://ghcr.io/lunarmodules/ldoc:v1.5.0
   entrypoint: sh
   args:
     - -c

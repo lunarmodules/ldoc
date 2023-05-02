@@ -7,7 +7,7 @@
 --
 -- C/C++ support for Lua extensions is provided.
 --
--- Available from LuaRocks as 'ldoc' and as a [Zip file](https://github.com/lunarmodules/ldoc/archive/refs/tags/1.4.6.zip)
+-- Available from LuaRocks as 'ldoc' and as a [Zip file](https://github.com/lunarmodules/ldoc/archive/refs/tags/v1.5.0.zip)
 --
 -- [Github Page](https://github.com/lunarmodules/ldoc)
 --
@@ -29,7 +29,7 @@ local tablex = require 'pl.tablex'
 utils.unpack = utils.unpack or unpack or table.unpack
 local lapp = require 'pl.lapp'
 
-local version = '1.4.6'
+local version = '1.5.0'
 
 -- so we can find our private modules
 app.require_here()

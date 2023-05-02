@@ -1,3 +1,34 @@
+## Version 1.5.0
+
+### Features
+  * Migrated to lunarmodules org, lowercased repository name, started using 'v' prefix for tags
+  * Add Dockerfile and publish build to ghcr.io
+  * Configure repository for use *as* a GitHub Action
+  * Support CommonMark via cmark-lua processor
+  * Add `--version` and improve CLI `--help` output
+  * Add 'new' theme
+  * Add filetype for xLua's .cs files
+  * Add options for project icons & favicons
+  * Distinguish between static/class members in moonscript
+  * Add support for Lua 5.4
+  * Add feature to skip adding timestamps to output
+  * Prettify Lua function names
+  * Make `@param` tag multiline
+  * Allow using `@module`, `@script`, `@file`, etc. multiple times in a single source file
+  * Expand builtin tparam aliases to full type names
+  * Add `--unsafe_no_sandbox` argument and allow importing Lua modules from config
+  * Support LLS-style tags for `@param` and `@return`
+
+### Fixes
+  * Correct documentation typos and errors in example code
+  * Honor TMPDIR environment variable
+  * Look for absolute references for `@see` references using module names first
+  * Use default MD template if none specified
+  * Recognize backslash separators in moonscript
+  * Do not remove `@see` references from internal data structure
+  * Fix Lua 5.1 support
+  * Cleanup CLI input to remove trailing slashes
+
 ## Version 1.4.4
 
 ### Features
@@ -35,7 +66,7 @@
   * add update time to footer of page
   * better C support: `global_lookup=true` - invoked when `parse_extra={C=true}`
   * `kind_names` can override names used in sidebar
-  
+
 ### Fixes
 
   * `all=true` in `config.ld` did not work.
