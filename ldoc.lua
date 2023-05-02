@@ -79,7 +79,7 @@ ldoc, a documentation generator for Lua, v]]..version..[[
     --multimodule	allow using @module, @script, @file, etc. multiple times in a file
     --unsafe_no_sandbox	disables sandbox and allows using `import` command in config.ld
 
-  <file> (string) source file or directory containing source
+  <file> (optional string) source file or directory containing source
 
   `ldoc .` reads options from an `config.ld` file in same directory;
   `ldoc -c path/to/myconfig.ld <file>` reads options from `path/to/myconfig.ld`
