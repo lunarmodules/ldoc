@@ -70,7 +70,7 @@ build = {
     ["ldoc.builtin.string"] = "ldoc/builtin/string.lua",
     ["ldoc.builtin.table"] = "ldoc/builtin/table.lua",
   },
-  copy_directories = {'doc','tests'},
+  copy_directories = {'tests'},
   install = {
     bin = {
       ldoc = "ldoc.lua"
