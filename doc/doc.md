@@ -1252,6 +1252,7 @@ you want to display your own functions in a special way. Each keyword may be sty
   - `postprocess_html` function that allows a last-minute modification to the produced HTML page.
 The arguments are the raw HTML that's intended to be written out (a string), and the module object.
 The string this function returns will be what's actually gets written out.
+  - `favicon` A link to an image that browser's will display as each page's icon.
 
 _Available functions are:_
 
