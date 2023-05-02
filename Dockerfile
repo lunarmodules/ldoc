@@ -3,18 +3,21 @@
 FROM akorn/luarocks:lua5.4-alpine AS builder
 
 RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing \
-	dumb-init gcc libc-dev
+	dumb-init gcc git libc-dev
 
 COPY ./ /src
 WORKDIR /src
 
+RUN luarocks --tree /pkgdir/usr/local --local install cmark && \
+    luarocks --tree /pkgdir/usr/local --local install lunamark && \
+    luarocks --tree /pkgdir/usr/local --local install lua-discount
 RUN luarocks --tree /pkgdir/usr/local make
 RUN find /pkgdir -type f -exec sed -i -e 's!/pkgdir!!g' {} \;
 
 FROM akorn/lua:5.4-alpine AS final
 
 RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing \
-	dumb-init setpriv
+    dumb-init setpriv
 
 LABEL org.opencontainers.image.title="LDoc"
 LABEL org.opencontainers.image.description="A containerized version of LDoc, a documentation generator for Lua and related C modules"
