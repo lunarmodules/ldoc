@@ -1,6 +1,6 @@
 # LDoc - A Lua Documentation Tool
 
-[![Luacheck](https://github.com/lunarmodules/LDoc/workflows/Luacheck/badge.svg)](https://github.com/lunarmodules/LDoc/actions)
+[![Luacheck](https://github.com/lunarmodules/ldoc/workflows/Luacheck/badge.svg)](https://github.com/lunarmodules/ldoc/actions)
 
 Copyright (C) 2011-2012 Steve Donovan.
 

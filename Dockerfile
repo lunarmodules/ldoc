@@ -19,12 +19,12 @@ FROM akorn/lua:5.4-alpine AS final
 RUN apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing \
     dumb-init setpriv
 
-LABEL org.opencontainers.image.title="LDoc"
+LABEL org.opencontainers.image.title="ldoc"
 LABEL org.opencontainers.image.description="A containerized version of LDoc, a documentation generator for Lua and related C modules"
 LABEL org.opencontainers.image.authors="Caleb Maclennan <caleb@alerque.com>"
 LABEL org.opencontainers.image.licenses="MIT"
-LABEL org.opencontainers.image.url="https://github.com/lunarmodules/LDoc/pkgs/container/ldoc"
-LABEL org.opencontainers.image.source="https://github.com/lunarmodules/LDoc"
+LABEL org.opencontainers.image.url="https://github.com/lunarmodules/ldoc/pkgs/container/ldoc"
+LABEL org.opencontainers.image.source="https://github.com/lunarmodules/ldoc"
 
 COPY --from=builder /pkgdir /
 RUN ldoc --version

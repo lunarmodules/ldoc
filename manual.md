@@ -530,7 +530,7 @@ These are presented in a special **Info** section in the default HTML output.
 The **@usage** tag has a somewhat different presentation when used in modules; the text is presented formatted as-is in a code font.
 If you look at the script `ldoc` in this documentation, you can see how the command-line usage is shown.
 Since coding is all about avoiding repetition and the out-of-sync issues that arise, the **@usage** tag can appear later in the module, before a long string.
-For instance, the main script of LDoc is [ldoc.lua](https://github.com/lunarmodules/LDoc/blob/master/ldoc.lua) and you will see that the usage tag appears on line 36 before the usage string
+For instance, the main script of LDoc is [ldoc.lua](https://github.com/lunarmodules/ldoc/blob/master/ldoc.lua) and you will see that the usage tag appears on line 36 before the usage string
 presented as help.
 
 **@export** is another module tag that is usually 'detached'.
@@ -1261,7 +1261,7 @@ end
 Although not currently rendered by the template as HTML, they can be extracted by the `--tags` command, which is given a comma-separated list of tags to list.
 
 ```console
-D:\dev\lua\LDoc\tests> ldoc --tags todo,fixme annot1.lua
+D:\dev\lua\ldoc\tests> ldoc --tags todo,fixme annot1.lua
 d:\dev\lua\ldoc\tests\annot1.lua:14: first: todo check if this works!
 d:\dev\lua\ldoc\tests\annot1.lua:19: first-fixme1: fixme what about else?
 ```
@@ -1341,7 +1341,7 @@ return {
 Can be used like so:
 
 ```console
-~/LDoc/tests/example$ ldoc --filter custom.filter mylib.c
+~/ldoc/tests/example$ ldoc --filter custom.filter mylib.c
 module  mylib   A sample C extension.
 ```
 
@@ -1367,3 +1367,5 @@ The internal naming is not always so consistent; `ret` corresponds to **@return*
 `item.params` is an array of the function parameters, in order; it is also a map from these names to the individual descriptions of the parameters.
 `item.modifiers` is a table where the keys are the tags and the values are arrays of modifier tables.
 The standard tag aliases `tparam` and `treturn` attach a `type` modifier to their tags.
+
+
