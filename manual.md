@@ -1,6 +1,6 @@
 # LDoc, a Lua Documentation Tool
 
-@lookup doc.md
+@lookup manual.md
 
 ## Introduction
 
@@ -1122,14 +1122,14 @@ the `@lookup` directive in documents, which must start at the first column on it
 For instance, if I am talking about `pl.utils`, then I can say `@lookup utils` and
 thereafter references like `@{\printf}` will resolve correctly.
 
-If you look at the source for this document, you will see a `@lookup doc.md` which allows
+If you look at the source for this document, you will see a `@lookup manual.md` which allows
 direct references to sections like @{Readme_files|this} with `@{\Readme_files|this}`.
 
 Remember that the default is for references in backticks to be resolved; unlike @
 references, it is not an error if the reference cannot be found.
 
 The _sections_ of a document (the second-level headings) are also references. This
-particular section you are reading can be referred to as `@{\doc.md.Readme_files}` - the
+particular section you are reading can be referred to as `@{\manual.md.Readme_files}` - the
 rule is that any non-alphabetic character is replaced by an underscore.
 
 Any indented blocks are assumed to be Lua, unless their first line is `@plain`. New
