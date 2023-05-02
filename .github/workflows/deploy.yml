@@ -36,7 +36,7 @@ jobs:
   docker:
     if: >-
       ${{
-        github.repository == 'lunarmodules/LDoc' &&
+        github.repository == 'lunarmodules/ldoc' &&
         ( github.ref_name == 'master' || startsWith(github.ref, 'refs/tags/') )
       }}
     uses: lunarmodules/.github/.github/workflows/docker_ghcr_deploy.yml@main

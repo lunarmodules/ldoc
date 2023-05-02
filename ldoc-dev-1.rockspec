@@ -25,8 +25,8 @@ description = {
       render comments, as well as integrated readme documentation and
       pretty-printed example files
     ]],
-  homepage="http://lunarmodules.github.io/LDoc",
-  issues_url = "https://github.com/lunarmodules/LDoc/issues",
+  homepage="http://lunarmodules.github.io/ldoc",
+  issues_url = "https://github.com/lunarmodules/ldoc/issues",
   maintainer="steve.j.donovan@gmail.com",
   license = 'MIT <http://opensource.org/licenses/MIT>'
 }
