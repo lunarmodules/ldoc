@@ -1256,6 +1256,7 @@ The string this function returns will be what's actually gets written out.
 
 _Available functions are:_
 
+  - `import(obj)` exposes Lua object `obj` to config.ld (enabled with `--unsafe_no_sandbox`)
   - `alias(a,tag)` provide an alias `a` for the tag `tag`, for instance `p` as short for
 `param`
   - `add_language_extension(ext,lang)` here `lang` may be either 'c' or 'lua', and `ext` is
@@ -1268,6 +1269,19 @@ that means `@tparam Object`.
   - `custom_see_handler(pattern,handler)`. If a reference matches `pattern`, then the
 extracted values will be passed to `handler`. It is expected to return link text
 and a suitable URI. (This match will happen before default processing.)
+
+## Importing Lua Objects
+
+The `import` function is available to gain access to built-in Lua functions & objects.
+
+```
+local print = import("print")
+local string = import("string")
+
+for _, s in ipairs({string.split("Hello world!")}) do
+	print(s)
+end
+```
 
 ## Annotations and Searching for Tags
 
