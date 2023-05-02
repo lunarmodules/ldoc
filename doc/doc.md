@@ -46,19 +46,23 @@ modules, functions, tables and types ("classes") of your API.
 Only 'doc comments' are parsed; these can be started with at least 3 hyphens, or by a empty
 comment line with at least 3 hyphens:
 
-    --- summary.
-    -- Description; this can extend over
-    -- several lines
+```lua
+--- summary.
+-- Description; this can extend over
+-- several lines
 
-    -----------------
-    -- This will also do.
+-----------------
+-- This will also do.
+```
 
 You can also use Lua block comments:
 
-    --[[--
-     Summary. A description
-     ...;
-    ]]
+```lua
+--[[--
+    Summary. A description
+    ...;
+]]
+```
 
 Any module or script must start with a doc comment; any other files are ignored and a
 warning issued. The only exception is if the module starts with an explicit `module`
@@ -80,9 +84,11 @@ contents.
 After this descriptive text, there will typically be _tags_ which are introduced with an @.
 These follow the convention established by Javadoc and widely used in tools for other languages.
 
-    --- Some doc comment
-    -- @tag1 parameters for first tag
-    -- @tag2 parameters for the second tag
+```lua
+--- Some doc comment
+-- @tag1 parameters for first tag
+-- @tag2 parameters for the second tag
+```
 
 The order of tags is not important, but as always, consistency is useful.
 
@@ -117,18 +123,20 @@ The first thing in your API module should be a name and a description.
 This is how a module is commonly done in Lua 5.2 with a **@module** tag at the top
 which introduces the name:
 
-    --- a test module
-    -- @module test
+```lua
+--- a test module
+-- @module test
 
-    local test = {}
+local test = {}
 
-    function test.my_module_function_1()
-        ...
-    end
-
+function test.my_module_function_1()
     ...
+end
 
-    return test
+...
+
+return test
+```
 
 This sets up a module named 'test' with the description 'a test module'.
 
@@ -137,13 +145,15 @@ This sets up a module named 'test' with the description 'a test module'.
 The next thing to describe are the functions your module has.
 This is a simple example of a documented function:
 
-    --- foo explodes text.
-    -- It is a specialized splitting operation on a string.
-    -- @param text the string
-    -- @return a table of substrings
-    function foo (text)
-    ....
-    end
+```lua
+--- foo explodes text.
+-- It is a specialized splitting operation on a string.
+-- @param text the string
+-- @return a table of substrings
+function foo (text)
+    ...
+end
+```
 
 You can also give the function name itself as an explicit tag,
 which is especially useful when documenting a Lua api exported by C code:
@@ -166,59 +176,70 @@ Common tags are the 'param' tag which takes a parameter name followed by a param
 description separated by a space, and the 'return' tag which is simply followed by
 a description for a return value:
 
-    -- @param name_of_parameter the description of this parameter as verbose text
-    -- @return the description of the return value
+```lua
+-- @param name_of_parameter the description of this parameter as verbose text
+-- @return the description of the return value
+```
 
 If you want to [specify a type](#Tag_Modifiers) for a parameter or a return value,
 there are also 'tparam' and 'treturn':
 
-    -- @tparam string text this parameter is named 'text' and has the fixed type 'string'
-    -- @treturn {string,...} a table of substrings
+```lua
+-- @tparam string text this parameter is named 'text' and has the fixed type 'string'
+-- @treturn {string,...} a table of substrings
+```
 
 There may be multiple 'param' tags, which should document each formal parameter of the
 function. For Lua, there can also be multiple 'return' tags
 
-    --- solve a quadratic equation.
-    -- @param a first coeff
-    -- @param b second coeff
-    -- @param c third coeff
-    -- @return first root, or nil
-    -- @return second root, or imaginary root error
-    function solve (a,b,c)
-        local disc = b^2 - 4*a*c
-        if disc < 0 then
-            return nil,"imaginary roots"
-        else
-           disc = math.sqrt(disc)
-           return (-b + disc)/2*a,
-                  (-b - disc)/2*a
-        end
+```lua
+--- solve a quadratic equation.
+-- @param a first coeff
+-- @param b second coeff
+-- @param c third coeff
+-- @return first root, or nil
+-- @return second root, or imaginary root error
+function solve (a,b,c)
+    local disc = b^2 - 4*a*c
+    if disc < 0 then
+        return nil,"imaginary roots"
+    else
+        disc = math.sqrt(disc)
+        return (-b + disc)/2*a,
+                (-b - disc)/2*a
     end
+end
 
-    ...
+...
+```
+
 
 #### Tables and constant values (fields)
 
 Modules can of course export tables and other values. The classic way to document a table
 looks like this:
 
-    --- a useful table of constants
-    -- @field alpha first correction
-    -- @field beta second correction
-    -- @field gamma fudge factor
-    -- @table constants
+```lua
+--- a useful table of constants
+-- @field alpha first correction
+-- @field beta second correction
+-- @field gamma fudge factor
+-- @table constants
+```
 
 Here the kind of item is made explicit by the 'table' tag; tables have 'fields' in the same
 way as functions have parameters.
 
 This can get tedious, so LDoc will attempt to extract table documentation from code:
 
-    --- a useful table of constants
-    M.constants = {
-        alpha = 0.23, -- first correction
-        beta = 0.443, -- second correction
-        gamma = 0.01  -- fudge factor
-    }
+```lua
+--- a useful table of constants
+M.constants = {
+    alpha = 0.23, -- first correction
+    beta = 0.443, -- second correction
+    gamma = 0.01  -- fudge factor
+}
+```
 
 The rule followed here is `NAME = <table-constructor>`. If LDoc can't work out the name and
 type from the following code, then a warning will be issued, pointing to the file and
@@ -227,8 +248,10 @@ identifiers.
 
 Another kind of module-level type is 'field', such as follows:
 
-    --- module version.
-    M._VERSION = '0.5'
+```lua
+--- module version.
+M._VERSION = '0.5'
+```
 
 That is, a module may contain exported functions, local functions, tables and fields.
 
@@ -236,15 +259,17 @@ That is, a module may contain exported functions, local functions, tables and fi
 
 When the code analysis would lead to the wrong type, you can always be explicit.
 
-    --- module contents with explicitly documented field _CONTENTS.
-    -- @field _CONTENTS
-    M._CONTENTS = {constants=true,one=true,...}
+```lua
+--- module contents with explicitly documented field _CONTENTS.
+-- @field _CONTENTS
+M._CONTENTS = {constants=true,one=true,...}
 
-    --- an explicitly named function.
-    -- @function my_function
-    function my_function()
-        ...
-    end
+--- an explicitly named function.
+-- @function my_function
+function my_function()
+    ...
+end
+```
 
 This is especially useful in C where the function declarations
 are different from final Lua api which you are documenting.
@@ -254,14 +279,16 @@ are different from final Lua api which you are documenting.
 As an alternative to using the 'module' tag as described previously, you
 can still start your modules the Lua 5.1 way:
 
-    --- solvers for common equations.
-    module("solvers", package.seeall)
+```lua
+--- solvers for common equations.
+module("solvers", package.seeall)
+```
 
 However, the 'module' function is deprecated in Lua 5.2 and it is increasingly
 common to see less 'magic' ways of creating modules, as seen in the description
 of the 'module' tag previously with the explicitly returned module table.
 
-### Repeating tags
+#### Repeating tags
 
 Tags like 'param' and 'return' can be specified multiple times, whereas a type
 tag like 'function' can only occur once in a comment.
@@ -273,18 +300,20 @@ The basic rule is that a single doc comment can only document one entity.
 It is common to use a local name for a module when declaring its contents. In this case the
 'alias' tag can tell LDoc that these functions do belong to the module:
 
-    --- another test.
-    -- @module test2
-    -- @alias M
+```lua
+--- another test.
+-- @module test2
+-- @alias M
 
-    local M = {}
+local M = {}
 
-    -- first test.
-    function M.one()
-    ..
-    end
+-- first test.
+function M.one()
+..
+end
 
-    return M
+return M
+```
 
 `M` and `_M` are used commonly enough that LDoc will recognize them as aliases
 automatically, but 'alias' allows you to use any identifier.
@@ -293,8 +322,10 @@ LDoc tries to deduce the function name and the formal parameter names from exami
 code after the doc comment. It also recognizes the 'unsugared' way of defining functions as
 explicit assignment to a variable:
 
-    --- second test.
-    M.two = function(...) ... end
+```lua
+--- second test.
+M.two = function(...) ... end
+```
 
 ### Local functions
 
@@ -303,31 +334,36 @@ does not include these in the documentation, but they can be enabled using the `
 or `all=true` in `config.ld`.
 They can be documented just like 'public' functions:
 
-    --- it's clear that boo is local from context.
-    local function boo(...) .. end
+```lua
+--- it's clear that boo is local from context.
+local function boo(...) .. end
 
-    local foo
+local foo
 
-    --- we need to give a hint here for foo
-    -- @local here
-    function foo(...) .. end
+--- we need to give a hint here for foo
+-- @local here
+function foo(...) .. end
+```
 
 ### Alternative way of specifying tags
 
 Since 1.3, LDoc allows the use of _colons_ instead of @.
 
-    --- a simple function.
-    -- string: name person's name
-    -- int: age age of person
-    -- !person: person object
-    -- treturn: ?string
-    -- function check(name,age)
+```lua
+--- a simple function.
+-- string: name person's name
+-- int: age age of person
+-- !person: person object
+-- treturn: ?string
+-- function check(name,age)
+```
 
 However, you must either use the `--colon` flag or set `colon=true` in your `config.ld`.
 
 In this style, types may be used directly if prefixed with '!' or '?' (for type-or-nil)
 
 (see @{colon.lua})
+
 
 ## Sections
 
@@ -341,21 +377,23 @@ There is also a way to declare ad-hoc sections using the **@section** tag.
 The need occurs when a module has a lot of functions that need to be put into logical
 sections.
 
-    --- File functions.
-    -- Useful utilities for opening foobar format files.
-    -- @section file
+```lua
+--- File functions.
+-- Useful utilities for opening foobar format files.
+-- @section file
 
-    --- open a file
-    ...
+--- open a file
+...
 
-    --- read a file
-    ...
+--- read a file
+...
 
-    --- Encoding operations.
-    -- Encoding foobar output in different ways.
-    -- @section encoding
+--- Encoding operations.
+-- Encoding foobar output in different ways.
+-- @section encoding
 
-    ...
+...
+```
 
 A section doc-comment has the same structure as a normal doc-comment; the summary is used as
 the new section title, and the description will be output at the start of the function
@@ -371,15 +409,17 @@ the documentation tool to limit the programmer!
 A specialized kind of section is `type`: it is used for documenting classes. The functions
 (or fields) within a type section are considered to be the methods of that class.
 
-    --- A File class.
-    -- @type File
+```lua
+--- A File class.
+-- @type File
 
-    ....
-    --- get the modification time.
-    -- @return standard time since epoch
-    function File:mtime()
-    ...
-    end
+....
+--- get the modification time.
+-- @return standard time since epoch
+function File:mtime()
+...
+end
+```
 
 (In an ideal world, we would use the word 'class' instead of 'type', but this would conflict
 with the LuaDoc `class` tag.)
@@ -425,15 +465,17 @@ If you want to document scripts, then use **@script** instead of **@module**. Ne
 **@see** is used to reference other parts of the documentation, and **@usage** can provide
 examples of use; there can be multiple such tags:
 
-    ---------
-    -- split a string in two.
-    -- @param s the string
-    -- @param delim the delimiter (default space)
-    -- @return first part
-    -- @return second part
-    -- @usage local hello,world = split2("hello world")
-    -- @see split
-    function split2(s,delim) .. end
+```lua
+---------
+-- split a string in two.
+-- @param s the string
+-- @param delim the delimiter (default space)
+-- @return first part
+-- @return second part
+-- @usage local hello,world = split2("hello world")
+-- @see split
+function split2(s,delim) ... end
+```
 
 Here it's assumed that 'split' is a function defined in the same module. If you wish to link
 to a function in another module, then the reference has to be qualified.
@@ -465,20 +507,22 @@ References may be made inline using the `@{\ref}` syntax. This may appear anywhe
 text, and is more flexible than **@see**. In particular, it provides one way to document the
 type of a parameter or return value when that type has a particular structure:
 
-    ------
-    -- extract standard variables.
-    -- @param s the string
-    -- @return @{\\stdvars}
-    function extract_std(s) ... end
+```lua
+------
+-- extract standard variables.
+-- @param s the string
+-- @return @{\\stdvars}
+function extract_std(s) ... end
 
-    ------
-    -- standard variables.
-    -- Use @{\\extract_std} to parse a string containing variables,
-    -- and @{\\pack_std} to make such a string.
-    -- @field length
-    -- @field duration
-    -- @field viscosity
-    -- @table stdvars
+------
+-- standard variables.
+-- Use @{\\extract_std} to parse a string containing variables,
+-- and @{\\pack_std} to make such a string.
+-- @field length
+-- @field duration
+-- @field viscosity
+-- @table stdvars
+```
 
 `@{\ref}` is very useful for referencing your API from code samples and readme text.
 
@@ -502,24 +546,28 @@ It's useful to define how to handle references external to a project. For instan
 [luaposix](https://github.com/luaposix/luaposix) project we wanted to have `man` references
 to the corresponding C function:
 
-    ------------
-    -- raise a signal on this process.
-    -- @see raise(3)
-    -- @int nsig
-    -- @return integer error cod
-    function raise (nsig)
-    end
+```lua
+------------
+-- raise a signal on this process.
+-- @see raise(3)
+-- @int nsig
+-- @return integer error cod
+function raise (nsig)
+end
+```
 
 These see references always have this particular form, and the task is to turn them into
 online references to the Linux manpages. So in `config.ld` we have:
 
-    local upat = "http://www.kernel.org/doc/man-pages/online/pages/man%s/%s.%s.html"
+```lua
+local upat = "http://www.kernel.org/doc/man-pages/online/pages/man%s/%s.%s.html"
 
-    custom_see_handler('^([%w_]+)%((%d)%)$',function(name,section)
-        local url = upat:format(section,name,section)
-        local name = name .. '(' ..section..')'
-        return name, url
-    end)
+custom_see_handler('^([%w_]+)%((%d)%)$',function(name,section)
+    local url = upat:format(section,name,section)
+    local name = name .. '(' ..section..')'
+    return name, url
+end)
+```
 
 `^([%w_]+)%((%d)%)$` both matches the pattern and extracts the name and its section. Then it's
 a simple matter of building up the appropriate URL.  The function is expected to
@@ -570,46 +618,58 @@ be sorted, then `@set sort=true` will do it _just_ for that module.
 LDoc tries to be faithful to LuaDoc, but provides some extensions. Aliases for tags can be
 defined, and new types declared.
 
-    --- zero function. Two new ldoc features here; item types
-    -- can be used directly as tags, and aliases for tags
-    -- can be defined in config.ld.
-    -- @function zero_fun
-    -- @p k1 first
-    -- @p k2 second
+```lua
+--- zero function. Two new ldoc features here; item types
+-- can be used directly as tags, and aliases for tags
+-- can be defined in config.ld.
+-- @function zero_fun
+-- @p k1 first
+-- @p k2 second
+```
 
 Here an alias for 'param' has been defined. If a file `config.ld` is found in the source,
 then it will be loaded as Lua data. For example, the configuration for the above module
 provides a title and defines an alias for 'param':
 
-    title = "testmod docs"
-    project = "testmod"
-    alias("p","param")
+```lua
+title = "testmod docs"
+project = "testmod"
+alias("p","param")
+```
 
 Extra tag _types_ can be defined:
 
-    new_type("macro","Macros")
+```lua
+new_type("macro","Macros")
+```
 
 And then used as any other type:
 
-    -----
-    -- A useful macro. This is an example of a custom type.
-    -- @macro first_macro
-    -- @see second_function
+```lua
+-----
+-- A useful macro. This is an example of a custom type.
+-- @macro first_macro
+-- @see second_function
+```
 
 This will also create a new module section called 'Macros'.
 
 If your new type has arguments or fields, then specify the name:
 
-    new_type("macro","Macros",false,"param")
+```lua
+new_type("macro","Macros",false,"param")
+```
 
 (The third argument means that this is not a _project level_ tag)
 
 Then you may say:
 
-    -----
-    -- A macro with arguments.
-    -- @macro second_macro
-    -- @param x the argument
+```lua
+-----
+-- A macro with arguments.
+-- @macro second_macro
+-- @param x the argument
+```
 
 And the arguments will be displayed under the subsection 'param'
 
@@ -621,36 +681,42 @@ doc comment. LDoc goes further with this kind of code analysis, however.
 
 Instead of:
 
-    --- first table.
-    -- @table one
-    -- @field A alpha
-    -- @field B beta
-    M.one = {
-        A = 1,
-        B = 2;
-    }
+```lua
+--- first table.
+-- @table one
+-- @field A alpha
+-- @field B beta
+M.one = {
+    A = 1,
+    B = 2;
+}
+```
 
 you can write:
 
-    --- first table
-    -- @table one
-    M.one = {
-        A = 1, -- alpha
-        B = 2; -- beta
-    }
+```lua
+--- first table
+-- @table one
+M.one = {
+    A = 1, -- alpha
+    B = 2; -- beta
+}
+```
 
 Similarly, function parameter comments can be directly used:
 
-    ------------
-    -- third function. Can also provide parameter comments inline,
-    -- provided they follow this pattern.
-    function mod1.third_function(
-        alpha, -- correction A
-        beta, -- correction B
-        gamma -- factor C
-        )
-        ...
-    end
+```lua
+------------
+-- third function. Can also provide parameter comments inline,
+-- provided they follow this pattern.
+function mod1.third_function(
+    alpha, -- correction A
+    beta, -- correction B
+    gamma -- factor C
+    )
+    ...
+end
+```
 
 As always, explicit tags can override this behaviour if it is inappropriate.
 
@@ -696,8 +762,10 @@ and methods put implicitly into a separate section.
 
 For example, to process all files in the 'lua' directory:
 
-    $ ldoc lua
-    output written to doc/
+```console
+$ ldoc lua
+output written to doc/
+```
 
 Thereafter the `doc` directory will contain `index.html` which points to individual modules
 in the `modules` subdirectory.  The `--dir` flag can specify where the output is generated,
@@ -712,7 +780,9 @@ package was `foo` then `ldoc foo` will work as expected. If we were actually in 
 directory then `ldoc -b .. .` will correctly deduce the module names. An example would be
 generating documentation for LuaDoc itself:
 
-    $ ldoc -b .. /path/to/luadoc
+```console
+$ ldoc -b .. /path/to/luadoc
+```
 
 Without the `-b` setting the base of the package to  the _parent_ of the directory, implicit
 modules like `luadoc.config` will be incorrectly placed in the global namespace.
@@ -724,9 +794,11 @@ deduce the module name, but may need help with `--package/-b` as above.
 A special case is if you simply say 'ldoc .'. Then there _must_ be a `config.ld` file
 available in the directory, and it can specify the file:
 
-    file = "mymod.lua"
-    title = "mymod documentation"
-    description = "mymod does some simple but useful things"
+```lua
+file = "mymod.lua"
+title = "mymod documentation"
+description = "mymod does some simple but useful things"
+```
 
 `file` can of course point to a directory, just as with the `--file` option. This mode makes
 it particularly easy for the user to build the documentation, by allowing you to specify
@@ -779,9 +851,11 @@ switch off formatting for code.
 special case when a single module file is specified. Here an index would be redundant, so
 the single HTML file generated contains the module documentation.
 
-    $ ldoc mylib.lua --> results in doc/index.html
-    $ ldoc --output mylib mylib.lua --> results in doc/mylib.html
-    $ ldoc --output mylib --dir html mylib.lua --> results in html/mylib.html
+```console
+$ ldoc mylib.lua --> results in doc/index.html
+$ ldoc --output mylib mylib.lua --> results in doc/mylib.html
+$ ldoc --output mylib --dir html mylib.lua --> results in html/mylib.html
+```
 
 The default sections used by LDoc are 'Functions', 'Tables' and 'Fields', corresponding to
 the built-in types 'function', 'table' and 'field'. If `config.ld` contains something like
@@ -794,23 +868,24 @@ presents items under their corresponding section titles, in order of definition.
 There is an option to simply dump the results of parsing modules. Consider the C example
 `tests/example/mylib.c':
 
-    @plain
-    $ ldoc --dump mylib.c
-    ----
-    module: mylib   A sample C extension.
-    Demonstrates using ldoc's C/C++ support. Can either use /// or /*** */ etc.
+```console
+$ ldoc --dump mylib.c
+----
+module: mylib   A sample C extension.
+Demonstrates using ldoc's C/C++ support. Can either use /// or /*** */ etc.
 
-    function        createtable(narr, nrec)
-    Create a table with given array and hash slots.
-    narr     initial array slots, default 0
-    nrec     initial hash slots, default 0
+function        createtable(narr, nrec)
+Create a table with given array and hash slots.
+narr     initial array slots, default 0
+nrec     initial hash slots, default 0
 
-    function        solve(a, b, c)
-    Solve a quadratic equation.
-    a        coefficient of x^2
-    b        coefficient of x
-    c        constant
-    return  {"first root","second root"}
+function        solve(a, b, c)
+Solve a quadratic equation.
+a        coefficient of x^2
+b        coefficient of x
+c        constant
+return  {"first root","second root"}
+```
 
 This is useful to quickly check for problems; here we see that `createable` did not have a
 return tag.
@@ -819,62 +894,66 @@ LDoc takes this idea of data dumping one step further. If used with the `-m` fla
 look up an installed Lua module and parse it. If it has been marked up in LuaDoc-style then
 you will get a handy summary of the contents:
 
-    @plain
-    $ ldoc -m pl.pretty
-    ----
-    module: pl.pretty       Pretty-printing Lua tables.
-    * read(s) - read a string representation of a Lua table.
-    * write(tbl, space, not_clever) - Create a string representation of a Lua table.
+```console
+$ ldoc -m pl.pretty
+----
+module: pl.pretty       Pretty-printing Lua tables.
+* read(s) - read a string representation of a Lua table.
+* write(tbl, space, not_clever) - Create a string representation of a Lua table.
 
-    * dump(t, ...) - Dump a Lua table out to a file or stdout.
+* dump(t, ...) - Dump a Lua table out to a file or stdout.
+```
 
 You can specify a fully qualified function to get more information:
 
-    @plain
-    $ ldoc -m pl.pretty.write
+```console
+$ ldoc -m pl.pretty.write
 
-    function        write(tbl, space, not_clever)
-    create a string representation of a Lua table.
-    tbl      {table} Table to serialize to a string.
-    space    {string} (optional) The indent to use.
-                   Defaults to two spaces.
-    not_clever       {bool} (optional) Use for plain output, e.g {['key']=1}.
-                   Defaults to false.
+function        write(tbl, space, not_clever)
+create a string representation of a Lua table.
+tbl      {table} Table to serialize to a string.
+space    {string} (optional) The indent to use.
+                Defaults to two spaces.
+not_clever       {bool} (optional) Use for plain output, e.g {['key']=1}.
+                Defaults to false.
+```
 
 LDoc knows about the basic Lua libraries, so that it can be used as a handy console reference:
 
-    @plain
-    $> ldoc -m assert
+```console
+$ ldoc -m assert
 
-    function        assert(v, message)
-    Issues an error when the value of its argument `v` is false (i.e.,
-     nil or false); otherwise, returns all its arguments.
-    `message` is an error
-     message; when absent, it defaults to "assertion failed!"
-    v
-    message
+function        assert(v, message)
+Issues an error when the value of its argument `v` is false (i.e.,
+    nil or false); otherwise, returns all its arguments.
+`message` is an error
+    message; when absent, it defaults to "assertion failed!"
+v
+message
+```
 
 Thanks to Mitchell's [Textadept](https://orbitalquark.github.io/textadept/) project, LDoc has a
 set of `.luadoc` files for all the standard tables, plus
 [LuaFileSystem](https://keplerproject.github.io/luafilesystem/) and
 [LPeg](http://www.inf.puc-rio.br/~roberto/lpeg/lpeg.html).
 
-    @plain
-    $> ldoc -m lfs.lock
+```console
+$ ldoc -m lfs.lock
 
-    function        lock(filehandle, mode, start, length)
-    Locks a file or a part of it.
-    This function works on open files; the file
-     handle should be specified as the first argument. The string mode could be
-     either r (for a read/shared lock) or w (for a write/exclusive lock). The
-     optional arguments start and length can be used to specify a starting point
-     and its length; both should be numbers.
-     Returns true if the operation was successful; in case of error, it returns
-     nil plus an error string.
-    filehandle
-    mode
-    start
-    length
+function        lock(filehandle, mode, start, length)
+Locks a file or a part of it.
+This function works on open files; the file
+    handle should be specified as the first argument. The string mode could be
+    either r (for a read/shared lock) or w (for a write/exclusive lock). The
+    optional arguments start and length can be used to specify a starting point
+    and its length; both should be numbers.
+    Returns true if the operation was successful; in case of error, it returns
+    nil plus an error string.
+filehandle
+mode
+start
+length
+```
 
 ## Anatomy of a LDoc-generated Page
 
@@ -939,9 +1018,11 @@ tags. This may appeal to programmers who dislike the traditional @tag soup xDoc 
 prefer to comment functions just with a description. This is particularly useful when using
 Markdown in a stylized way to specify arguments:
 
-    ---------
-    -- This extracts the shortest common substring from the strings _s1_ and _s2_
-    function M.common_substring(s1,s2)
+```lua
+---------
+-- This extracts the shortest common substring from the strings _s1_ and _s2_
+function M.common_substring(s1,s2)
+```
 
 Here I've chosen to italicise parameter names; the main thing is to be consistent.
 
@@ -953,12 +1034,14 @@ It is also very much how the Lua documentation is ordered. For instance, this co
 file formats the built-in documentation for the Lua global functions in a way which is close
 to the original:
 
-    project = 'Lua'
-    description = 'Lua Standard Libraries'
-    file = {'ldoc/builtin',exclude = {'ldoc/builtin/globals.lua'}}
-    no_summary = true
-    no_return_or_parms = true
-    format = 'discount'
+```lua
+project = 'Lua'
+description = 'Lua Standard Libraries'
+file = {'ldoc/builtin',exclude = {'ldoc/builtin/globals.lua'}}
+no_summary = true
+no_return_or_parms = true
+format = 'discount'
+```
 
 Generally, using Markdown gives you the opportunity to structure your documentation in any
 way you want; particularly if using lua-discount and its [table
@@ -979,7 +1062,9 @@ you a pretty-printed version of the code.
 
 The line in the `config.ld` that enables this is:
 
-    examples = {'examples', exclude = {'examples/slow.lua'}}
+```lua
+examples = {'examples', exclude = {'examples/slow.lua'}}
+```
 
 That is, all files in the `examples` folder are to be pretty-printed, except for `slow.lua`
 which is meant to be called from one of the examples.
@@ -1003,7 +1088,9 @@ all sources, and generate per-function links to the source.
 
 Like all good Github projects, Winapi has a `readme.md`:
 
-    readme = "readme.md"
+```lua
+readme = "readme.md"
+```
 
 This goes under the 'Topics' global section; the 'Contents' of this document is generated
 from the second-level (##) headings of the readme.
@@ -1066,7 +1153,9 @@ These types can be combined, so that "?string|number" means "either a string or 
 
 There is a useful function for creating new tags that can be used in `config.ld`:
 
-    tparam_alias('string','string')
+```lua
+tparam_alias('string','string')
+```
 
 That is, **@string** will now have the same meaning as "@tparam string"; this also applies
 to the optional type syntax "?|T1|T2".
@@ -1097,7 +1186,9 @@ The exact form of `<type>` is not defined, but here is one suggested scheme:
 The `alias` function within configuration files has been extended so that alias tags can be
 defined as a tag plus a set of modifiers.  So `tparam` is defined as:
 
-    alias('tparam',{'param',modifiers={type="$1"}})
+```lua
+alias('tparam',{'param',modifiers={type="$1"}})
+```
 
 As an extension, you're allowed to use **@param** tags in table definitions. This makes it
 possible to use type aliases like **@string** to describe fields, since they will expand to
@@ -1106,25 +1197,29 @@ possible to use type aliases like **@string** to describe fields, since they wil
 
 Another modifier understood by LDoc is `opt`. For instance,
 
-    ---- testing [opt]
-    -- @param one
-    -- @param[opt] two
-    -- @param three
-    -- @param[opt] four
-    function fun (one,two,three,four)
-    end
-    ----> displayed as: fun (one [, two], three [, four])
+```lua
+---- testing [opt]
+-- @param one
+-- @param[opt] two
+-- @param three
+-- @param[opt] four
+function fun (one,two,three,four)
+end
+----> displayed as: fun (one [, two], three [, four])
+```
 
 A more typical Lua API would have a chain of optional arguments, like so:
 
-    ---- a chain of options
-    -- @param one
-    -- @param[opt] two
-    -- @param[optchain] three
-    -- @param[optchain] four
-    function fun (one,two,three,four)
-    end
-    ----> displayed as: fun (one [, two [, three [, four]]])
+```lua
+---- a chain of options
+-- @param one
+-- @param[opt] two
+-- @param[optchain] three
+-- @param[optchain] four
+function fun (one,two,three,four)
+end
+----> displayed as: fun (one [, two [, three [, four]]])
+```
 
 This is a bit tedious to type, so the rule is that a series of 'opt' modifiers will be interpreted
 as 'opt','optchain'.... .   If you want to be explicit, then do `convert_opt=true` in your
@@ -1134,17 +1229,19 @@ If a value is given for `opt`then LDoc can present this as the default value for
 
 This modifier can also be used with typed param aliases.
 
-    --- a function with typed args.
-    -- If the Lua function has varargs, then
-    -- you may document an indefinite number of extra arguments!
-    -- @string name person's name
-    -- @int age
-    -- @string[opt='gregorian'] calendar optional calendar
-    -- @int[opt=0] offset optional offset
-    -- @treturn string
-    function one (name,age,...)
-    end
-    ----> displayed as: one (name, age [, calendar='gregorian' [, offset=0]])
+```lua
+--- a function with typed args.
+-- If the Lua function has varargs, then
+-- you may document an indefinite number of extra arguments!
+-- @string name person's name
+-- @int age
+-- @string[opt='gregorian'] calendar optional calendar
+-- @int[opt=0] offset optional offset
+-- @treturn string
+function one (name,age,...)
+end
+----> displayed as: one (name, age [, calendar='gregorian' [, offset=0]])
+```
 
 (See @{four.lua})
 
@@ -1159,12 +1256,14 @@ Return groups allow a documenter to specify the various possible return values o
 by specifying _number_ modifiers. All `return` tags with the same digit modifier belong together
 as a group:
 
-    -----
-    -- function with return groups.
-    -- @return[1] result
-    -- @return[2] nil
-    -- @return[2] error message
-    function mul1() ... end
+```lua
+-----
+-- function with return groups.
+-- @return[1] result
+-- @return[2] nil
+-- @return[2] error message
+function mul1() ... end
+```
 
 This is the first function in @{multiple.lua}, and the output shows how return groups are presented, with an **Or** between the groups.
 
@@ -1231,16 +1330,18 @@ e.g. Markdown
 and the default function used to format the name. For example, to show an icon or label beside any
 function tagged with a certain tag:
 
-      -- define a @callback tag:
-      custom_tags = { { 'callback', hidden = true } }
+    ```lua
+    -- define a @callback tag:
+    custom_tags = { { 'callback', hidden = true } }
 
-      -- show a label beside functions tagged with @callback.
-      custom_display_name_handler = function(item, default_handler)
-        if item.type == 'function' and item.tags.callback then
-          return item.name .. ' [callback]'
-        end
-        return default_handler(item)
-      end
+    -- show a label beside functions tagged with @callback.
+    custom_display_name_handler = function(item, default_handler)
+    if item.type == 'function' and item.tags.callback then
+        return item.name .. ' [callback]'
+    end
+    return default_handler(item)
+    end
+    ```
 
   - `not_luadoc` set to `true` if the docs break LuaDoc compatibility
   - `no_space_before_args` set to `true` if you do not want a space between a function's name and its arguments.
@@ -1274,7 +1375,7 @@ and a suitable URI. (This match will happen before default processing.)
 
 The `import` function is available to gain access to built-in Lua functions & objects.
 
-```
+```lua
 local print = import("print")
 local string = import("string")
 
@@ -1289,26 +1390,28 @@ Annotations are special tags that can be used to keep track of internal developm
 The known annotations are 'todo', 'fixme' and 'warning'. They may occur in regular
 function/table doc comments, or on their own anywhere in the code.
 
-    --- Testing annotations
-    -- @module annot1
-    ...
-    --- first function.
-    -- @todo check if this works!
-    function annot1.first ()
-        if boo then
+```lua
+--- Testing annotations
+-- @module annot1
+...
+--- first function.
+-- @todo check if this works!
+function annot1.first ()
+    if boo then
 
-        end
-        --- @fixme what about else?
     end
+    --- @fixme what about else?
+end
+```
 
 Although not currently rendered by the template as HTML, they can be extracted by the
 `--tags` command, which is given a comma-separated list of tags to list.
 
-    @plain
-    D:\dev\lua\LDoc\tests> ldoc --tags todo,fixme annot1.lua
-    d:\dev\lua\ldoc\tests\annot1.lua:14: first: todo check if this works!
-    d:\dev\lua\ldoc\tests\annot1.lua:19: first-fixme1: fixme what about else?
-
+```console
+D:\dev\lua\LDoc\tests> ldoc --tags todo,fixme annot1.lua
+d:\dev\lua\ldoc\tests\annot1.lua:14: first: todo check if this works!
+d:\dev\lua\ldoc\tests\annot1.lua:19: first-fixme1: fixme what about else?
+```
 
 ## Generating HTML
 
@@ -1318,12 +1421,14 @@ Lake](http://lua-users.org/wiki/SlightlyLessSimpleLuaPreprocessor) which is now 
 Penlight. There are two rules - any line starting with '#' is Lua code, which can also be
 embedded with '$(...)'.
 
-    <h2>Contents</h2>
-    <ul>
-    # for kind,items in module.kinds() do
-    <li><a href="#$(no_spaces(kind))">$(kind)</a></li>
-    # end
-    </ul>
+```html
+<h2>Contents</h2>
+<ul>
+# for kind,items in module.kinds() do
+<li><a href="#$(no_spaces(kind))">$(kind)</a></li>
+# end
+</ul>
+```
 
 This is then styled with `ldoc.css`. Currently the template and stylesheet is very much
 based on LuaDoc, so the results are mostly equivalent; the main change that the template has
@@ -1372,7 +1477,9 @@ customizeable way to process the output data generated by LDoc, using the `--fil
 parameter. This is understood to be a fully qualified function (module + name). For example,
 try
 
-    $ ldoc --filter pl.pretty.dump mylib.c
+```console
+$ ldoc --filter pl.pretty.dump mylib.c
+```
 
 to see a raw dump of the data. (Simply using `dump` as the value here would be a shorthand
 for `pl.pretty.dump`.)  This is potentially very powerful, since you may write arbitrary Lua
@@ -1380,18 +1487,22 @@ code to extract the information you need from your project.
 
 For instance, a file `custom.lua` like this:
 
-    return {
-       filter = function (t)
-          for _, mod in ipairs(t) do
-             print(mod.type,mod.name,mod.summary)
-          end
-       end
-    }
+```lua
+return {
+    filter = function (t)
+        for _, mod in ipairs(t) do
+            print(mod.type,mod.name,mod.summary)
+        end
+    end
+}
+```
 
 Can be used like so:
 
-    ~/LDoc/tests/example$ ldoc --filter custom.filter mylib.c
-    module  mylib   A sample C extension.
+```console
+~/LDoc/tests/example$ ldoc --filter custom.filter mylib.c
+module  mylib   A sample C extension.
+```
 
 The basic data structure is straightforward: it is an array of 'modules' (project-level
 entities, including scripts) which each contain an `item` array (functions, tables and so
@@ -1399,17 +1510,19 @@ forth).
 
 For instance, to find all functions which don't have a **@return** tag:
 
-    return {
-       filter = function (t)
-          for _, mod in ipairs(t) do
-             for _, item in ipairs(mod.items) do
-                if item.type == 'function' and not item.ret then
-                   print(mod.name,item.name,mod.file,item.lineno)
-                end
-             end
-          end
-       end
-    }
+```lua
+return {
+    filter = function (t)
+        for _, mod in ipairs(t) do
+            for _, item in ipairs(mod.items) do
+            if item.type == 'function' and not item.ret then
+                print(mod.name,item.name,mod.file,item.lineno)
+            end
+            end
+        end
+    end
+}
+```
 
 The internal naming is not always so consistent; `ret` corresponds to **@return**, and `params`
 corresponds to **@param**.  `item.params` is an array of the function parameters, in order; it
@@ -1418,5 +1531,3 @@ is also a map from these names to the individual descriptions of the parameters.
 `item.modifiers` is a table where the keys are the tags and the values are arrays of
 modifier tables.  The standard tag aliases `tparam` and `treturn` attach a `type` modifier
 to their tags.
-
-
