@@ -1207,7 +1207,7 @@ _These only appear in the configuration file:_
   - `full_description` when you _really_ need a longer project description
   - `examples` a directory or file: can be a table
   - `readme` or `topics` readme files (to be processed with Markdown)
-  - `pretty` code prettify 'lua' (default) or 'lxsh'
+  - `pretty` code prettify 'lua' (default), 'lxsh' or 'none'
   - `prettify_files` prettify the source as well and make links to it; if its value is "show"
 then also index the source files.
   - `charset` use if you want to override the UTF-8 default (also **@charset** in files)
