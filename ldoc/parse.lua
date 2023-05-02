@@ -81,7 +81,7 @@ local function parse_lls_tags(text)
       local lls_param = '@param%s+([%w_]+)%s([%w_]+)%??%s*#?%s*(.*)'
       local param_name, param_type, param_desc = line:match(lls_param)
       local lls_ret = '@return%s+([%w_]+)%s*([%w]*)%s*#?%s*(.*)'
-      local ret_type, ret_name, ret_desc = line:match(lls_ret)
+      local ret_type, _, ret_desc = line:match(lls_ret)
       if param_type then
          -- LLS-style: param
          local modifiers = {['type'] = param_type}
