@@ -76,7 +76,7 @@ ldoc, a documentation generator for Lua, v]]..version..[[
     --testing		reproducible build; no date or version on output
     --icon		(default none) an image that will be displayed under the project name on all pages
     --multimodule	allow using @module, @script, @file, etc. multiple times in a file
-    --UNSAFE_NO_SANDBOX	disables sandbox and allows using `import` command in config.ld
+    --unsafe_no_sandbox	disables sandbox and allows using `import` command in config.ld
 
   <file> (string) source file or directory containing source
 
@@ -264,7 +264,7 @@ local ldoc_contents = {
    'no_args_infer', 'multimodule', 'import'
 }
 
-if args.UNSAFE_NO_SANDBOX then
+if args.unsafe_no_sandbox then
    local select_locals = {
       ["args"] = args,
    }
