@@ -31,7 +31,7 @@ return [==[
 # local display_name = ldoc.display_name
 # local iter = ldoc.modules.iter
 # local function M(txt,item) return ldoc.markup(txt,item,ldoc.plain) end
-# local nowrap = ldoc.wrap and '' or 'nowrap'
+# local nowrap = ldoc.wrap and '' or ' nowrap'
 
 <!-- Menu -->
 
@@ -139,7 +139,7 @@ return [==[
 <table class="function_list">
 #  for item in items() do
 	<tr>
-	<td class="name" $(nowrap)><a href="#$(item.name)">$(display_name(item))</a></td>
+	<td class="name"$(nowrap)><a href="#$(item.name)">$(display_name(item))</a></td>
 	<td class="summary">$(M(item.summary,item))</td>
 	</tr>
 #  end -- for items
@@ -306,7 +306,7 @@ return [==[
 <table class="module_list">
 # for m in mods() do
 	<tr>
-		<td class="name"  $(nowrap)><a href="$(no_spaces(kind))/$(m.name).html">$(m.name)</a></td>
+		<td class="name"$(nowrap)><a href="$(no_spaces(kind))/$(m.name).html">$(m.name)</a></td>
 		<td class="summary">$(M(ldoc.strip_header(m.summary),m))</td>
 	</tr>
 #  end -- for modules
