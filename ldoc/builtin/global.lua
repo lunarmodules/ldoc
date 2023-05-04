@@ -201,7 +201,7 @@ function type(v) end
 -- A global variable (not a function) that holds a string containing the
 -- current interpreter version. The current contents of this variable is
 -- "`Lua 5.1`".
--- @table _VERSION
+-- @string _VERSION
 
 ---
 -- This function is similar to `pcall`, except that you can set a new
