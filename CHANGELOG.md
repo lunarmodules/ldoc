@@ -29,6 +29,14 @@
   * Fix Lua 5.1 support
   * Cleanup CLI input to remove trailing slashes
 
+## Version 1.4.6
+
+https://github.com/lunarmodules/ldoc/compare/1.4.5...1.4.6
+
+## Version 1.4.5
+
+https://github.com/lunarmodules/ldoc/compare/1.4.4...1.4.5
+
 ## Version 1.4.4
 
 ### Features
