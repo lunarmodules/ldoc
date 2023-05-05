@@ -111,9 +111,12 @@ end
 -- that we must infer the module name.
 function Lua:find_module(tok,t,v)
    local res
-   res,t,v = self:search_for_token(tok,'iden','module',t,v)
+   -- st and sv are temporaries, which exist to ensure that `t` and `v`
+   -- are not clobbered if `res` is false-y.
+   local st, sv
+   res,st,sv = self:search_for_token(tok,'iden','module',t,v)
    if not res then return nil,t,v end
-   return self:parse_module_call(tok,t,v)
+   return self:parse_module_call(tok,st,sv)
 end
 
 local function parse_lua_parameters (tags,tok)
