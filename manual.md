@@ -11,7 +11,7 @@ It is mostly compatible with [LuaDoc](https://web.archive.org/web/20230313112124
 For instance, it is not so married to the idea that Lua modules should be defined using the `module` function; this is not only a matter of taste since this has been deprecated in Lua 5.2.
 
 Otherwise, the output is very similar, which is no accident since the HTML templates are based directly on LuaDoc.
-You can ship your own customized templates and style sheets with your [own project](https://web.archive.org/web/20190809030116/http://nilnor.github.io/textui/docs/) (also see Graham Hannington's documentation for [Lua for z/OS]()).
+You can ship your own customized templates and style sheets with your [own project](https://web.archive.org/web/20190809030116/http://nilnor.github.io/textui/docs/) (also see Graham Hannington's documentation for [Lua for z/OS](https://web.archive.org/web/20191231114636/http://lua4z.com/doc/)).
 LDoc comes with three extra themes; 'pale' for those who like whitespace, 'one' for one-column output, and 'fixed' for a fixed navigation bar down the left side.
 
 You have an option to use Markdown to process the documentation, which means no ugly HTML is needed in doc comments.
