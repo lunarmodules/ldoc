@@ -7,11 +7,11 @@
 LDoc is a software documentation tool which automatically generates API documentation out of source code comments (doc comments).
 It is mainly targeted at Lua and documenting Lua APIs, but it can also parse C with according doc comments for documenting Lua modules implemented in C.
 
-It is mostly compatible with [LuaDoc](http://keplerproject.github.io/luadoc/), except that certain workarounds are no longer needed.
+It is mostly compatible with [LuaDoc](https://keplerproject.github.io/luadoc/), except that certain workarounds are no longer needed.
 For instance, it is not so married to the idea that Lua modules should be defined using the `module` function; this is not only a matter of taste since this has been deprecated in Lua 5.2.
 
 Otherwise, the output is very similar, which is no accident since the HTML templates are based directly on LuaDoc.
-You can ship your own customized templates and style sheets with your [own project](https://nilnor.github.io/textui/docs/) (also see Graham Hannington's documentation for [Lua for z/OS](http://lua4z.com/doc/)).
+You can ship your own customized templates and style sheets with your [own project](https://nilnor.github.io/textui/docs/) (also see Graham Hannington's documentation for [Lua for z/OS](https://web.archive.org/web/20191231114636/http://lua4z.com/doc/)).
 LDoc comes with three extra themes; 'pale' for those who like whitespace, 'one' for one-column output, and 'fixed' for a fixed navigation bar down the left side.
 
 You have an option to use Markdown to process the documentation, which means no ugly HTML is needed in doc comments.
@@ -838,7 +838,7 @@ v
 message
 ```
 
-Thanks to Mitchell's [Textadept](https://orbitalquark.github.io/textadept/) project, LDoc has a set of `.luadoc` files for all the standard tables, plus [LuaFileSystem](https://keplerproject.github.io/luafilesystem/) and [LPeg](http://www.inf.puc-rio.br/~roberto/lpeg/lpeg.html).
+Thanks to Mitchell's [Textadept](https://orbitalquark.github.io/textadept/) project, LDoc has a set of `.luadoc` files for all the standard tables, plus [LuaFileSystem](https://lunarmodules.github.io/luafilesystem/) and [LPeg](http://www.inf.puc-rio.br/~roberto/lpeg/lpeg.html).
 
 ```console
 $ ldoc -m lfs.lock
