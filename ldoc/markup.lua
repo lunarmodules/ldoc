@@ -156,57 +156,59 @@ local function process_multiline_markdown(ldoc, txt, F, filename, deflang)
          local_context = name .. '.'
          line = getline()
       end
-      local fence = line:match '^```(.*)'
-      if fence then
-         local plain = fence==''
-         line = getline()
-         local code = {}
-         while not line:match '^```' do
-            if not plain then
-               append(code, line)
-            else
-               append(res, '     '..line)
-            end
+      if line then
+         local fence = line:match '^```(.*)'
+         if fence then
+            local plain = fence==''
             line = getline()
-         end
-         pretty_code (code,fence)
-         line = getline() -- skip fence
-         if not line then break end
-      end
-      indent, line = indent_line(line)
-      if indent >= 4 then -- indented code block
-         local code = {}
-         local plain
-         while indent >= 4 or blank(line) do
-            if not start_indent then
-               start_indent = indent
-               if line:match '^%s*@plain%s*$' then
-                  plain = true
-                  line = getline()
+            local code = {}
+            while not line:match '^```' do
+               if not plain then
+                  append(code, line)
+               else
+                  append(res, '     '..line)
                end
+               line = getline()
             end
-            if not plain then
-               append(code,line:sub(start_indent + 1))
-            else
-               append(res,line)
+            pretty_code (code,fence)
+            line = getline() -- skip fence
+            if not line then break end
+         end
+         indent, line = indent_line(line)
+         if indent >= 4 then -- indented code block
+            local code = {}
+            local plain
+            while indent >= 4 or blank(line) do
+               if not start_indent then
+                  start_indent = indent
+                  if line:match '^%s*@plain%s*$' then
+                     plain = true
+                     line = getline()
+                  end
+               end
+               if not plain then
+                  append(code,line:sub(start_indent + 1))
+               else
+                  append(res,line)
+               end
+               line = getline()
+               if line == nil then break end
+               indent, line = indent_line(line)
             end
+            start_indent = nil
+            while #code > 1 and blank(code[#code]) do  -- trim blank lines.
+              table.remove(code)
+            end
+            pretty_code (code,deflang)
+         else
+            local section = F and F.sections[L]
+            if section then
+               append(res,('<a name="%s"></a>'):format(section))
+            end
+            line = resolve_inline_references(ldoc, line, err_item)
+            append(res,line)
             line = getline()
-            if line == nil then break end
-            indent, line = indent_line(line)
          end
-         start_indent = nil
-         while #code > 1 and blank(code[#code]) do  -- trim blank lines.
-           table.remove(code)
-         end
-         pretty_code (code,deflang)
-      else
-         local section = F and F.sections[L]
-         if section then
-            append(res,('<a name="%s"></a>'):format(section))
-         end
-         line = resolve_inline_references(ldoc, line, err_item)
-         append(res,line)
-         line = getline()
       end
    end
    res = concat(res,'\n')
