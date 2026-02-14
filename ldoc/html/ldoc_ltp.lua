@@ -65,7 +65,8 @@ return [==[
 
 
 # if ldoc.no_summary and module and not ldoc.one then -- bang out the functions on the side
-# for kind, items in module.kinds() do
+# for k, items in module.kinds() do
+# local kind = k
 <h2>$(kind)</h2>
 <ul class="nowrap">
 # for item in items() do
@@ -76,7 +77,8 @@ return [==[
 # end
 # -------- contents of project ----------
 # local this_mod = module and module.name
-# for kind, mods, type in ldoc.kinds() do
+# for k, mods, t in ldoc.kinds() do
+#  local kind, type = k, t
 #  if ldoc.allowed_in_contents(type,module) then
 <h2>$(kind)</h2>
 <ul class="$(kind=='Topics' and '' or 'nowrap')">
@@ -300,7 +302,8 @@ return [==[
   <p>$(M(ldoc.full_description,nil))</p>
 # end
 
-# for kind, mods in ldoc.kinds() do
+# for k, mods in ldoc.kinds() do
+# local kind = k
 <h2>$(kind)</h2>
 # kind = kind:lower()
 <table class="module_list">

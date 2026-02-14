@@ -41,12 +41,12 @@ end
 
 local function get_module_info(m)
    local info = OrderedMap()
-   for tag in doc.module_info_tags() do
-      local val = m.tags[tag]
+   for t in doc.module_info_tags() do
+      local val = m.tags[t]
       if type(val)=='table' then
          val = table.concat(val,',')
       end
-      tag = stringx.title(tag)
+      local tag = stringx.title(t)
       info:set(tag,val)
    end
    if #info:keys() > 0 then
@@ -232,7 +232,8 @@ function ldoc.source_ref (fun)
       end
 
       local types = {}
-      for name in tp:gmatch("[^|]+") do
+      for n in tp:gmatch("[^|]+") do
+	 local name = n
          local sym = name:match '([%w%.%:]+)'
          local ref,_ = markup.process_reference(sym,true)
          if ref then

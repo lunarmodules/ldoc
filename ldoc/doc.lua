@@ -6,7 +6,7 @@ local class = require 'pl.class'
 local utils = require 'pl.utils'
 local List = require 'pl.List'
 local Map = require 'pl.Map'
-local text = require 'pl.text'
+local text = require 'pl.stringx'
 
 local doc = {}
 local global = require 'ldoc.builtin.globals'
