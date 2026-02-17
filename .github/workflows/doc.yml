@@ -14,16 +14,23 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+
     - name: Setup Lua
-      uses: leafo/gh-actions-lua@v8
+      uses: hishamhm/gh-actions-lua@master
       with:
-        luaVersion: 5.4
-    - name: Setup Lua Rocks
-      uses: leafo/gh-actions-luarocks@v4
+        luaVersion: "5.5"
+
+    - name: Setup LuaRocks
+      uses: hishamhm/gh-actions-luarocks@master
+      with:
+        luaRocksVersion: "3.13.0"
+
     - name: Setup dependencies
       run: luarocks install --only-deps ldoc-dev-1.rockspec
+
     - name: Build docs
       run: make doc-site
+
     - name: Deploy
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
       uses: peaceiris/actions-gh-pages@v3
