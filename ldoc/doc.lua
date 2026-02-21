@@ -1065,10 +1065,15 @@ end
 
 local function reference (s, mod_ref, item_ref)
    local name = item_ref and item_ref.name or ''
-   -- this is deeply hacky; classes have 'Class ' prepended.
---~    if item_ref and doc.class_tag(item_ref.type) then
---~       name = 'Class_'..name
---~    end
+   -- HTML anchors for class sections (@type/@factory) are generated from the
+   -- section display name, e.g. "Class Foo" -> "Class_Foo".
+   -- When a reference resolves to the section item itself, make sure we link
+   -- to that anchor instead of "#Foo".
+   if item_ref and doc.class_tag(item_ref.type) then
+      if not name:match('^Class_') then
+         name = 'Class_' .. name:gsub('%W', '_')
+      end
+   end
    return {mod = mod_ref, name = name, label=s}
 end
 
