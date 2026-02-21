@@ -1130,9 +1130,21 @@ function Module:process_see_reference (s,modules,istype)
    -- module reference?
    mod_ref = self:hunt_for_reference(s, modules)
    if ismod(mod_ref) then return mod_ref end
+
+   -- In a strict type context, prefer class sections over same-named functions.
+   -- This avoids collisions like a function `inotify()` and a `@type inotify` section.
+   if istype then
+      local section_ref = self.sections and self.sections.by_name and self.sections.by_name[s]
+      if section_ref and doc.class_tag(section_ref.type) then
+         return reference(s, self, section_ref)
+      end
+   end
+
    -- method reference? (These are of form CLASS.NAME)
-   fun_ref = self.items.by_name[s]
-   if fun_ref then return reference(s,self,fun_ref) end
+   if not istype then
+      fun_ref = self.items.by_name[s]
+      if fun_ref then return reference(s,self,fun_ref) end
+   end
    -- otherwise, start splitting!
    local packmod,name = split_dotted_name(s) -- e.g. 'pl.utils','split'
    if packmod then -- qualified name
@@ -1153,19 +1165,26 @@ function Module:process_see_reference (s,modules,istype)
             return nil,"module not found: "..packmod
          end
       end
+      if istype then
+         fun_ref = mod_ref.sections.by_name[name]
+         if fun_ref and doc.class_tag(fun_ref.type) then
+            return reference(s, mod_ref, fun_ref)
+         end
+      end
+
       fun_ref = mod_ref:get_fun_ref(name)
       if fun_ref then
          return reference(s,mod_ref,fun_ref)
+      end
+
+      fun_ref = mod_ref.sections.by_name[name]
+      if not fun_ref then
+         return nil,"function or section not found: "..s.." in "..mod_ref.name
       else
-         fun_ref = mod_ref.sections.by_name[name]
-         if not fun_ref then
-            return nil,"function or section not found: "..s.." in "..mod_ref.name
-         else
-            return reference(fun_ref.name:gsub('_',' '),mod_ref,fun_ref)
-         end
+         return reference(fun_ref.name:gsub('_',' '),mod_ref,fun_ref)
       end
    else -- plain jane name; module in this package, function in this module
-      if ldoc and ldoc.global_lookup then
+      if ldoc and ldoc.global_lookup and not istype then
         for m in modules:iter() do
             fun_ref = m:get_fun_ref(s)
             if fun_ref then return reference(s,m,fun_ref) end
@@ -1175,16 +1194,22 @@ function Module:process_see_reference (s,modules,istype)
       mod_ref = modules.by_name[self.package..'.'..s]
       if ismod(mod_ref) then return reference(s, mod_ref,nil) end
 
-      fun_ref = self.items.by_name[self.name..'.'..s]
-      if fun_ref then return reference(self.name..'.'..s,self,fun_ref) end
+      if not istype then
+         fun_ref = self.items.by_name[self.name..'.'..s]
+         if fun_ref then return reference(self.name..'.'..s,self,fun_ref) end
 
-      fun_ref = self:get_fun_ref(s)
-      if fun_ref then return reference(s,self,fun_ref)
-      else
-         local ref = lua_manual_ref (s)
-         if ref then return ref end
-         return nil, "function not found: "..s.." in this module"
+         fun_ref = self:get_fun_ref(s)
+         if fun_ref then return reference(s,self,fun_ref) end
       end
+
+      local ref = lua_manual_ref (s)
+      if ref then return ref end
+
+      if istype then
+         return nil, "type not found: "..s.." in this module"
+      end
+
+      return nil, "function not found: "..s.." in this module"
    end
 end
 
