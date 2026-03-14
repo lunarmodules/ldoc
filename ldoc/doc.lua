@@ -37,6 +37,7 @@ local known_tags = {
 
 }
 known_tags._alias = {}
+known_tags._alias['signal'] = 'function'
 known_tags._project_level = {
    module = true,
    script = true,
