@@ -183,7 +183,9 @@ return [==[
 #  end
     </dt>
     <dd>
+    <p>
     $(M(ldoc.descript(item),item))
+    </p>
 
 #   if ldoc.custom_tags then
 #    for custom in iter(ldoc.custom_tags) do
