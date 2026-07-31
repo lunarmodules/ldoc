@@ -13,15 +13,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@a37ce9120846195fa4ece8f58b268e6043cb2f26 # v3
 
     - name: Setup Lua
-      uses: hishamhm/gh-actions-lua@master
+      uses: hishamhm/gh-actions-lua@fc6f8de246f8c01f6e1a56a1b851143e23370ff3 # master
       with:
         luaVersion: "5.5"
 
     - name: Setup LuaRocks
-      uses: hishamhm/gh-actions-luarocks@master
+      uses: hishamhm/gh-actions-luarocks@95d2308a0aff36ad31ebadca493ed14853399842 # master
       with:
         luaRocksVersion: "3.13.0"
 
@@ -33,6 +33,6 @@ jobs:
 
     - name: Deploy
       if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
-      uses: peaceiris/actions-gh-pages@v3
+      uses: peaceiris/actions-gh-pages@373f7f263a76c20808c831209c920827a82a2847 # v3
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
