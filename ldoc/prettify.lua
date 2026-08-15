@@ -110,16 +110,15 @@ end
 
 local lxsh
 
-local lxsh_highlighers = {bib=true,c=true,lua=true,sh=true}
-
 function prettify.code (lang,fname,code,initial_lineno,pre)
    if not lxsh then
       return prettify.lua (lang,fname, code, initial_lineno, pre)
    else
-      if not lxsh_highlighers[lang] then
-         lang = 'lua'
+      local highlighter = lxsh.highlighters[lang]
+      if not highlighter then
+         return code
       end
-      code = lxsh.highlighters[lang](code, {
+      code = highlighter(code, {
          formatter = lxsh.formatters.html,
          external = true
       })
