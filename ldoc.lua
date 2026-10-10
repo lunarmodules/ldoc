@@ -570,7 +570,7 @@ end
 -- (this also will initialize the code prettifier used)
 override ('format','plain')
 override 'pretty'
-ldoc.markup = markup.create(ldoc, args.format, args.pretty, ldoc.user_keywords)
+ldoc.markup = markup.create(ldoc, args.format, ldoc.pretty, ldoc.user_keywords)
 
 ------ 'Special' Project-level entities ---------------------------------------
 -- Examples and Topics do not contain code to be processed for doc comments.
